@@ -5,18 +5,16 @@
  */
 package demo.ts;
 
-
-
-import bftsmart.tom.ParallelServiceProxy;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import bftsmart.tom.ParallelServiceProxy;
 import parallelism.ParallelMapping;
 
 /**
@@ -24,30 +22,26 @@ import parallelism.ParallelMapping;
  * @author alchieri
  */
 public class BFTTupleSpace {
-    
+
     static final int OUT = 1;
     static final int INP = 2;
     static final int RDP = 3;
     static final int CAS = 4;
 
-    
     static final String WILDCARD = "*";
-    
+
     protected ParallelServiceProxy proxy = null;
     protected ByteArrayOutputStream out = null;
 
     protected boolean parallel = false;
-    
-
 
     public BFTTupleSpace(int id, boolean parallelExecution) {
         proxy = new ParallelServiceProxy(id);
         this.parallel = parallelExecution;
     }
 
-     
-    public void out(Tuple tuple){
-     try {
+    public void out(Tuple tuple) {
+        try {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(OUT);
@@ -64,16 +58,16 @@ public class BFTTupleSpace {
             ObjectInputStream in = new ObjectInputStream(bis);
             boolean ret = in.readBoolean();
             in.close();
-            //return ret;
+            // return ret;
 
         } catch (IOException ex) {
             ex.printStackTrace();
-            //return false;
+            // return false;
         }
     }
-    
-    public Tuple rdp(Tuple template){
-         try {
+
+    public Tuple rdp(Tuple template) {
+        try {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(RDP);
@@ -88,7 +82,7 @@ public class BFTTupleSpace {
             }
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
-            Tuple ret = (Tuple)in.readObject();
+            Tuple ret = (Tuple) in.readObject();
             in.close();
             return ret;
         } catch (IOException ex) {
@@ -96,10 +90,10 @@ public class BFTTupleSpace {
             return null;
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BFTTupleSpace.class.getName()).log(Level.SEVERE, null, ex);
-             return null;
+            return null;
         }
     }
-    
+
     public Tuple inp(Tuple template) {
         try {
             out = new ByteArrayOutputStream();
@@ -116,7 +110,7 @@ public class BFTTupleSpace {
             }
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
-            Tuple ret = (Tuple)in.readObject();
+            Tuple ret = (Tuple) in.readObject();
             in.close();
             return ret;
         } catch (IOException ex) {
@@ -124,22 +118,19 @@ public class BFTTupleSpace {
             return null;
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BFTTupleSpace.class.getName()).log(Level.SEVERE, null, ex);
-             return null;
+            return null;
         }
     }
-    
-    
-    
-    
+
     public boolean cas(Tuple tuple, Tuple template) {
         try {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(CAS);
             ObjectOutputStream out1 = new ObjectOutputStream(out);
-           
+
             out1.writeObject(template);
-             out1.writeObject(tuple);
+            out1.writeObject(tuple);
             out1.close();
             byte[] rep = null;
             if (parallel) {
@@ -147,18 +138,16 @@ public class BFTTupleSpace {
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
             }
-            
+
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
             boolean ret = in.readBoolean();
             in.close();
             return ret;
 
-            
-            
         } catch (Exception ex) {
             ex.printStackTrace();
             return false;
-        } 
+        }
     }
 }

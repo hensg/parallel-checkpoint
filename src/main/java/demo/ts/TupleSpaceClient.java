@@ -23,7 +23,8 @@ public class TupleSpaceClient {
     @SuppressWarnings("static-access")
     public static void main(String[] args) throws IOException {
         if (args.length < 7) {
-            System.out.println("Usage: ... TupleSpaceClient <num. threads> <process id> <number of operations> <interval> <max fields> <parallel?> <percent>");
+            System.out.println(
+                    "Usage: ... TupleSpaceClient <num. threads> <process id> <number of operations> <interval> <max fields> <parallel?> <percent>");
             System.exit(-1);
         }
 
@@ -31,10 +32,10 @@ public class TupleSpaceClient {
         initId = Integer.parseInt(args[1]);
 
         int numberOfOps = Integer.parseInt(args[2]);
-        //int requestSize = Integer.parseInt(args[3]);
+        // int requestSize = Integer.parseInt(args[3]);
         int interval = Integer.parseInt(args[3]);
         int max = Integer.parseInt(args[4]);
-        boolean verbose = false; //Boolean.parseBoolean(args[5]);
+        boolean verbose = false; // Boolean.parseBoolean(args[5]);
         boolean parallel = Boolean.parseBoolean(args[5]);
         int perc = Integer.parseInt(args[6]);
 
@@ -42,16 +43,16 @@ public class TupleSpaceClient {
         if (args.length >= 8) {
             v2 = Boolean.parseBoolean(args[7]);
         }
-        System.out.println(args.length+" v2: "+v2);
+        System.out.println(args.length + " v2: " + v2);
 
-        for(int i = 0; i < args.length; i++){
-            System.out.println(i+" "+args[i]);
+        for (int i = 0; i < args.length; i++) {
+            System.out.println(i + " " + args[i]);
         }
-        
-        /*if(!v2){
-            System.exit(0);
-        }*/
-        
+
+        /*
+         * if(!v2){ System.exit(0); }
+         */
+
         Client[] c = new Client[numThreads];
 
         for (int i = 0; i < numThreads; i++) {
@@ -63,7 +64,7 @@ public class TupleSpaceClient {
 
             System.out.println("Launching client " + (initId + i));
             c[i] = new TupleSpaceClient.Client(initId + i, numberOfOps, interval, max, verbose, parallel, v2, perc);
-            //c[i].start();
+            // c[i].start();
         }
 
         for (int i = 0; i < numThreads; i++) {
@@ -80,7 +81,7 @@ public class TupleSpaceClient {
             }
         }
 
-        //System.exit(0);
+        // System.exit(0);
     }
 
     static class Client extends Thread {
@@ -91,16 +92,17 @@ public class TupleSpaceClient {
         int interval;
 
         boolean verbose;
-        //boolean dos;
-        //ServiceProxy proxy;
-        //byte[] request;
+        // boolean dos;
+        // ServiceProxy proxy;
+        // byte[] request;
         BFTTupleSpace space;
 
         int maxF;
 
         int percent;
 
-        public Client(int id, int numberOfOps, int interval, int max, boolean verbose, boolean parallel, boolean version2, int percent) {
+        public Client(int id, int numberOfOps, int interval, int max, boolean verbose, boolean parallel,
+                boolean version2, int percent) {
             super("Client " + id);
 
             this.id = id;
@@ -110,8 +112,8 @@ public class TupleSpaceClient {
             this.interval = interval;
 
             this.verbose = verbose;
-            //this.proxy = new ServiceProxy(id);
-            //this.request = new byte[this.requestSize];
+            // this.proxy = new ServiceProxy(id);
+            // this.request = new byte[this.requestSize];
             this.maxF = max;
 
             if (version2) {
@@ -122,7 +124,7 @@ public class TupleSpaceClient {
                 space = new BFTTupleSpace(id, parallel);
                 System.out.println("NORMAL");
             }
-            //this.dos = dos;
+            // this.dos = dos;
         }
 
         private void out(Random rand) {
@@ -137,46 +139,42 @@ public class TupleSpaceClient {
         }
 
         private Tuple inp(Random rand) {
-             int nf = rand.nextInt(10) + 1;
+            int nf = rand.nextInt(10) + 1;
             Object[] f = new Object[nf];
-            //int id = rand.nextInt(maxF);
+            // int id = rand.nextInt(maxF);
             for (int j = 0; j < f.length; j++) {
                 f[j] = new String("Este Campo Possui Os Dados Do Campo iiiiiiiiiiii:" + maxF);
             }
-            
+
             return space.inp(Tuple.createTuple(f));
         }
 
         private boolean cas(Random rand) {
             int nf = rand.nextInt(10) + 1;
             Object[] f = new Object[nf];
-            //int id = rand.nextInt(maxF);
+            // int id = rand.nextInt(maxF);
             for (int j = 0; j < f.length; j++) {
                 f[j] = new String("Este Campo Possui Os Dados Do Campo iiiiiiiiiiii:" + maxF);
             }
-            
-            
-            
+
             nf = rand.nextInt(10) + 1;
             Object[] ft = new Object[nf];
-            //int id = rand.nextInt(maxF);
+            // int id = rand.nextInt(maxF);
             for (int j = 0; j < ft.length; j++) {
                 ft[j] = new String("Este Campo Possui Os Dados Do Campo iiiiiiiiiiii:" + maxF);
             }
-            
-            
-            return space.cas(Tuple.createTuple(ft),Tuple.createTuple(f));
+
+            return space.cas(Tuple.createTuple(ft), Tuple.createTuple(f));
         }
-        
-        
+
         private Tuple rdp(Random rand) {
             int nf = rand.nextInt(10) + 1;
             Object[] f = new Object[nf];
-           //int id = rand.nextInt(maxF);
+            // int id = rand.nextInt(maxF);
             for (int j = 0; j < f.length; j++) {
                 f[j] = new String("Este Campo Possui Os Dados Do Campo iiiiiiiiiiii:" + maxF);
             }
-            
+
             return space.rdp(Tuple.createTuple(f));
         }
 
@@ -188,47 +186,41 @@ public class TupleSpaceClient {
             Random rand = new Random();
             WorkloadGeneratorTS work = new WorkloadGeneratorTS(this.percent, numberOfOps);
 
-            /*for (int i = 0; i < numberOfOps / 20; i++, req++) {
-                if (verbose) {
-                    System.out.print("Sending req " + req + "...");
-                }
-
-                int op = work.getOperations()[i];
-
-                if (op == BFTTupleSpace.OUT) {
-
-                    out(rand);
-                } else if (op == BFTTupleSpace.RDP) {
-
-                   
-                    Tuple ret = rdp(rand);
-
-                    //int index = rand.nextInt(maxIndex);
-                    //boolean ret = store.contains(new Integer(index));
-                    //System.out.println("Contém: "+ret);
-                } else if (op == BFTTupleSpace.INP) {
-
-                    
-                    Tuple ret = inp(rand);
-                }
-
-                if (verbose) {
-                    System.out.println(" sent!");
-                }
-
-                if (verbose && (req % 1000 == 0)) {
-                    System.out.println(this.id + " // " + req + " operations sent!");
-                }
-
-            }*/
+            /*
+             * for (int i = 0; i < numberOfOps / 20; i++, req++) { if (verbose) {
+             * System.out.print("Sending req " + req + "..."); }
+             * 
+             * int op = work.getOperations()[i];
+             * 
+             * if (op == BFTTupleSpace.OUT) {
+             * 
+             * out(rand); } else if (op == BFTTupleSpace.RDP) {
+             * 
+             * 
+             * Tuple ret = rdp(rand);
+             * 
+             * //int index = rand.nextInt(maxIndex); //boolean ret = store.contains(new
+             * Integer(index)); //System.out.println("Contém: "+ret); } else if (op ==
+             * BFTTupleSpace.INP) {
+             * 
+             * 
+             * Tuple ret = inp(rand); }
+             * 
+             * if (verbose) { System.out.println(" sent!"); }
+             * 
+             * if (verbose && (req % 1000 == 0)) { System.out.println(this.id + " // " + req
+             * + " operations sent!"); }
+             * 
+             * }
+             */
 
             Storage st = new Storage(numberOfOps);
 
             // for (int j = 0; j < 5; j++) {
             System.out.println("Executing experiment for " + numberOfOps + " ops");
 
-            //work = new WorkloadGenerator(j * 25, numberOfOps / 2);
-            for (int i = 0; i < numberOfOps ; i++, req++) {
+            // work = new WorkloadGenerator(j * 25, numberOfOps / 2);
+            for (int i = 0; i < numberOfOps; i++, req++) {
 
                 if (verbose) {
                     System.out.print(this.id + " // Sending req " + req + "...");
@@ -237,37 +229,34 @@ public class TupleSpaceClient {
                 int op = work.getOperations()[i];
 
                 if (op == BFTTupleSpace.OUT) {
-                    //int index = rand.nextInt(maxIndex * 2);
+                    // int index = rand.nextInt(maxIndex * 2);
 
                     long last_send_instant = System.nanoTime();
-                   
+
                     out(rand);
                     st.store(System.nanoTime() - last_send_instant);
                 } else if (op == BFTTupleSpace.RDP) {
 
-            
                     long last_send_instant = System.nanoTime();
-  
-                     Tuple ret = rdp(rand);
+
+                    Tuple ret = rdp(rand);
                     st.store(System.nanoTime() - last_send_instant);
-                    //System.out.println("RDP: "+ret);
+                    // System.out.println("RDP: "+ret);
 
                 } else if (op == BFTTupleSpace.INP) {
 
-               
                     long last_send_instant = System.nanoTime();
-                 
-                     Tuple ret = inp(rand);
-                    st.store(System.nanoTime() - last_send_instant);
-                    //System.out.println("INP: "+ret);
-                }else if (op == BFTTupleSpace.CAS) {
 
-               
+                    Tuple ret = inp(rand);
+                    st.store(System.nanoTime() - last_send_instant);
+                    // System.out.println("INP: "+ret);
+                } else if (op == BFTTupleSpace.CAS) {
+
                     long last_send_instant = System.nanoTime();
-                 
+
                     cas(rand);
                     st.store(System.nanoTime() - last_send_instant);
-                    
+
                 }
 
                 if (verbose) {
@@ -277,7 +266,7 @@ public class TupleSpaceClient {
                 // System.out.println("resultado lido= "+ ret.toString());
                 if (interval > 0) {
                     try {
-                        //sleeps interval ms before sending next request
+                        // sleeps interval ms before sending next request
                         Thread.sleep(interval);
                     } catch (InterruptedException ex) {
                     }
@@ -290,15 +279,19 @@ public class TupleSpaceClient {
             }
 
             if (id == initId) {
-                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
-                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (-10%) = " + st.getDP(true) / 1000 + " us ");
-                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
-                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
-                System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = " + st.getMax(false) / 1000 + " us ");
+                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = "
+                        + st.getAverage(true) / 1000 + " us ");
+                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (-10%) = "
+                        + st.getDP(true) / 1000 + " us ");
+                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = "
+                        + st.getAverage(false) / 1000 + " us ");
+                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2
+                        + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
+                System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = "
+                        + st.getMax(false) / 1000 + " us ");
             }
 
         }
 
-        
     }
 }

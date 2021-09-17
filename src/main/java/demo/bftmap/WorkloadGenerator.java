@@ -6,14 +6,12 @@
 package demo.bftmap;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
-import java.util.StringTokenizer;
 
 /**
  *
@@ -30,13 +28,13 @@ public class WorkloadGenerator {
         generate();
     }
 
-    //Alex apenas para experimento
+    // Alex apenas para experimento
     public WorkloadGenerator(int size) {
         this.percent = -1;
         this.operations = new int[size];
         generate2();
     }
-    //Fim ALex
+    // Fim ALex
 
     public int[] getOperations() {
         return operations;
@@ -75,30 +73,30 @@ public class WorkloadGenerator {
                     int r = rand.nextInt(100);
                     if ((cnf == cnfT) || (r >= percent && ncnf < ncnfT)) {
                         ncnf++;
-                        //nao conflitantes
+                        // nao conflitantes
                         r = rand.nextInt(2);
-                        //if(r >= 2){
-                        //CONTAINS
-                        //op = BFTList.CONTAINS;
-                        //}else
+                        // if(r >= 2){
+                        // CONTAINS
+                        // op = BFTList.CONTAINS;
+                        // }else
                         if (r >= 1) {
-                            //SIZE
-                            //op = BFTList.SIZE;
+                            // SIZE
+                            // op = BFTList.SIZE;
                             op = BFTMapRequestType.CHECK;
 
                         } else {
-                            //GET
+                            // GET
                             op = BFTMapRequestType.GET;
                         }
                     } else {
                         cnf++;
-                        //conflitante
+                        // conflitante
                         r = rand.nextInt(2);
                         if (r >= 1) {
-                            //ADD
+                            // ADD
                             op = BFTMapRequestType.PUT;
                         } else {
-                            //REMOVE
+                            // REMOVE
                             op = BFTMapRequestType.REMOVE;
                         }
                     }
@@ -124,7 +122,7 @@ public class WorkloadGenerator {
         }
     }
 
-    //Alex apenas para Experimento
+    // Alex apenas para Experimento
     private void generate2() {
         String sep = System.getProperty("file.separator");
         String path = "config" + sep + "workloadP_BFT_SMART";
@@ -155,7 +153,7 @@ public class WorkloadGenerator {
 
                 while (num < this.operations.length) {
 
-                    //0% conflitantes
+                    // 0% conflitantes
                     while (num < this.operations.length * 0.1) {
                         op = BFTMapRequestType.CHECK;
                         pw.println(op);
@@ -163,7 +161,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //10% conflitantes
+                    // 10% conflitantes
                     while (num < this.operations.length * 0.2) {
 
                         if (num < (this.operations.length * 0.2) * 0.1) {
@@ -177,7 +175,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //20% conflitantes
+                    // 20% conflitantes
                     while (num < this.operations.length * 0.3) {
                         if (num < (this.operations.length * 0.3) * 0.2) {
                             op = BFTMapRequestType.PUT;
@@ -190,7 +188,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //30% conflitantes
+                    // 30% conflitantes
                     while (num < this.operations.length * 0.4) {
                         if (num < (this.operations.length * 0.4) * 0.3) {
                             op = BFTMapRequestType.PUT;
@@ -203,7 +201,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //40% conflitantes
+                    // 40% conflitantes
                     while (num < this.operations.length * 0.5) {
                         if (num < (this.operations.length * 0.5) * 0.4) {
                             op = BFTMapRequestType.PUT;
@@ -216,7 +214,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //50% conflitantes
+                    // 50% conflitantes
                     while (num < this.operations.length * 0.6) {
                         if (num < (this.operations.length * 0.6) * 0.5) {
                             op = BFTMapRequestType.PUT;
@@ -229,7 +227,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //60% conflitantes
+                    // 60% conflitantes
                     while (num < this.operations.length * 0.7) {
                         if (num < (this.operations.length * 0.7) * 0.6) {
                             op = BFTMapRequestType.PUT;
@@ -242,7 +240,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //70% conflitantes
+                    // 70% conflitantes
                     while (num < this.operations.length * 0.8) {
                         if (num < (this.operations.length * 0.8) * 0.7) {
                             op = BFTMapRequestType.PUT;
@@ -255,7 +253,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //80% conflitantes
+                    // 80% conflitantes
                     while (num < this.operations.length * 0.9) {
                         if (num < (this.operations.length * 0.9) * 0.8) {
                             op = BFTMapRequestType.PUT;
@@ -268,7 +266,7 @@ public class WorkloadGenerator {
                         num++;
                     }
 
-                    //100%conflitantes
+                    // 100%conflitantes
                     while (num < this.operations.length * 1) {
                         op = BFTMapRequestType.PUT;
                         pw.println(op);
@@ -277,127 +275,48 @@ public class WorkloadGenerator {
                     }
 
                     /*
-                    //50%conflitantes
-                    ncnfT = ((100 - 50) * this.operations.length) / 100;
-                    cnfT = (50 * this.operations.length) / 100;
-
-                    while (num < this.operations.length * 0.6) {
-                        int r = rand.nextInt(100);
-                        if ((cnf == cnfT) || (r >= percent && ncnf < ncnfT)) {
-                            ncnf++;
-                            //nao conflitantes
-                            r = rand.nextInt(2);
-                            //if(r >= 2){
-                            //CONTAINS
-                            //op = BFTList.CONTAINS;
-                            //}else
-                            if (r >= 1) {
-                                //SIZE
-                                //op = BFTList.SIZE;
-                                op = BFTList.CONTAINS;
-
-                            } else {
-                                //GET
-                                op = BFTList.GET;
-                            }
-                        } else {
-                            cnf++;
-                            //conflitante
-                            r = rand.nextInt(2);
-                            if (r >= 1) {
-                                //ADD
-                                op = BFTList.ADD;
-                            } else {
-                                //REMOVE
-                                op = BFTList.REMOVE;
-                            }
-                        }
-
-                        pw.println(op);
-                        this.operations[num] = op;
-                        num++;
-                    }
-
-                    //75%conflitantes
-                    ncnfT = ((100 - 75) * this.operations.length) / 100;
-                    cnfT = (75 * this.operations.length) / 100;
-
-                    while (num < this.operations.length * 0.8) {
-                        int r = rand.nextInt(100);
-                        if ((cnf == cnfT) || (r >= percent && ncnf < ncnfT)) {
-                            ncnf++;
-                            //nao conflitantes
-                            r = rand.nextInt(2);
-                            //if(r >= 2){
-                            //CONTAINS
-                            //op = BFTList.CONTAINS;
-                            //}else
-                            if (r >= 1) {
-                                //SIZE
-                                //op = BFTList.SIZE;
-                                op = BFTList.CONTAINS;
-
-                            } else {
-                                //GET
-                                op = BFTList.GET;
-                            }
-                        } else {
-                            cnf++;
-                            //conflitante
-                            r = rand.nextInt(2);
-                            if (r >= 1) {
-                                //ADD
-                                op = BFTList.ADD;
-                            } else {
-                                //REMOVE
-                                op = BFTList.REMOVE;
-                            }
-                        }
-
-                        pw.println(op);
-                        this.operations[num] = op;
-                        num++;
-                    }
-
-                    //25%conflitantes
-                    ncnfT = ((100 - 25) * this.operations.length) / 100;
-                    cnfT = (25 * this.operations.length) / 100;
-                    while (num < this.operations.length) {
-                        int r = rand.nextInt(100);
-                        if ((cnf == cnfT) || (r >= percent && ncnf < ncnfT)) {
-                            ncnf++;
-                            //nao conflitantes
-                            r = rand.nextInt(2);
-                            //if(r >= 2){
-                            //CONTAINS
-                            //op = BFTList.CONTAINS;
-                            //}else
-                            if (r >= 1) {
-                                //SIZE
-                                //op = BFTList.SIZE;
-                                op = BFTList.CONTAINS;
-
-                            } else {
-                                //GET
-                                op = BFTList.GET;
-                            }
-                        } else {
-                            cnf++;
-                            //conflitante
-                            r = rand.nextInt(2);
-                            if (r >= 1) {
-                                //ADD
-                                op = BFTList.ADD;
-                            } else {
-                                //REMOVE
-                                op = BFTList.REMOVE;
-                            }
-                        }
-
-                        pw.println(op);
-                        this.operations[num] = op;
-                        num++;
-                    }
+                     * //50%conflitantes ncnfT = ((100 - 50) * this.operations.length) / 100; cnfT =
+                     * (50 * this.operations.length) / 100;
+                     * 
+                     * while (num < this.operations.length * 0.6) { int r = rand.nextInt(100); if
+                     * ((cnf == cnfT) || (r >= percent && ncnf < ncnfT)) { ncnf++; //nao
+                     * conflitantes r = rand.nextInt(2); //if(r >= 2){ //CONTAINS //op =
+                     * BFTList.CONTAINS; //}else if (r >= 1) { //SIZE //op = BFTList.SIZE; op =
+                     * BFTList.CONTAINS;
+                     * 
+                     * } else { //GET op = BFTList.GET; } } else { cnf++; //conflitante r =
+                     * rand.nextInt(2); if (r >= 1) { //ADD op = BFTList.ADD; } else { //REMOVE op =
+                     * BFTList.REMOVE; } }
+                     * 
+                     * pw.println(op); this.operations[num] = op; num++; }
+                     * 
+                     * //75%conflitantes ncnfT = ((100 - 75) * this.operations.length) / 100; cnfT =
+                     * (75 * this.operations.length) / 100;
+                     * 
+                     * while (num < this.operations.length * 0.8) { int r = rand.nextInt(100); if
+                     * ((cnf == cnfT) || (r >= percent && ncnf < ncnfT)) { ncnf++; //nao
+                     * conflitantes r = rand.nextInt(2); //if(r >= 2){ //CONTAINS //op =
+                     * BFTList.CONTAINS; //}else if (r >= 1) { //SIZE //op = BFTList.SIZE; op =
+                     * BFTList.CONTAINS;
+                     * 
+                     * } else { //GET op = BFTList.GET; } } else { cnf++; //conflitante r =
+                     * rand.nextInt(2); if (r >= 1) { //ADD op = BFTList.ADD; } else { //REMOVE op =
+                     * BFTList.REMOVE; } }
+                     * 
+                     * pw.println(op); this.operations[num] = op; num++; }
+                     * 
+                     * //25%conflitantes ncnfT = ((100 - 25) * this.operations.length) / 100; cnfT =
+                     * (25 * this.operations.length) / 100; while (num < this.operations.length) {
+                     * int r = rand.nextInt(100); if ((cnf == cnfT) || (r >= percent && ncnf <
+                     * ncnfT)) { ncnf++; //nao conflitantes r = rand.nextInt(2); //if(r >= 2){
+                     * //CONTAINS //op = BFTList.CONTAINS; //}else if (r >= 1) { //SIZE //op =
+                     * BFTList.SIZE; op = BFTList.CONTAINS;
+                     * 
+                     * } else { //GET op = BFTList.GET; } } else { cnf++; //conflitante r =
+                     * rand.nextInt(2); if (r >= 1) { //ADD op = BFTList.ADD; } else { //REMOVE op =
+                     * BFTList.REMOVE; } }
+                     * 
+                     * pw.println(op); this.operations[num] = op; num++; }
                      */
                 }
 
@@ -417,7 +336,7 @@ public class WorkloadGenerator {
     }
 
     private void load(String path) {
-        //System.out.println("Vai ler!!!");
+        // System.out.println("Vai ler!!!");
         try {
 
             FileReader fr = new FileReader(path);
@@ -427,7 +346,7 @@ public class WorkloadGenerator {
             int j = 0;
             while (((line = rd.readLine()) != null) && (j < operations.length)) {
                 operations[j] = Integer.valueOf(line);
-                //System.out.println("Leu:" + operations[j]);
+                // System.out.println("Leu:" + operations[j]);
                 j++;
             }
             fr.close();
@@ -446,14 +365,14 @@ public class WorkloadGenerator {
         }
 
         new WorkloadGenerator(100000);
-//        
-//        new WorkloadGenerator(25, 1000);
-//        
-//        new WorkloadGenerator(50, 1000);
-//        
-//        new WorkloadGenerator(75, 1000);
-//        
-//        new WorkloadGenerator(100, 1000);
+        //
+        // new WorkloadGenerator(25, 1000);
+        //
+        // new WorkloadGenerator(50, 1000);
+        //
+        // new WorkloadGenerator(75, 1000);
+        //
+        // new WorkloadGenerator(100, 1000);
     }
 
 }

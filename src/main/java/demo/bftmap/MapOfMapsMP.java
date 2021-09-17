@@ -26,41 +26,41 @@ import java.io.Serializable;
  * @author sweta
  */
 public class MapOfMapsMP implements Serializable {
-	
+
 	private static final long serialVersionUID = -8898539992606449057L;
-	
-	private Map<Integer, Map<Integer,byte[]>> tableMap = null;
+
+	private Map<Integer, Map<Integer, byte[]>> tableMap = null;
 
 	public MapOfMapsMP() {
-		tableMap=new TreeMap<Integer, Map<Integer,byte[]>>();
+		tableMap = new TreeMap<Integer, Map<Integer, byte[]>>();
 	}
 
-	public Map<Integer,byte[]> addTable(Integer key, Map<Integer, byte[]> table) {
+	public Map<Integer, byte[]> addTable(Integer key, Map<Integer, byte[]> table) {
 		return tableMap.put(key, table);
 	}
 
 	public byte[] addData(Integer tableName, Integer key, byte[] value) {
-		Map<Integer,byte[]> table = tableMap.get(tableName);
-		if (table == null) { 
-            System.out.println("Non-existant table: "+tableName);
-            return null;
-        }
+		Map<Integer, byte[]> table = tableMap.get(tableName);
+		if (table == null) {
+			System.out.println("Non-existant table: " + tableName);
+			return null;
+		}
 		byte[] ret = table.put(key, value);
 		return ret;
 	}
 
-	public Map<Integer,byte[]> getTable(Integer tableName) {
+	public Map<Integer, byte[]> getTable(Integer tableName) {
 		return tableMap.get(tableName);
 	}
 
 	public byte[] getEntry(Integer tableName, Integer key) {
-		//System.out.println("Table name: "+tableName);
-		//System.out.println("Entry key: "+ key);
-		Map<Integer,byte[]> info= tableMap.get(tableName);
-		if (info == null) { 
-                    System.out.println("Non-existant table: "+tableName);
-                    return null;
-                }
+		// System.out.println("Table name: "+tableName);
+		// System.out.println("Entry key: "+ key);
+		Map<Integer, byte[]> info = tableMap.get(tableName);
+		if (info == null) {
+			System.out.println("Non-existant table: " + tableName);
+			return null;
+		}
 		return info.get(key);
 	}
 
@@ -69,16 +69,16 @@ public class MapOfMapsMP implements Serializable {
 	}
 
 	public int getSize(Integer tableName) {
-		Map<Integer,byte[]> table = tableMap.get(tableName);
-		return (table == null)?0:table.size();
+		Map<Integer, byte[]> table = tableMap.get(tableName);
+		return (table == null) ? 0 : table.size();
 	}
 
-	public Map<Integer,byte[]> removeTable(Integer tableName) {
+	public Map<Integer, byte[]> removeTable(Integer tableName) {
 		return tableMap.remove(tableName);
 	}
 
-	public byte[] removeEntry(Integer tableName,Integer key) {
-		Map<Integer,byte[]> info= tableMap.get(tableName);
+	public byte[] removeEntry(Integer tableName, Integer key) {
+		Map<Integer, byte[]> info = tableMap.get(tableName);
 		return info.remove(key);
 	}
 }

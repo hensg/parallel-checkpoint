@@ -18,28 +18,25 @@ package demo.bftmap;
 public class BFTMapRequestType {
         // comandos da aplicação
         public static final int TAB_CREATE = 1;
-	public static final int TAB_REMOVE = 2;
-	public static final int SIZE_TABLE = 3;
-	public static final int PUT = 4;
-	public static final int GET = 5;
-	public static final int SIZE = 6;
-	public static final int REMOVE = 7;
-	public static final int CHECK = 8;
-	public static final int GET_TABLE = 9;
-	public static final int TAB_CREATE_CHECK = 10;
-	public static final int EXIT = 11;
+        public static final int TAB_REMOVE = 2;
+        public static final int SIZE_TABLE = 3;
+        public static final int PUT = 4;
+        public static final int GET = 5;
+        public static final int SIZE = 6;
+        public static final int REMOVE = 7;
+        public static final int CHECK = 8;
+        public static final int GET_TABLE = 9;
+        public static final int TAB_CREATE_CHECK = 10;
+        public static final int EXIT = 11;
         public static final int PUT12 = 12;
         public static final int GET12 = 13;
-        //comandos de checkpoint
+        // comandos de checkpoint
         public static final int CKP = 14;
-        public static final int CKPPART = 15;        
-        //comandos da recuperação
-        public static final int RECOVERER =16;
-        public static final int SENDER =17;
+        public static final int CKPPART = 15;
+        // comandos da recuperação
+        public static final int RECOVERER = 16;
+        public static final int SENDER = 17;
         public static final int METADATA = 18;
-        public static final int STATE = 19; 
+        public static final int STATE = 19;
 
-       
-
-        
 }

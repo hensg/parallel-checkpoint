@@ -6,7 +6,6 @@
 package demo.ts;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
@@ -19,16 +18,15 @@ public class Temp {
 
     public static void main(String[] args) {
 
-        /*File f = new File(args[0]);
-        if (!f.exists()) {
-            System.exit(0);
-        }*/
+        /*
+         * File f = new File(args[0]); if (!f.exists()) { System.exit(0); }
+         */
         load(args[0]);
 
     }
 
     private static void load(String path) {
-        //System.out.println("Vai ler!!!");
+        // System.out.println("Vai ler!!!");
         try {
 
             FileReader fr = new FileReader(path);
@@ -43,34 +41,34 @@ public class Temp {
                 try {
                     int i = Integer.parseInt(st.nextToken());
                     if (i <= 120) {
-                        
+
                         String t = st.nextToken();
-                        //System.out.println(t);
+                        // System.out.println(t);
 
                         double d = Double.parseDouble(t);
-                        
-                        if ( i > nextSec){
-                            
-                            System.out.println("entrou para i = "+i+" e next sec = "+nextSec);
-                            for(int z = nextSec; z < i; z++){
+
+                        if (i > nextSec) {
+
+                            System.out.println("entrou para i = " + i + " e next sec = " + nextSec);
+                            for (int z = nextSec; z < i; z++) {
                                 l.add(d);
-                               
+
                             }
-                             nextSec = i;
-                             
-                             System.out.println("saiu com i = "+i+" e next sec = "+nextSec);
-                        }else{
-                            System.out.println("nao entrou i = "+i+" e next sec = "+nextSec);
+                            nextSec = i;
+
+                            System.out.println("saiu com i = " + i + " e next sec = " + nextSec);
+                        } else {
+                            System.out.println("nao entrou i = " + i + " e next sec = " + nextSec);
                         }
-                        
-                        if( i == nextSec){
+
+                        if (i == nextSec) {
                             l.add(d);
                             nextSec++;
                         }
-                        //System.out.println("adicionou "+nextSec);
+                        // System.out.println("adicionou "+nextSec);
                     }
                 } catch (Exception e) {
-                    //e.printStackTrace();
+                    // e.printStackTrace();
                 }
 
             }
@@ -85,15 +83,13 @@ public class Temp {
                 sum = sum + l.get(i);
             }
 
-            /* double md1 = sum/250;
-            sum = 0;
-            for(i = 251; i < l.size(); i++){
-                sum = sum + l.get(i);
-            }
-            double md2 = sum/(l.size()-250);
-            
-            
-            System.out.println("Media: "+((md1+md2)/2));*/
+            /*
+             * double md1 = sum/250; sum = 0; for(i = 251; i < l.size(); i++){ sum = sum +
+             * l.get(i); } double md2 = sum/(l.size()-250);
+             * 
+             * 
+             * System.out.println("Media: "+((md1+md2)/2));
+             */
             System.out.println("Sum: " + sum);
             System.out.println("Media: " + (sum / l.size()));
         } catch (Exception e) {

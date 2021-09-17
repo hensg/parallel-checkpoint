@@ -3,8 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package  demo.ts;
-
+package demo.ts;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,21 +18,20 @@ import java.util.logging.Logger;
  *
  * @author alchieri
  */
-public class BFTTupleSpacePlus extends BFTTupleSpace{
-    
-   
-   // private int factor = 1;
+public class BFTTupleSpacePlus extends BFTTupleSpace {
+
+    // private int factor = 1;
 
     public BFTTupleSpacePlus(int id, boolean parallelExecution) {
         super(id, parallelExecution);
     }
-    
-    /*public void setGroupFactor(int f){
-        this.factor = f;
-    }*/
-     
-    public void out(Tuple tuple){
-     try {
+
+    /*
+     * public void setGroupFactor(int f){ this.factor = f; }
+     */
+
+    public void out(Tuple tuple) {
+        try {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(OUT);
@@ -42,11 +40,12 @@ public class BFTTupleSpacePlus extends BFTTupleSpace{
             out1.close();
             byte[] rep = null;
             if (parallel) {
-                //if(factor == 1){
-                    rep = proxy.invokeParallel(out.toByteArray(), (tuple.getFields().length-1));
-               // }else{
-                  //  rep = proxy.invokeParallel(out.toByteArray(), factor*tuple.getFields().length);
-                //}
+                // if(factor == 1){
+                rep = proxy.invokeParallel(out.toByteArray(), (tuple.getFields().length - 1));
+                // }else{
+                // rep = proxy.invokeParallel(out.toByteArray(),
+                // factor*tuple.getFields().length);
+                // }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
             }
@@ -54,16 +53,16 @@ public class BFTTupleSpacePlus extends BFTTupleSpace{
             ObjectInputStream in = new ObjectInputStream(bis);
             boolean ret = in.readBoolean();
             in.close();
-            //return ret;
+            // return ret;
 
         } catch (IOException ex) {
             ex.printStackTrace();
-            //return false;
+            // return false;
         }
     }
-    
-    public Tuple rdp(Tuple template){
-         try {
+
+    public Tuple rdp(Tuple template) {
+        try {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(RDP);
@@ -72,17 +71,18 @@ public class BFTTupleSpacePlus extends BFTTupleSpace{
             out1.close();
             byte[] rep = null;
             if (parallel) {
-                //if(factor == 1){
-                    rep = proxy.invokeParallel(out.toByteArray(), (template.getFields().length-1));
-               //}else{
-               //     rep = proxy.invokeParallel(out.toByteArray(), factor*template.getFields().length);
-               // }
+                // if(factor == 1){
+                rep = proxy.invokeParallel(out.toByteArray(), (template.getFields().length - 1));
+                // }else{
+                // rep = proxy.invokeParallel(out.toByteArray(),
+                // factor*template.getFields().length);
+                // }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
             }
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
-            Tuple ret = (Tuple)in.readObject();
+            Tuple ret = (Tuple) in.readObject();
             in.close();
             return ret;
         } catch (IOException ex) {
@@ -90,12 +90,12 @@ public class BFTTupleSpacePlus extends BFTTupleSpace{
             return null;
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BFTTupleSpacePlus.class.getName()).log(Level.SEVERE, null, ex);
-             return null;
+            return null;
         }
     }
-    
+
     public Tuple inp(Tuple template) {
-       try {
+        try {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(INP);
@@ -104,17 +104,18 @@ public class BFTTupleSpacePlus extends BFTTupleSpace{
             out1.close();
             byte[] rep = null;
             if (parallel) {
-               //if(factor == 1){
-                    rep = proxy.invokeParallel(out.toByteArray(), (template.getFields().length-1));
-               // }else{
-               //     rep = proxy.invokeParallel(out.toByteArray(), factor*template.getFields().length);
-              //  }
+                // if(factor == 1){
+                rep = proxy.invokeParallel(out.toByteArray(), (template.getFields().length - 1));
+                // }else{
+                // rep = proxy.invokeParallel(out.toByteArray(),
+                // factor*template.getFields().length);
+                // }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
             }
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
-            Tuple ret = (Tuple)in.readObject();
+            Tuple ret = (Tuple) in.readObject();
             in.close();
             return ret;
         } catch (IOException ex) {
@@ -122,41 +123,42 @@ public class BFTTupleSpacePlus extends BFTTupleSpace{
             return null;
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BFTTupleSpacePlus.class.getName()).log(Level.SEVERE, null, ex);
-             return null;
+            return null;
         }
     }
-    
+
     public boolean cas(Tuple tuple, Tuple template) {
-       try {
+        try {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(CAS);
             ObjectOutputStream out1 = new ObjectOutputStream(out);
             out1.writeObject(template);
             out1.writeObject(tuple);
-            
+
             out1.close();
             byte[] rep = null;
             if (parallel) {
-               //if(factor == 1){
-               int grupoID = 0;
-               if(template.getFields().length == tuple.getFields().length){
-                   grupoID = template.getFields().length - 1;
-               }else if(template.getFields().length < tuple.getFields().length){
-                   grupoID = (template.getFields().length)*10;
-                   grupoID = grupoID + tuple.getFields().length;
-               }  else{
-                   grupoID = (tuple.getFields().length)*10;
-                   grupoID = grupoID + template.getFields().length;
-               
-               }
-               
-               //System.out.println("Cas para o grupo "+grupoID);
-               
-               rep = proxy.invokeParallel(out.toByteArray(), grupoID);
-               // }else{
-               //     rep = proxy.invokeParallel(out.toByteArray(), factor*template.getFields().length);
-              //  }
+                // if(factor == 1){
+                int grupoID = 0;
+                if (template.getFields().length == tuple.getFields().length) {
+                    grupoID = template.getFields().length - 1;
+                } else if (template.getFields().length < tuple.getFields().length) {
+                    grupoID = (template.getFields().length) * 10;
+                    grupoID = grupoID + tuple.getFields().length;
+                } else {
+                    grupoID = (tuple.getFields().length) * 10;
+                    grupoID = grupoID + template.getFields().length;
+
+                }
+
+                // System.out.println("Cas para o grupo "+grupoID);
+
+                rep = proxy.invokeParallel(out.toByteArray(), grupoID);
+                // }else{
+                // rep = proxy.invokeParallel(out.toByteArray(),
+                // factor*template.getFields().length);
+                // }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
             }
@@ -168,8 +170,7 @@ public class BFTTupleSpacePlus extends BFTTupleSpace{
         } catch (Exception ex) {
             ex.printStackTrace();
             return false;
-        } 
+        }
     }
-    
-    
+
 }

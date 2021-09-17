@@ -42,51 +42,54 @@ import parallelism.ParallelMapping;
  * 
  * @author sweta
  */
-public class BFTMap implements Map<String, Map<String,byte[]>> {
+public class BFTMap implements Map<String, Map<String, byte[]>> {
 
-    ServiceProxy KVProxy = null; // original do bftsmart
-    protected ParallelServiceProxy proxy = null; // alchieri
-    protected boolean parallel = false;
-    protected boolean async = false;
-    ByteArrayOutputStream out = null;
-    protected ParallelAsynchServiceProxy asyncProxy = null; // alchieri
-    
+	ServiceProxy KVProxy = null; // original do bftsmart
+	protected ParallelServiceProxy proxy = null; // alchieri
+	protected boolean parallel = false;
+	protected boolean async = false;
+	ByteArrayOutputStream out = null;
+	protected ParallelAsynchServiceProxy asyncProxy = null; // alchieri
+
 	public BFTMap(int id) {
 		KVProxy = new ServiceProxy(id, "config");
 	}
-	public BFTMap(int id, boolean parallelExecution, boolean async){
-                   
-        this.parallel = parallelExecution;
-        this.async = async;
-        if(async){
-            asyncProxy = new ParallelAsynchServiceProxy(id);
-        }else{
-             proxy = new ParallelServiceProxy(id);     
-        }
-        }
+
+	public BFTMap(int id, boolean parallelExecution, boolean async) {
+
+		this.parallel = parallelExecution;
+		this.async = async;
+		if (async) {
+			asyncProxy = new ParallelAsynchServiceProxy(id);
+		} else {
+			proxy = new ParallelServiceProxy(id);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
-	public Map<String,byte[]> get(String tableName) {
+	public Map<String, byte[]> get(String tableName) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.GET);
 			dos.writeUTF(tableName);
-                        byte[] rep = null;    
-			//byte[] rep = KVProxy.invokeUnordered(out.toByteArray());
+			byte[] rep = null;
+			// byte[] rep = KVProxy.invokeUnordered(out.toByteArray());
 			if (parallel) {
-                            if(async){
-                                int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), null, TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
-                                asyncProxy.cleanAsynchRequest(id);
-                                return null;
-                            }else{
-                                rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.CONC_ALL);
-                            }
-                        } else {
-                            rep = proxy.invokeOrdered(out.toByteArray());
-                        }
-                        ByteArrayInputStream bis = new ByteArrayInputStream(rep) ;
-			ObjectInputStream in = new ObjectInputStream(bis) ;
-			Map<String,byte[]> table = (Map<String,byte[]>) in.readObject();
+				if (async) {
+					int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), null,
+							TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+					asyncProxy.cleanAsynchRequest(id);
+					return null;
+				} else {
+					rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.CONC_ALL);
+				}
+			} else {
+				rep = proxy.invokeOrdered(out.toByteArray());
+			}
+			ByteArrayInputStream bis = new ByteArrayInputStream(rep);
+			ObjectInputStream in = new ObjectInputStream(bis);
+			Map<String, byte[]> table = (Map<String, byte[]>) in.readObject();
 			in.close();
 			return table;
 		} catch (ClassNotFoundException ex) {
@@ -99,26 +102,27 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 
 	}
 
-	public byte[] getEntry(String tableName,String key) {
+	public byte[] getEntry(String tableName, String key) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.GET);
 			dos.writeUTF(tableName);
 			dos.writeUTF(key);
-			//byte[] rep = KVProxy.invokeUnordered(out.toByteArray());
-                                    byte[] rep = null;
-            if (parallel) {
-                if(async){
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), null, TOMMessageType.ORDERED_REQUEST, ParallelMapping.SYNC_ALL);
-                    asyncProxy.cleanAsynchRequest(id);   
-                    return rep;
-                }else{
-                    rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.SYNC_ALL);
-                }
-            } else {
-                rep = proxy.invokeOrdered(out.toByteArray());
-            }
+			// byte[] rep = KVProxy.invokeUnordered(out.toByteArray());
+			byte[] rep = null;
+			if (parallel) {
+				if (async) {
+					int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), null,
+							TOMMessageType.ORDERED_REQUEST, ParallelMapping.SYNC_ALL);
+					asyncProxy.cleanAsynchRequest(id);
+					return rep;
+				} else {
+					rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.SYNC_ALL);
+				}
+			} else {
+				rep = proxy.invokeOrdered(out.toByteArray());
+			}
 			return rep;
 		} catch (IOException ex) {
 			Logger.getLogger(BFTMap.class.getName()).log(Level.SEVERE, null, ex);
@@ -127,38 +131,38 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String,byte[]> put(String key, Map<String,byte[]> value) {
+	public Map<String, byte[]> put(String key, Map<String, byte[]> value) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.TAB_CREATE);
 			dos.writeUTF(key);
-			//ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
-			ObjectOutputStream  out1 = new ObjectOutputStream(out) ;
+			// ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
+			ObjectOutputStream out1 = new ObjectOutputStream(out);
 			out1.writeObject(value);
 			out1.close();
-			//byte[] rep = KVProxy.invokeOrdered(out.toByteArray());
-                        byte[] rep = null;
-                        if (parallel) {
-                if(async){
-                    
-                    
-                    System.out.println("PT AT out.size()="+out.toByteArray().length);
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), null, TOMMessageType.ORDERED_REQUEST, ParallelMapping.SYNC_ALL);
-                    asyncProxy.cleanAsynchRequest(id);
-                    return null;
-                }else{
-                    System.out.println("PT AF out.size()="+out.toByteArray().length);
-                    rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.SYNC_ALL);
-                }
-            } else {
-                System.out.println("PF out.size()="+out.toByteArray().length);
-                rep = proxy.invokeOrdered(out.toByteArray());
-                System.out.println("Passou de invokeOrdered(out.toByteArray)");
-            }
-			ByteArrayInputStream bis = new ByteArrayInputStream(rep) ;
-			ObjectInputStream in = new ObjectInputStream(bis) ;
-			Map<String,byte[]> table = (Map<String,byte[]>) in.readObject();
+			// byte[] rep = KVProxy.invokeOrdered(out.toByteArray());
+			byte[] rep = null;
+			if (parallel) {
+				if (async) {
+
+					System.out.println("PT AT out.size()=" + out.toByteArray().length);
+					int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), null,
+							TOMMessageType.ORDERED_REQUEST, ParallelMapping.SYNC_ALL);
+					asyncProxy.cleanAsynchRequest(id);
+					return null;
+				} else {
+					System.out.println("PT AF out.size()=" + out.toByteArray().length);
+					rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.SYNC_ALL);
+				}
+			} else {
+				System.out.println("PF out.size()=" + out.toByteArray().length);
+				rep = proxy.invokeOrdered(out.toByteArray());
+				System.out.println("Passou de invokeOrdered(out.toByteArray)");
+			}
+			ByteArrayInputStream bis = new ByteArrayInputStream(rep);
+			ObjectInputStream in = new ObjectInputStream(bis);
+			Map<String, byte[]> table = (Map<String, byte[]>) in.readObject();
 			in.close();
 			return table;
 
@@ -176,7 +180,7 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public byte[] putEntry(String tableName, String key, byte[] value) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.PUT);
 			dos.writeUTF(tableName);
 			dos.writeUTF(key);
@@ -192,17 +196,17 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String,byte[]> remove(Object key) {
+	public Map<String, byte[]> remove(Object key) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.TAB_REMOVE);
 			dos.writeUTF((String) key);
 			byte[] rep = KVProxy.invokeOrdered(out.toByteArray());
 
-			ByteArrayInputStream bis = new ByteArrayInputStream(rep) ;
-			ObjectInputStream in = new ObjectInputStream(bis) ;
-			Map<String,byte[]> table = (Map<String,byte[]>) in.readObject();
+			ByteArrayInputStream bis = new ByteArrayInputStream(rep);
+			ObjectInputStream in = new ObjectInputStream(bis);
+			Map<String, byte[]> table = (Map<String, byte[]>) in.readObject();
 			in.close();
 			return table;
 		} catch (ClassNotFoundException ex) {
@@ -215,10 +219,10 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 
 	}
 
-	public byte[] removeEntry(String tableName,String key)  {
+	public byte[] removeEntry(String tableName, String key) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.REMOVE);
 			dos.writeUTF((String) tableName);
 			dos.writeUTF((String) key);
@@ -230,6 +234,7 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 		}
 
 	}
+
 	public int size() {
 		try {
 			out = new ByteArrayOutputStream();
@@ -248,7 +253,7 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public int size1(String tableName) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.SIZE);
 			dos.writeUTF(tableName);
 			byte[] rep;
@@ -265,7 +270,7 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public boolean containsKey(String key) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.TAB_CREATE_CHECK);
 			dos.writeUTF((String) key);
 			byte[] rep;
@@ -284,7 +289,7 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 	public boolean containsKey1(String tableName, String key) {
 		try {
 			out = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(out); 
+			DataOutputStream dos = new DataOutputStream(out);
 			dos.writeInt(BFTMapRequestType.CHECK);
 			dos.writeUTF((String) tableName);
 			dos.writeUTF((String) key);
@@ -298,9 +303,6 @@ public class BFTMap implements Map<String, Map<String,byte[]>> {
 			return false;
 		}
 	}
-
-
-
 
 	public boolean isEmpty() {
 		throw new UnsupportedOperationException("Not supported yet.");

@@ -4,8 +4,10 @@
  * and open the template in the editor.
  */
 package bftsmart.tom;
+
 import bftsmart.tom.server.Executable;
 import parallelism.MessageContextPair;
+
 /**
  *
  * @author juninho

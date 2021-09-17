@@ -6,10 +6,10 @@
 package parallelism.scheduler;
 
 import java.util.HashMap;
+
 import parallelism.HibridClassToThreads;
 import parallelism.MessageContextPair;
 import parallelism.ParallelMapping;
-
 
 /**
  *
@@ -17,8 +17,12 @@ import parallelism.ParallelMapping;
  */
 public interface Scheduler {
     public void schedule(MessageContextPair request);
+
     public ParallelMapping getMapping();
+
     public void scheduleReplicaReconfiguration();
+
     public int getNumWorkers();
-    public HashMap<Integer,HibridClassToThreads> getClasses();
+
+    public HashMap<Integer, HibridClassToThreads> getClasses();
 }

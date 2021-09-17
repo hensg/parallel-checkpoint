@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author juninho
  */
-public class Pair<T,U> implements Serializable{
+public class Pair<T, U> implements Serializable {
     private final T key;
     private final U value;
 
@@ -28,4 +28,3 @@ public class Pair<T,U> implements Serializable{
         return this.value;
     }
 }
-

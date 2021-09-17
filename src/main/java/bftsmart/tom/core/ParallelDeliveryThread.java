@@ -35,7 +35,8 @@ public final class ParallelDeliveryThread extends DeliveryThread {
      * @param tomLayer TOM layer
      * @param receiver Object that receives requests from clients
      */
-    public ParallelDeliveryThread(TOMLayer tomLayer, ServiceReplica receiver, Recoverable recoverer, ServerViewController controller) {
+    public ParallelDeliveryThread(TOMLayer tomLayer, ServiceReplica receiver, Recoverable recoverer,
+            ServerViewController controller) {
         super(tomLayer, receiver, recoverer, controller);
     }
 
@@ -53,10 +54,10 @@ public final class ParallelDeliveryThread extends DeliveryThread {
 
         if (controller.getCurrentView().isMember(receiver.getId())) {
             for (int i = 0; i < dests.length; i++) {
-                tomLayer.getCommunication().send(new int[]{dests[i].getSender()},
-                        new TOMMessage(controller.getStaticConf().getProcessId(),
-                                dests[i].getSession(), dests[i].getSequence(), response,
-                                controller.getCurrentViewId(), TOMMessageType.RECONFIG));
+                tomLayer.getCommunication().send(new int[] { dests[i].getSender() },
+                        new TOMMessage(controller.getStaticConf().getProcessId(), dests[i].getSession(),
+                                dests[i].getSequence(), response, controller.getCurrentViewId(),
+                                TOMMessageType.RECONFIG));
             }
 
             tomLayer.getCommunication().updateServersConnections();

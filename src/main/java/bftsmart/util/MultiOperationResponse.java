@@ -10,8 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,37 +23,36 @@ public class MultiOperationResponse {
 
     public MultiOperationResponse(int number) {
         this.operations = new Response[number];
-        /*for(int i = 0; i < operations.length;i++){
-            operations[i] = null;
-
-            
-        }*/
+        /*
+         * for(int i = 0; i < operations.length;i++){ operations[i] = null;
+         * 
+         * 
+         * }
+         */
     }
 
-    
-    public boolean isComplete(){
-        for(int i = 0; i < operations.length;i++){
-            if(operations[i] == null){
+    public boolean isComplete() {
+        for (int i = 0; i < operations.length; i++) {
+            if (operations[i] == null) {
                 return false;
             }
         }
         return true;
     }
-    
-    public void add(int index, byte[] data){
+
+    public void add(int index, byte[] data) {
         this.operations[index] = new Response(data);
     }
-    
+
     public MultiOperationResponse(byte[] buffer) {
         DataInputStream dis = null;
         try {
             ByteArrayInputStream in = new ByteArrayInputStream(buffer);
             dis = new DataInputStream(in);
-            
-            
+
             this.operations = new Response[dis.readInt()];
-            
-            for(int i = 0; i < this.operations.length; i++){
+
+            for (int i = 0; i < this.operations.length; i++) {
                 this.operations[i] = new Response();
                 this.operations[i].data = new byte[dis.readInt()];
                 dis.readFully(this.operations[i].data);
@@ -69,7 +66,6 @@ public class MultiOperationResponse {
                 Logger.getLogger(MultiOperationResponse.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-		
 
     }
 
@@ -77,15 +73,15 @@ public class MultiOperationResponse {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream oos = new DataOutputStream(baos);
-            
+
             oos.writeInt(operations.length);
-            
-            for(int i = 0; i < operations.length; i++){
-                
+
+            for (int i = 0; i < operations.length; i++) {
+
                 oos.writeInt(this.operations[i].data.length);
                 oos.write(this.operations[i].data);
             }
-            
+
             oos.close();
             return baos.toByteArray();
         } catch (Exception e) {
@@ -103,9 +99,7 @@ public class MultiOperationResponse {
             this.data = data;
         }
 
-        
-        
         public byte[] data;
-        }
+    }
 
 }

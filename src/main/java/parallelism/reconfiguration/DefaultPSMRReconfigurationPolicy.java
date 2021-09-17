@@ -5,20 +5,15 @@
  */
 package parallelism.reconfiguration;
 
-import bftsmart.tom.core.messages.TOMMessage;
-
-
 /**
  *
  * @author alex
  */
-public class DefaultPSMRReconfigurationPolicy implements PSMRReconfigurationPolicy{
+public class DefaultPSMRReconfigurationPolicy implements PSMRReconfigurationPolicy {
 
     @Override
     public int checkReconfiguration(int classId, int activeThreads, int numMaxThreads) {
         return 0;
     }
-    
-    
-    
+
 }

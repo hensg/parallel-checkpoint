@@ -5,15 +5,6 @@
  */
 package demo.ts;
 
-import bftsmart.statemanagement.ApplicationState;
-import bftsmart.statemanagement.StateManager;
-import bftsmart.statemanagement.strategy.StandardStateManager;
-import bftsmart.tom.MessageContext;
-import bftsmart.tom.ReplicaContext;
-import bftsmart.tom.ServiceReplica;
-import bftsmart.tom.server.Recoverable;
-import bftsmart.tom.server.SingleExecutable;
-import bftsmart.tom.util.Storage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -28,34 +19,36 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
+
+import bftsmart.tom.MessageContext;
+import bftsmart.tom.ServiceReplica;
+import bftsmart.tom.server.SingleExecutable;
 import parallelism.ParallelServiceReplica;
-import parallelism.reconfiguration.LazyPolicy;
 
 /**
  *
  * @author alchieri
  */
-//public class TupleSpaceServer implements SingleExecutable, Recoverable {
+// public class TupleSpaceServer implements SingleExecutable, Recoverable {
 public class TupleSpaceServer implements SingleExecutable {
 
     private int interval;
     private float maxTp = -1;
     private boolean context;
 
-    //private byte[] state;
+    // private byte[] state;
     private int iterations = 0;
     private long throughputMeasurementStartTime = System.currentTimeMillis();
 
-   
     protected ServiceReplica replica;
-    //private ReplicaContext replicaContext;
+    // private ReplicaContext replicaContext;
 
-    //private StateManager stateManager;
+    // private StateManager stateManager;
     private Map<Integer, List<Tuple>> tuplesBag = new TreeMap<Integer, List<Tuple>>();
 
     private int myId;
     private PrintWriter pw;
-     private long start = 0;
+    private long start = 0;
 
     public TupleSpaceServer(int id, int interval, int nimT, int initT, int maxT, int entries, boolean context) {
         myId = id;
@@ -64,26 +57,25 @@ public class TupleSpaceServer implements SingleExecutable {
         this.interval = interval;
         this.context = context;
         /*
-        this.state = new byte[stateSize];
+         * this.state = new byte[stateSize];
+         * 
+         * for (int i = 0; i < stateSize; i++) { state[i] = (byte) i; }
+         */
 
-        for (int i = 0; i < stateSize; i++) {
-            state[i] = (byte) i;
-        }*/
-
-        /*totalLatency = new Storage(interval);
-        consensusLatency = new Storage(interval);
-        preConsLatency = new Storage(interval);
-        posConsLatency = new Storage(interval);
-        proposeLatency = new Storage(interval);
-        writeLatency = new Storage(interval);
-        acceptLatency = new Storage(interval);*/
+        /*
+         * totalLatency = new Storage(interval); consensusLatency = new
+         * Storage(interval); preConsLatency = new Storage(interval); posConsLatency =
+         * new Storage(interval); proposeLatency = new Storage(interval); writeLatency =
+         * new Storage(interval); acceptLatency = new Storage(interval);
+         */
 
         for (int i = 0; i < entries; i++) {
             for (int j = 1; j <= 10; j++) {
                 Object[] f = new Object[j];
                 for (int x = 0; x < f.length; x++) {
                     f[x] = new String("Este Campo Possui Os Dados Do Campo iiiiiiiiiiii:" + i);
-                    //System.out.println("Tamanho "+x+" e i "+j+" igual a " +f[x].toString().length());
+                    // System.out.println("Tamanho "+x+" e i "+j+" igual a "
+                    // +f[x].toString().length());
                 }
                 out(Tuple.createTuple(f));
             }
@@ -114,8 +106,9 @@ public class TupleSpaceServer implements SingleExecutable {
         } else {
             System.out.println("Replica in parallel execution model.");
 
-            //replica = new ParallelServiceReplica(id, this, null, numThreads);
-            //replica = new ParallelServiceReplica(id, this, null, minT, initT, maxT, new LazyPolicy());
+            // replica = new ParallelServiceReplica(id, this, null, numThreads);
+            // replica = new ParallelServiceReplica(id, this, null, minT, initT, maxT, new
+            // LazyPolicy());
 
         }
 
@@ -131,12 +124,12 @@ public class TupleSpaceServer implements SingleExecutable {
 
     public byte[] execute(byte[] command, MessageContext msgCtx) {
 
-         if (start == 0) {
-            
+        if (start == 0) {
+
             start = System.currentTimeMillis();
             throughputMeasurementStartTime = start;
         }
-        
+
         computeStatistics(msgCtx);
 
         try {
@@ -145,12 +138,12 @@ public class TupleSpaceServer implements SingleExecutable {
             byte[] reply = null;
             int cmd = new DataInputStream(in).readInt();
             switch (cmd) {
-                //operations on the list
+                // operations on the list
                 case BFTTupleSpace.OUT:
                     Tuple t = (Tuple) new ObjectInputStream(in).readObject();
-                    //System.out.println("add received: " + t);
+                    // System.out.println("add received: " + t);
                     out(t);
-                    //boolean ret = true;
+                    // boolean ret = true;
                     out = new ByteArrayOutputStream();
                     ObjectOutputStream out1 = new ObjectOutputStream(out);
                     out1.writeBoolean(true);
@@ -172,8 +165,8 @@ public class TupleSpaceServer implements SingleExecutable {
                     break;
                 case BFTTupleSpace.INP:
                     t = (Tuple) new ObjectInputStream(in).readObject();
-                    //Tuple removed = inp(t);
-                    //TODO:ajeitar
+                    // Tuple removed = inp(t);
+                    // TODO:ajeitar
                     Tuple removed = rdp(t);
 
                     out = new ByteArrayOutputStream();
@@ -212,13 +205,13 @@ public class TupleSpaceServer implements SingleExecutable {
 
     public void computeStatistics(MessageContext msgCtx) {
 
-       
         iterations++;
-    
+
         float tp = -1;
         if (iterations % interval == 0) {
             if (context) {
-                System.out.println("--- (Context)  iterations: " + iterations + " // regency: " + msgCtx.getRegency() + " // consensus: " + msgCtx.getConsensusId() + " ---");
+                System.out.println("--- (Context)  iterations: " + iterations + " // regency: " + msgCtx.getRegency()
+                        + " // consensus: " + msgCtx.getConsensusId() + " ---");
             }
 
             System.out.println("--- Measurements after " + iterations + " ops (" + interval + " samples) ---");
@@ -230,13 +223,13 @@ public class TupleSpaceServer implements SingleExecutable {
             }
 
             int now = (int) ((System.currentTimeMillis() - start) / 1000);
-            System.out.println("Throughput = " + tp + " operations/sec at sec: "+now+" (Maximum observed: " + maxTp + " ops/sec)");
+            System.out.println("Throughput = " + tp + " operations/sec at sec: " + now + " (Maximum observed: " + maxTp
+                    + " ops/sec)");
 
-             
             if (replica instanceof ParallelServiceReplica) {
 
                 pw.println(now + " " + tp + " " + ((ParallelServiceReplica) replica).getNumActiveThreads());
-               
+
             } else {
                 pw.println(now + " " + tp);
             }
@@ -317,7 +310,8 @@ public class TupleSpaceServer implements SingleExecutable {
     public static void main(String[] args) {
 
         if (args.length < 7) {
-            System.out.println("Usage: ... TupleSpaceServer <processId> <measurement interval> <minNum threads> <initialNum threads> <maxNum threads> <initial entries> <context?>");
+            System.out.println(
+                    "Usage: ... TupleSpaceServer <processId> <measurement interval> <minNum threads> <initialNum threads> <maxNum threads> <initial entries> <context?>");
             System.exit(-1);
         }
 

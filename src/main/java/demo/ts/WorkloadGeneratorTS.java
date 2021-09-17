@@ -5,7 +5,6 @@
  */
 package demo.ts;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -55,47 +54,47 @@ public class WorkloadGeneratorTS {
                 Random rand = new Random();
                 int op = 0;
                 int num = 0;
-                
+
                 int out = 0;
                 int rdp = 0;
                 int inp = 0;
                 int cas = 0;
-                
+
                 while (num < this.operations.length) {
 
-                    op = rand.nextInt(4)+1;
-                    //System.out.println("Sorteou: "+op);
+                    op = rand.nextInt(4) + 1;
+                    // System.out.println("Sorteou: "+op);
                     if (op == BFTTupleSpace.OUT) {
-                        
-                        if(out == 0 || ((double) operations.length/out) > 4){
-                           out++;
-                           pw.println(op);
-                           this.operations[num] = op;
-                            num++;     
+
+                        if (out == 0 || ((double) operations.length / out) > 4) {
+                            out++;
+                            pw.println(op);
+                            this.operations[num] = op;
+                            num++;
                         }
-                    }else if (op == BFTTupleSpace.RDP) {
-                        
-                        if(rdp == 0 || ((double)operations.length/rdp) > 4){
-                           rdp++;
-                           pw.println(op);
-                           this.operations[num] = op;
-                           num++;     
+                    } else if (op == BFTTupleSpace.RDP) {
+
+                        if (rdp == 0 || ((double) operations.length / rdp) > 4) {
+                            rdp++;
+                            pw.println(op);
+                            this.operations[num] = op;
+                            num++;
                         }
-                    }else if (op == BFTTupleSpace.INP) {
-                        
-                        if(inp == 0 || ((double)operations.length/inp) > 4){
-                           inp++;
-                           pw.println(op);
-                           this.operations[num] = op;
-                            num++;     
+                    } else if (op == BFTTupleSpace.INP) {
+
+                        if (inp == 0 || ((double) operations.length / inp) > 4) {
+                            inp++;
+                            pw.println(op);
+                            this.operations[num] = op;
+                            num++;
                         }
-                    }else {
-                        
-                        if(cas == 0 || ((double)operations.length/cas) > 4){
-                           cas++;
-                           pw.println(op);
-                           this.operations[num] = op;
-                            num++;     
+                    } else {
+
+                        if (cas == 0 || ((double) operations.length / cas) > 4) {
+                            cas++;
+                            pw.println(op);
+                            this.operations[num] = op;
+                            num++;
                         }
                     }
                 }
@@ -103,19 +102,19 @@ public class WorkloadGeneratorTS {
                 fw.flush();
                 pw.close();
                 fw.close();
-                
-                System.out.println("OUT: "+out);
-                System.out.println("RDP: "+rdp);
-                System.out.println("INP: "+inp);
-                System.out.println("CAS: "+cas);
-                
+
+                System.out.println("OUT: " + out);
+                System.out.println("RDP: " + rdp);
+                System.out.println("INP: " + inp);
+                System.out.println("CAS: " + cas);
+
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
 
         }
     }
-    
+
     private void generate_old() {
         String sep = System.getProperty("file.separator");
         String path = "config" + sep + "workloadP_BFT_SMART";
@@ -140,47 +139,45 @@ public class WorkloadGeneratorTS {
                 int num = 0;
                 int cnf = 0;
                 int ncnf = 0;
-                
-                int ncnfT = ((100-this.percent) * this.operations.length)/100;
-                int cnfT = (this.percent * this.operations.length)/100;
-                
+
+                int ncnfT = ((100 - this.percent) * this.operations.length) / 100;
+                int cnfT = (this.percent * this.operations.length) / 100;
+
                 while (num < this.operations.length) {
 
                     int r = rand.nextInt(100);
                     if ((cnf == cnfT) || (r >= percent && ncnf < ncnfT)) {
                         ncnf++;
-                        //nao conflitantes
+                        // nao conflitantes
                         op = BFTTupleSpace.RDP;
-                            
-                       
+
                     } else {
                         cnf++;
-                        //conflitante
+                        // conflitante
                         r = rand.nextInt(2);
                         if (r >= 1) {
-                            //OUT
+                            // OUT
                             op = BFTTupleSpace.OUT;
                         } else {
-                            //INP
+                            // INP
                             op = BFTTupleSpace.INP;
                         }
                     }
-                    
-                    
+
                     pw.println(op);
                     this.operations[num] = op;
                     num++;
-                    
+
                 }
 
                 pw.flush();
                 fw.flush();
                 pw.close();
                 fw.close();
-                
-                System.out.println("Conflitantes: "+cnf);
-                System.out.println("Não Conflitantes: "+ncnf);
-                
+
+                System.out.println("Conflitantes: " + cnf);
+                System.out.println("Não Conflitantes: " + ncnf);
+
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
@@ -189,7 +186,7 @@ public class WorkloadGeneratorTS {
     }
 
     private void load(String path) {
-        //System.out.println("Vai ler!!!");
+        // System.out.println("Vai ler!!!");
         try {
 
             FileReader fr = new FileReader(path);
@@ -199,7 +196,7 @@ public class WorkloadGeneratorTS {
             int j = 0;
             while (((line = rd.readLine()) != null) && (j < operations.length)) {
                 operations[j] = Integer.valueOf(line);
-                //System.out.println("Leu:" + operations[j]);
+                // System.out.println("Leu:" + operations[j]);
                 j++;
             }
             fr.close();
@@ -211,14 +208,16 @@ public class WorkloadGeneratorTS {
 
     public static void main(String[] args) {
         new WorkloadGeneratorTS(0, 1000);
-        
-        /*new WorkloadGeneratorTS(25, 1000);
-        
-        new WorkloadGeneratorTS(50, 1000);
-        
-        new WorkloadGeneratorTS(75, 1000);
-        
-        new WorkloadGeneratorTS(100, 1000);*/
+
+        /*
+         * new WorkloadGeneratorTS(25, 1000);
+         * 
+         * new WorkloadGeneratorTS(50, 1000);
+         * 
+         * new WorkloadGeneratorTS(75, 1000);
+         * 
+         * new WorkloadGeneratorTS(100, 1000);
+         */
     }
 
 }

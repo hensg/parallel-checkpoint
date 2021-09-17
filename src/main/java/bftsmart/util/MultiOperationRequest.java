@@ -10,10 +10,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import parallelism.ClassToThreads;
 
 /**
@@ -28,29 +27,28 @@ public class MultiOperationRequest {
         this.operations = new Operation[number];
     }
 
-    public void add(int index, byte[] data, int classId){
+    public void add(int index, byte[] data, int classId) {
         this.operations[index] = new Operation(data, classId);
     }
-    
+
     public MultiOperationRequest(byte[] buffer) {
         DataInputStream dis = null;
         try {
             ByteArrayInputStream in = new ByteArrayInputStream(buffer);
             dis = new DataInputStream(in);
-            
-            
-            //this.operations = new Operation[dis.readInt()];
+
+            // this.operations = new Operation[dis.readInt()];
             this.operations = new Operation[1];
             dis.readInt();
-            //System.out.println("--------------dis.readInt()="+dis.readInt());
-            for(int i = 0; i < this.operations.length; i++){
+            // System.out.println("--------------dis.readInt()="+dis.readInt());
+            for (int i = 0; i < this.operations.length; i++) {
                 this.operations[i] = new Operation();
-                //this.operations[i].classId = dis.readInt();
+                // this.operations[i].classId = dis.readInt();
                 this.operations[i].classId = ClassToThreads.CONC;
-                //this.operations[i].data = new byte[dis.readInt()];
+                // this.operations[i].data = new byte[dis.readInt()];
                 this.operations[i].data = new byte[2];
-                //dis.readFully(this.operations[i].data);
-                
+                // dis.readFully(this.operations[i].data);
+
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -61,7 +59,6 @@ public class MultiOperationRequest {
                 Logger.getLogger(MultiOperationRequest.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-		
 
     }
 
@@ -69,17 +66,17 @@ public class MultiOperationRequest {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream oos = new DataOutputStream(baos);
-            
+
             oos.writeInt(operations.length);
-            
-            for(int i = 0; i < operations.length; i++){
-                
+
+            for (int i = 0; i < operations.length; i++) {
+
                 oos.writeInt(this.operations[i].classId);
                 oos.writeInt(this.operations[i].data.length);
                 oos.write(this.operations[i].data);
             }
-            //oos.flush();
-            //baos.flush();
+            // oos.flush();
+            // baos.flush();
             oos.close();
             return baos.toByteArray();
         } catch (Exception e) {
@@ -98,8 +95,6 @@ public class MultiOperationRequest {
             this.classId = classId;
         }
 
-        
-        
         public byte[] data;
         public int classId;
     }

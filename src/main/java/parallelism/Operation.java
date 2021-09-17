@@ -11,27 +11,32 @@ import java.io.Serializable;
  *
  * @author juninho
  */
-public class Operation implements Serializable{
+public class Operation implements Serializable {
     public int operation;
     public int classID;
     public byte[] content;
     public int sequence;
-    public Operation(int op,int classID, byte[] content, int sequence){
-        this.operation=op;
-        this.classID=classID;
-        this.content=content;
-        this.sequence=sequence;
+
+    public Operation(int op, int classID, byte[] content, int sequence) {
+        this.operation = op;
+        this.classID = classID;
+        this.content = content;
+        this.sequence = sequence;
     }
-    public byte[] getContent(){
+
+    public byte[] getContent() {
         return this.content;
     }
-    public int getOperation(){
+
+    public int getOperation() {
         return this.operation;
     }
-    public int getClassId(){
+
+    public int getClassId() {
         return this.classID;
     }
-    public int getSequence(){
+
+    public int getSequence() {
         return this.sequence;
     }
 }
