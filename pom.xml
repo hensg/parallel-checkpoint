@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>parallelism</groupId>
+  <artifactId>BFT-SMaRt-parallel-cp</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <name>BFT-SMaRt-parallel-cp</name>
+  <!-- FIXME change it to the project's website -->
+  <url>http://www.example.com</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>lib</id>
+      <name>lib</name>
+      <releases>
+          <enabled>true</enabled>
+          <checksumPolicy>ignore</checksumPolicy>
+      </releases>
+      <snapshots>
+          <enabled>false</enabled>
+      </snapshots>
+      <url>file://${project.basedir}/lib</url>
+    </repository>
+	</repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>bft-smart</groupId>
+      <artifactId>library</artifactId>
+      <version>v1.1-beta</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.5</version>
+    </dependency>
+    <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>4.0.25.Final</version>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.5.8</version>
+    </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+          <version>1.5.8</version>
+      </dependency>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+          <version>1.2.14</version>
+      </dependency>
+  </dependencies>
+
+  <build>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.2.4</version>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <minimizeJar>true</minimizeJar>
+            <filters>
+              <filter>
+                  <artifact>bft-smart:library</artifact>
+                  <excludes>
+                      <exclude>bftsmart/demo/bftmap/BFTMap.class</exclude>
+                      <exclude>bftsmart/demo/bftmap/BFTMapClient.class</exclude>
+                      <!-- duplicated warning, this project has a copy of these classes -->
+                  </excludes>
+                </filter>
+                <filter>
+                    <artifact>*:*</artifact>
+                    <excludes>
+                      <exclude>META-INF/*.MF</exclude>
+                    </excludes>
+                </filter>
+            </filters>
+          </configuration>
+        </plugin>
+      </plugins>
+  </build>
+</project>
