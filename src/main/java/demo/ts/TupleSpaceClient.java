@@ -5,11 +5,13 @@
  */
 package demo.ts;
 
-import bftsmart.tom.util.Storage;
 import java.io.IOException;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import bftsmart.tom.util.Storage;
 
 /**
  *
@@ -17,13 +19,14 @@ import java.util.logging.Logger;
  */
 public class TupleSpaceClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(TupleSpaceClient.class);
     private static int VALUE_SIZE = 1024;
     public static int initId = 0;
 
     @SuppressWarnings("static-access")
     public static void main(String[] args) throws IOException {
         if (args.length < 7) {
-            System.out.println(
+            logger.info(
                     "Usage: ... TupleSpaceClient <num. threads> <process id> <number of operations> <interval> <max fields> <parallel?> <percent>");
             System.exit(-1);
         }
@@ -43,10 +46,10 @@ public class TupleSpaceClient {
         if (args.length >= 8) {
             v2 = Boolean.parseBoolean(args[7]);
         }
-        System.out.println(args.length + " v2: " + v2);
+        logger.info(args.length + " v2: " + v2);
 
         for (int i = 0; i < args.length; i++) {
-            System.out.println(i + " " + args[i]);
+            logger.info(i + " " + args[i]);
         }
 
         /*
@@ -59,10 +62,11 @@ public class TupleSpaceClient {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
-                Logger.getLogger(TupleSpaceClient.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("Error while sleeping", ex.getCause());
+                System.exit(-1);
             }
 
-            System.out.println("Launching client " + (initId + i));
+            logger.info("Launching client " + (initId + i));
             c[i] = new TupleSpaceClient.Client(initId + i, numberOfOps, interval, max, verbose, parallel, v2, perc);
             // c[i].start();
         }
@@ -81,7 +85,6 @@ public class TupleSpaceClient {
             }
         }
 
-        // System.exit(0);
     }
 
     static class Client extends Thread {
@@ -118,11 +121,11 @@ public class TupleSpaceClient {
 
             if (version2) {
                 space = new BFTTupleSpacePlus(id, parallel);
-                System.out.println("PLUS PLUS");
+                logger.info("PLUS PLUS");
 
             } else {
                 space = new BFTTupleSpace(id, parallel);
-                System.out.println("NORMAL");
+                logger.info("NORMAL");
             }
             // this.dos = dos;
         }
@@ -180,7 +183,7 @@ public class TupleSpaceClient {
 
         public void run() {
 
-            System.out.println("Warm up...");
+            logger.info("Warm up...");
 
             int req = 0;
             Random rand = new Random();
@@ -200,16 +203,16 @@ public class TupleSpaceClient {
              * Tuple ret = rdp(rand);
              * 
              * //int index = rand.nextInt(maxIndex); //boolean ret = store.contains(new
-             * Integer(index)); //System.out.println("Contém: "+ret); } else if (op ==
+             * Integer(index)); //logger.info("Contém: "+ret); } else if (op ==
              * BFTTupleSpace.INP) {
              * 
              * 
              * Tuple ret = inp(rand); }
              * 
-             * if (verbose) { System.out.println(" sent!"); }
+             * if (verbose) { logger.info(" sent!"); }
              * 
-             * if (verbose && (req % 1000 == 0)) { System.out.println(this.id + " // " + req
-             * + " operations sent!"); }
+             * if (verbose && (req % 1000 == 0)) { logger.info(this.id + " // " + req +
+             * " operations sent!"); }
              * 
              * }
              */
@@ -217,7 +220,7 @@ public class TupleSpaceClient {
             Storage st = new Storage(numberOfOps);
 
             // for (int j = 0; j < 5; j++) {
-            System.out.println("Executing experiment for " + numberOfOps + " ops");
+            logger.info("Executing experiment for " + numberOfOps + " ops");
 
             // work = new WorkloadGenerator(j * 25, numberOfOps / 2);
             for (int i = 0; i < numberOfOps; i++, req++) {
@@ -241,7 +244,7 @@ public class TupleSpaceClient {
 
                     Tuple ret = rdp(rand);
                     st.store(System.nanoTime() - last_send_instant);
-                    // System.out.println("RDP: "+ret);
+                    // logger.info("RDP: "+ret);
 
                 } else if (op == BFTTupleSpace.INP) {
 
@@ -249,7 +252,7 @@ public class TupleSpaceClient {
 
                     Tuple ret = inp(rand);
                     st.store(System.nanoTime() - last_send_instant);
-                    // System.out.println("INP: "+ret);
+                    // logger.info("INP: "+ret);
                 } else if (op == BFTTupleSpace.CAS) {
 
                     long last_send_instant = System.nanoTime();
@@ -260,10 +263,10 @@ public class TupleSpaceClient {
                 }
 
                 if (verbose) {
-                    System.out.println(this.id + " // sent!");
+                    logger.info(this.id + " // sent!");
                 }
 
-                // System.out.println("resultado lido= "+ ret.toString());
+                // logger.info("resultado lido= "+ ret.toString());
                 if (interval > 0) {
                     try {
                         // sleeps interval ms before sending next request
@@ -273,21 +276,21 @@ public class TupleSpaceClient {
                 }
 
                 if (verbose && (req % 1000 == 0)) {
-                    System.out.println(this.id + " // " + req + " operations sent!");
+                    logger.info(this.id + " // " + req + " operations sent!");
                 }
 
             }
 
             if (id == initId) {
-                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = "
+                logger.info(this.id + " // Average time for " + numberOfOps / 2 + " executions (-10%) = "
                         + st.getAverage(true) / 1000 + " us ");
-                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (-10%) = "
+                logger.info(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (-10%) = "
                         + st.getDP(true) / 1000 + " us ");
-                System.out.println(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = "
+                logger.info(this.id + " // Average time for " + numberOfOps / 2 + " executions (all samples) = "
                         + st.getAverage(false) / 1000 + " us ");
-                System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2
-                        + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
-                System.out.println(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = "
+                logger.info(this.id + " // Standard desviation for " + numberOfOps / 2 + " executions (all samples) = "
+                        + st.getDP(false) / 1000 + " us ");
+                logger.info(this.id + " // Maximum time for " + numberOfOps / 2 + " executions (all samples) = "
                         + st.getMax(false) / 1000 + " us ");
             }
 

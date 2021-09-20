@@ -32,7 +32,10 @@
             <filter>
               <artifact>*:*</artifact>
               <excludes>
-                <exclude>META-INF/*.MF</exclude>
+                <exclude>META-INF/MANIFEST.MF</exclude>
+                <exclude>META-INF/log4j-provider.properties</exclude>
+                <exclude>**/log4j.properties</exclude>
+                <exclude>**/Log4j2Plugins.dat</exclude>
               </excludes>
             </filter>
           </filters>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <RollingFile name="fileLoggerServer" fileName="/var/log/bft-smart/bft-mapserver.log" filePattern="/var/log/bft-smart/bft-mapserver-%d{yyyy-MM-dd}.log">
+            <PatternLayout>
+                <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
+        <RollingFile name="fileLoggerClient" fileName="/var/log/bft-smart/bft-client.log" filePattern="/var/log/bft-smart/bft-client-%d{yyyy-MM-dd}.log">
+            <PatternLayout>
+                <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <logger name="bftsmart" additivity="false">
+            <appender-ref ref="fileLoggerServer" />
+        </logger>
+        <logger name="parallelism" additivity="false">
+            <appender-ref ref="fileLoggerServer" />
+        </logger>
+        <logger name="demo" additivity="false">
+            <appender-ref ref="fileLoggerServer" />
+        </logger>
+        <logger name="demo.bftmap.BFTMapClientMP" additivity="false">
+            <appender-ref ref="fileLoggerClient" />
+        </logger>
+        <Root level="debug" additivity="false">
+            <appender-ref ref="console" />
+        </Root>
+    </Loggers>
+</Configuration>

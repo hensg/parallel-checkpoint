@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
@@ -28,6 +28,8 @@ import parallelism.ParallelMapping;
  * @author eduardo
  */
 public class DefaultScheduler implements Scheduler {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultScheduler.class);
 
     protected ParallelMapping mapping;
     private HashMap<Integer, HibridClassToThreads> classes;
@@ -88,9 +90,8 @@ public class DefaultScheduler implements Scheduler {
         if (ct == null) {
             // TRATAR COMO CONFLICT ALL
             // criar uma classe que sincroniza tudo
-            System.err.println("CLASStoTHREADs MAPPING NOT FOUND");
+            logger.error("CLASStoTHREADs MAPPING NOT FOUND");
         }
-        // System.out.println("queues length = "+ct.queues.length);
         if (ct.type == ClassToThreads.CONC) {// conc
             ct.queues[ct.threadIndex].add(request);
             ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
@@ -114,7 +115,7 @@ public class DefaultScheduler implements Scheduler {
                 dos.writeUTF(sb.toString());
                 dos.writeInt(request.request.getSequence());
             } catch (IOException ex) {
-                Logger.getLogger(ParallelScheduler.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("Failed to write CKP request to output bytestream", ex);
             }
             byte[] b = out.toByteArray();
             TOMMessage req = new TOMMessage(1, 1, request.m.getConsensusId() + 1, b, 1);

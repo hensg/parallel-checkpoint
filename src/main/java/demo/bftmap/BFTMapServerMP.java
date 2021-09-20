@@ -12,8 +12,9 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
@@ -22,6 +23,9 @@ import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 import parallelism.ParallelServiceReplica;
 
 public final class BFTMapServerMP extends DefaultSingleRecoverable implements SingleExecutable, Serializable {
+
+    private static final transient Logger logger = LoggerFactory.getLogger(BFTMapServerMP.class);
+
     private static int CPperiod;
     private int interval;
     private float maxTp = -1;
@@ -39,16 +43,17 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
     public BFTMapServerMP(int id, int interval, int maxThreads, int minThreads, int initThreads, int entries,
             boolean context, boolean cbase, boolean partition) throws IOException, ClassNotFoundException {
 
+        logger.info("Initializing BFTMapServerMP");
         if (initThreads <= 0) {
-            System.out.println("Replica in sequential execution model.");
+            logger.info("Replica in sequential execution model.");
             tableMap = new MapOfMapsMP();
             replica = new ServiceReplica(id, this, this);
             this.workers = initThreads;
         } else if (cbase) {
-            System.out.println("Replica in parallel execution model (CBASE).");
+            logger.info("Replica in parallel execution model (CBASE).");
 
         } else {
-            System.out.println("Replica in parallel execution model.");
+            logger.info("Replica in parallel execution model.");
             tableMap = new MapOfMapsMP();
 
         }
@@ -61,17 +66,17 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
                 tableMap.getTable(i).put(j, ByteBuffer.allocate(1024).putInt(2).array());
             }
         }
-        System.out.println("numOfTables =" + tableMap.getNumOfTables());
+        logger.info("Number of tables = {}", tableMap.getNumOfTables());
         for (int j = 0; j < initThreads; j++) {
-            System.out.println("table " + j + " = " + tableMap.getSize(j));
+            logger.info("Table {} has size of {} entries", j, tableMap.getSize(j));
         }
         replica = new ParallelServiceReplica(id, this, this, initThreads, CPperiod, partition);
 
-        System.out.println("Server initialization complete!");
+        logger.info("Server initialization complete!");
     }
 
     public byte[] executeOrdered(byte[] command, MessageContext msgCtx) {
-        // System.out.println("ckp");
+        // logger.info("ckp");
         return execute(command, msgCtx);
     }
 
@@ -87,6 +92,8 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
             ByteArrayOutputStream out = null;
             byte[] reply = null;
             int cmd = new DataInputStream(in).readInt();
+            long start = System.nanoTime();
+            logger.debug("Executing command type: {}", cmd);
             switch (cmd) {
                 case BFTMapRequestType.PUT:
                     Integer tableName = new DataInputStream(in).readInt();
@@ -114,10 +121,11 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
                     ObjectInputStream objIn = new ObjectInputStream(in);
                     Map<Integer, byte[]> table = null;
                     try {
-                        // System.out.println("TABLE CREATED!!!!!");
+                        // logger.info("TABLE CREATED!!!!!");
                         table = (Map<Integer, byte[]>) objIn.readObject();
                     } catch (ClassNotFoundException ex) {
-                        Logger.getLogger(bftsmart.demo.bftmap.BFTMapServer.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.error("Error on create table operation", ex.getCause());
+                        throw new RuntimeException(ex);
                     }
                     Map<Integer, byte[]> tableCreated = tableMap.addTable(tableName, table);
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -138,21 +146,16 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
                     reply = bos.toByteArray();
                     break;
                 case BFTMapRequestType.SIZE_TABLE:
-                    System.out.println("morreu aki?");
                     int size1 = tableMap.getNumOfTables();
-                    // System.out.println("Size " + size1);
                     out = new ByteArrayOutputStream();
                     new DataOutputStream(out).writeInt(size1);
                     reply = out.toByteArray();
                     break;
                 case BFTMapRequestType.GET:
                     tableName = new DataInputStream(in).readInt();
-                    // System.out.println("tablename: " + tableName);
                     key = new DataInputStream(in).readInt();
-                    // System.out.println("Key received: " + key);
                     valueBytes = tableMap.getEntry(tableName, key);
                     value = new String(valueBytes);
-                    // System.out.println("The value to be get is: " + value);
                     out = new ByteArrayOutputStream();
                     new DataOutputStream(out).writeBytes(value);
                     reply = out.toByteArray();
@@ -167,7 +170,6 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
                 case BFTMapRequestType.CHECK:
                     tableName = new DataInputStream(in).readInt();
                     key = new DataInputStream(in).readInt();
-                    // System.out.println("Table Key received: " + key);
                     valueBytes = tableMap.getEntry(tableName, key);
                     boolean entryExists = valueBytes != null;
                     out = new ByteArrayOutputStream();
@@ -176,10 +178,8 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
                     break;
                 case BFTMapRequestType.TAB_CREATE_CHECK:
                     tableName = new DataInputStream(in).readInt();
-                    // System.out.println("Table of Table Key received: " + tableName);
                     table = tableMap.getTable(tableName);
                     boolean tableExists = (table != null);
-                    // System.out.println("Table exists: " + tableExists);
                     out = new ByteArrayOutputStream();
                     new DataOutputStream(out).writeBoolean(tableExists);
                     reply = out.toByteArray();
@@ -187,51 +187,46 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
                 case BFTMapRequestType.CKP:
                     String part = new DataInputStream(in).readUTF();
                     String[] partitions = part.split("#");
-                    // System.out.println("part = "+part);
-
                     int[] particoes = new int[partitions.length];
                     for (int i = 0; i < partitions.length; i++) {
                         particoes[i] = Integer.parseInt(partitions[i]);
-                        // System.out.println("partitions = "+particoes[i]);
                     }
 
                     reply = getSnapshot(particoes);
-                    return reply;
+                    break;
                 case BFTMapRequestType.PUT12:
                     Integer tableNamea = new DataInputStream(in).readInt();
                     Integer keya = new DataInputStream(in).readInt();
-                    // String valuea = new DataInputStream(in).readUTF();
                     Integer tableNameb = new DataInputStream(in).readInt();
                     Integer keyb = new DataInputStream(in).readInt();
 
                     byte[] valueBytes1 = ByteBuffer.allocate(1024).array();
                     reply = tableMap.addData(tableNamea, keya, valueBytes1);
                     reply = tableMap.addData(tableNameb, keyb, valueBytes1);
-                    return reply;
+                    break;
                 case BFTMapRequestType.RECOVERER:
                     ObjectInputStream is = new ObjectInputStream(in);
                     installSnapshot(command);
-
-                    return reply;
+                    break;
                 case BFTMapRequestType.SENDER:
                     sendState();
-                    return reply;
-                default:
-                    // System.out.println("operation = "+cmd);
                     break;
+                default:
+                    throw new RuntimeException("Unmapped operation!");
             }
+            logger.debug("Took {} ns to execute command type: {}", (System.nanoTime() - start), cmd);
             return reply;
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(BFTMapServerMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            logger.error("Error on execute operation", ex.getCause());
+            throw new RuntimeException(ex);
         }
 
     }
 
     public byte[] getSnapshot(int[] particoes) {
+        logger.info("Getting snapshot {}", particoes.length);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream out = null;
-        System.out.println("table amount = " + particoes.length);
         try {
             out = new ObjectOutputStream(bos);
             for (int i = 0; i < particoes.length; i++) {
@@ -242,11 +237,9 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
             byte[] state = bos.toByteArray();
             bos.flush();
             bos.close();
-            // System.out.println("STATE");
             return state;
         } catch (Exception ex) {
-            // ignore close exception
-            return null;
+            throw new RuntimeException(ex);
         }
     }
 
@@ -256,11 +249,11 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
         float tp = -1;
         if (iterations % interval == 0) {
             if (context) {
-                System.out.println("--- (Context)  iterations: " + iterations + " // regency: " + msgCtx.getRegency()
-                        + " // consensus: " + msgCtx.getConsensusId() + " ---");
+                logger.info("--- (Context)  iterations: {}, // regency: {} // consensus: {} ---", iterations,
+                        msgCtx.getRegency(), msgCtx.getConsensusId());
             }
 
-            System.out.println("--- Measurements after " + iterations + " ops (" + interval + " samples) ---");
+            logger.info("--- Measurements after {} ops ({} samples) ---", iterations, interval);
 
             tp = (float) (interval * 1000 / (float) (System.currentTimeMillis() - throughputMeasurementStartTime));
 
@@ -272,11 +265,11 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
 
             if (now < 3000) {
 
-                // System.out.println("****************THROUGHPUT: "+now+" "+tp);
+                // logger.info("****************THROUGHPUT: "+now+" "+tp);
                 if (replica instanceof ParallelServiceReplica) {
 
                     pw.println(now + " " + tp + " " + ((ParallelServiceReplica) replica).getNumActiveThreads());
-                    // System.out.println("*******************THREADS: "+now+"
+                    // logger.info("*******************THREADS: "+now+"
                     // "+((ParallelServiceReplica)replica).getNumActiveThreads());
                 } else {
                     pw.println(now + " " + tp);
@@ -293,8 +286,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
             }
 
             if (replica instanceof ParallelServiceReplica) {
-                System.out.println("Active Threads = " + ((ParallelServiceReplica) replica).getNumActiveThreads()
-                        + " in sec: " + now);
+                logger.info("Active Threads = {}", ((ParallelServiceReplica) replica).getNumActiveThreads());
             }
 
             throughputMeasurementStartTime = System.currentTimeMillis();
@@ -304,8 +296,8 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         if (args.length < 6) {
-            System.out.println(
-                    "Usage: ... ListServer <processId> <measurement interval> <Num threads> <initial entries> <checkpoint period>  <particionado?>");
+            logger.error(
+                    "Usage: ... BFTMapServerMP <processId> <measurement interval> <Num threads> <initial entries> <checkpoint period>  <particionado?>");
             System.exit(-1);
         }
 
@@ -328,6 +320,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
 
     @Override
     public void installSnapshot(byte[] bytes) {
+        logger.info("Installing snapshot...");
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ObjectInputStream is;
 
@@ -335,16 +328,16 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
             is = new ObjectInputStream(in);
             is.readInt();
             tableMap.addTable(is.readInt(), (Map<Integer, byte[]>) is.readObject());
-        } catch (IOException ex) {
-            Logger.getLogger(BFTMapServerMP.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(BFTMapServerMP.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | ClassNotFoundException ex) {
+            logger.error("Error installing snapshot", ex.getCause());
+            throw new RuntimeException(ex);
         }
-        System.out.println("Snapshot intalled at time = " + System.nanoTime());
+        logger.info("Snapshot installed");
     }
 
     @Override
     public byte[] getSnapshot() {
+        logger.info("Getting snapshot...");
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream out = null;
         try {
@@ -352,11 +345,11 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Si
             out.writeObject(this.tableMap);
             out.flush();
             byte[] yourBytes = bos.toByteArray();
+            logger.info("Got the snapshot");
             return yourBytes;
         } catch (Exception ex) {
-            System.out.println("ERROR");
+            throw new RuntimeException(ex);
         }
-        return null;
     }
 
     public byte[] appExecuteOrdered(byte[] bytes, MessageContext mc) {

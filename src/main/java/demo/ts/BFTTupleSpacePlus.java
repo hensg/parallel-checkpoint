@@ -152,8 +152,6 @@ public class BFTTupleSpacePlus extends BFTTupleSpace {
 
                 }
 
-                // System.out.println("Cas para o grupo "+grupoID);
-
                 rep = proxy.invokeParallel(out.toByteArray(), grupoID);
                 // }else{
                 // rep = proxy.invokeParallel(out.toByteArray(),

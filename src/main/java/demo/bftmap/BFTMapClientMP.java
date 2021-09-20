@@ -24,8 +24,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //import bftsmart.tom.ServiceProxy;
 //import bftsmart.tom.core.messages.TOMMessageType;
@@ -36,6 +37,9 @@ import bftsmart.util.Storage;
  *
  */
 public class BFTMapClientMP {
+
+    private static final Logger logger = LoggerFactory.getLogger(BFTMapClientMP.class);
+
     private static int var = 0;
     private static int VALUE_SIZE = 1024;
     public static int initId = 0;
@@ -47,7 +51,7 @@ public class BFTMapClientMP {
     @SuppressWarnings("static-access")
     public static void main(String[] args) throws IOException {
         if (args.length < 7) {
-            System.out.println(
+            logger.info(
                     "Usage: ... ListClient <num. threads> <process id> <number of operations> <interval> <maxIndex> <p_read %> <p_conflict %> <verbose?> <parallel?> <async?>");
             System.exit(-1);
         }
@@ -64,7 +68,7 @@ public class BFTMapClientMP {
         boolean verbose = Boolean.parseBoolean(args[7]);
         boolean parallel = Boolean.parseBoolean(args[8]);
         boolean async = Boolean.parseBoolean(args[9]);
-        System.out.println("P_CONFLICT ====== " + p_conflict);
+        logger.info("P_CONFLICT ====== {}", p_conflict);
         Client[] c = new Client[numThreads];
         ops = new int[numThreads];
         for (int k = 0; k < ops.length; k++) {
@@ -74,10 +78,10 @@ public class BFTMapClientMP {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
-                Logger.getLogger(BFTMapClientMP.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("", ex.getCause());
             }
 
-            System.out.println("Launching client " + (initId + i));
+            logger.info("Launching client {}", (initId + i));
             c[i] = new BFTMapClientMP.Client(initId + i, numberOfOps, interval, max, verbose, parallel, async,
                     numThreads, p_read, p_conflict);
             // c[i].start();
@@ -181,13 +185,13 @@ public class BFTMapClientMP {
          */
         public void run() {
 
-            // System.out.println("Warm up...");
+            // logger.info("Warm up...");
             int req = 0;
 
             Storage st = new Storage(numberOfOps);
             String tableName = "table";
 
-            System.out.println("Executing experiment for " + numberOfOps + " ops");
+            logger.info("Executing experiment for {} ops", numberOfOps);
             // if(id==initId){
             // boolean b;
             // try {
@@ -199,7 +203,7 @@ public class BFTMapClientMP {
             op = BFTMapRequestType.PUT;
             for (int i = 0; i < numberOfOps && !stop; i++, req++) {
 
-                // System.out.println("?????????????????");
+                // logger.info("?????????????????");
                 if (op == BFTMapRequestType.PUT) {
 
                     // int index = rand.nextInt(maxIndex);
@@ -236,8 +240,9 @@ public class BFTMapClientMP {
                             Integer key1 = k1.nextInt(maxIndex);
                             long last = System.nanoTime();
                             byte[] res = getEntry(store, table1, key1);
-                            if (id == 4)
-                                System.out.println(System.nanoTime() + " " + (System.nanoTime() - last));
+                            if (res == null)
+                                throw new RuntimeException("Error, got null  entries");
+                            logger.info("Got {} entries, took {} ns", res.length, (System.nanoTime() - last));
                         } else { // escrita
                             if ((c < p_conflict && p_conflict != 0)) {// conflita
                                 var++;
@@ -263,7 +268,7 @@ public class BFTMapClientMP {
                                 // table2=3;
                                 // break;
                                 // default:
-                                // System.out.println("INCORRECT TABLE");
+                                // logger.info("INCORRECT TABLE");
                                 // break;
                                 // }
                                 if (table1 > table2) {
@@ -273,25 +278,28 @@ public class BFTMapClientMP {
                                 }
                                 long last = System.nanoTime();
                                 byte[] res = putEntries(store, table1, key1, table2, key2);
-                                if (id == 4)
-                                    System.out.println(System.nanoTime() + " " + (System.nanoTime() - last));
+                                if (res == null)
+                                    throw new RuntimeException("Error putting entries, returned null response");
+                                logger.info("Put {} entries, took {} ns", res.length, (System.nanoTime() - last));
                             } else {// escrita em 1 particao
                                 int table1 = t1.nextInt(maxIndex);
                                 int key1 = k1.nextInt(maxIndex);
-                                // System.out.println("here?");
+                                // logger.info("here?");
                                 long last = System.nanoTime();
                                 boolean res = insertValue(store, table1, key1);
-                                if (id == 4)
-                                    System.out.println(System.nanoTime() + " " + (System.nanoTime() - last));
+                                if (!res)
+                                    throw new RuntimeException("Failed to insert value");
+                                logger.info("Insert value took {} ns", (System.nanoTime() - last));
                             }
                         }
-                        // System.out.println("sent op");
-                        // System.out.println("inserting into table"+table);
+                        // logger.info("sent op");
+                        // logger.info("inserting into table"+table);
                         // result = insertValue(store,table,2);
                     } catch (Exception ex) {
-                        Logger.getLogger(BFTMapClientMP.class.getName()).log(Level.SEVERE, null, ex);
+                        logger.error("put operation failed", ex.getCause());
+                        throw new RuntimeException(ex);
                     }
-                    // System.out.println(st.store(System.nanoTime() - last_send_instant));
+                    // logger.info(st.store(System.nanoTime() - last_send_instant));
                     st.store(System.nanoTime() - last_send_instant);
                 }
 
@@ -303,46 +311,37 @@ public class BFTMapClientMP {
                 }
 
                 if (verbose && (req % 1000 == 0)) {
-                    System.out.println(this.id + " // " + req + " operations sent!");
+                    logger.info("{} operations sent by {}!", req, this.id);
                 }
 
             }
 
-            System.out.println("total conflict of client " + id + " = " + var);
-            try {
-                sleep(4000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(BFTMapClientMP.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            // store.printValues();
-            if (id == initId) {
-                // System.out.println(this.id + " // Average time for " + numberOfOps + "
-                // executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
-                // System.out.println(st.getAverage(true) / 1000);
-                // System.out.println(this.id + " // Standard desviation for " + numberOfOps + "
-                // executions (-10%) = " + st.getDP(true) / 1000 + " us ");
-                // System.out.println(this.id + " // Average time for " + numberOfOps / 2 + "
-                // executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
-                // System.out.println(this.id + " // Standard desviation for " + numberOfOps / 2
-                // + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
-                // System.out.println(this.id + " // 90th percentile for " + numberOfOps + "
-                // executions = " + store.getPercentile(90) / 1000 + " us ");
-                // System.out.println(this.id + " // 95th percentile for " + numberOfOps + "
-                // executions = " + st.getPercentile(95) / 1000 + " us ");
-                // System.out.println(this.id + " // 99th percentile for " + numberOfOps + "
-                // executions = " + st.getPercentile(99) / 1000 + " us ");
-            }
-
+            logger.info("total conflict of client {} = {}", id, var);
+            // logger.info(this.id + " // Average time for " + numberOfOps + "
+            // executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
+            // logger.info(st.getAverage(true) / 1000);
+            // logger.info(this.id + " // Standard desviation for " + numberOfOps + "
+            // executions (-10%) = " + st.getDP(true) / 1000 + " us ");
+            // logger.info(this.id + " // Average time for " + numberOfOps / 2 + "
+            // executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
+            // logger.info(this.id + " // Standard desviation for " + numberOfOps / 2
+            // + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
+            // logger.info(this.id + " // 90th percentile for " + numberOfOps + "
+            // executions = " + store.getPercentile(90) / 1000 + " us ");
+            // logger.info(this.id + " // 95th percentile for " + numberOfOps + "
+            // executions = " + st.getPercentile(95) / 1000 + " us ");
+            // logger.info(this.id + " // 99th percentile for " + numberOfOps + "
+            // executions = " + st.getPercentile(99) / 1000 + " us ");
         }
 
         private static boolean createTable(PBFTMapMP bftMap, Integer nameTable) throws Exception {
             boolean tableExists;
 
             tableExists = bftMap.containsKey(nameTable);
-            System.out.println("tableExists:" + tableExists);
+            logger.info("tableExists:" + tableExists);
             if (tableExists == false)
                 bftMap.put(nameTable, new TreeMap<Integer, byte[]>());
-            System.out.println("Created the table. Maybe");
+            logger.info("Created the table. Maybe");
 
             return tableExists;
         }
@@ -356,7 +355,7 @@ public class BFTMapClientMP {
             // byte[] valueBytes = new byte[VALUE_SIZE];
             // rand.nextBytes(valueBytes);
             byte[] resultBytes = bftMap.putEntry(nameTable, key, valueBytes);
-            // System.out.println("resultBytes" + resultBytes);
+            // logger.info("resultBytes" + resultBytes);
             if (resultBytes == null)
                 return false;
             return true;
@@ -372,12 +371,12 @@ public class BFTMapClientMP {
             Random rand = new Random();
             int obj = rand.nextInt();
             byte[] valueBytes = ByteBuffer.allocate(1024).array();
-            // System.out.println("Here?????");
+            // logger.info("Here?????");
             // Random rand = new Random();
             // byte[] valueBytes = new byte[VALUE_SIZE];
             // rand.nextBytes(valueBytes);
             byte[] resultBytes = bftMap.putEntries(nameTable1, key1, nameTable2, key2, valueBytes);
-            // System.out.println("resultBytes" + resultBytes);
+            // logger.info("resultBytes" + resultBytes);
             if (resultBytes == null)
                 return null;
             return resultBytes;

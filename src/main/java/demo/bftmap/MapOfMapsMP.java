@@ -42,7 +42,6 @@ public class MapOfMapsMP implements Serializable {
 	public byte[] addData(Integer tableName, Integer key, byte[] value) {
 		Map<Integer, byte[]> table = tableMap.get(tableName);
 		if (table == null) {
-			System.out.println("Non-existant table: " + tableName);
 			return null;
 		}
 		byte[] ret = table.put(key, value);
@@ -54,11 +53,8 @@ public class MapOfMapsMP implements Serializable {
 	}
 
 	public byte[] getEntry(Integer tableName, Integer key) {
-		// System.out.println("Table name: "+tableName);
-		// System.out.println("Entry key: "+ key);
 		Map<Integer, byte[]> info = tableMap.get(tableName);
 		if (info == null) {
-			System.out.println("Non-existant table: " + tableName);
 			return null;
 		}
 		return info.get(key);

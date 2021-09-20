@@ -13,12 +13,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author alchieri
  */
 public class WorkloadGenerator {
 
+    private static final Logger logger = LoggerFactory.getLogger(WorkloadGenerator.class);
     private int percent;
     private int[] operations;
 
@@ -112,8 +116,8 @@ public class WorkloadGenerator {
                 pw.close();
                 fw.close();
 
-                System.out.println("Conflitantes: " + cnf);
-                System.out.println("Não Conflitantes: " + ncnf);
+                logger.info("Conflitantes: {}", cnf);
+                logger.info("Não Conflitantes: {}", ncnf);
 
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -325,8 +329,8 @@ public class WorkloadGenerator {
                 pw.close();
                 fw.close();
 
-                System.out.println("Conflitantes: " + cnf);
-                System.out.println("Não Conflitantes: " + ncnf);
+                logger.info("Conflitantes: {}", cnf);
+                logger.info("Não Conflitantes: {}", ncnf);
 
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -336,7 +340,6 @@ public class WorkloadGenerator {
     }
 
     private void load(String path) {
-        // System.out.println("Vai ler!!!");
         try {
 
             FileReader fr = new FileReader(path);
@@ -346,22 +349,23 @@ public class WorkloadGenerator {
             int j = 0;
             while (((line = rd.readLine()) != null) && (j < operations.length)) {
                 operations[j] = Integer.valueOf(line);
-                // System.out.println("Leu:" + operations[j]);
                 j++;
             }
             fr.close();
             rd.close();
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("Failed to load", e.getCause());
+            System.exit(-1);
         }
     }
 
     public static void main(String[] args) {
         Random rand = new Random();
+        logger.info("Generate random numbers");
         for (int i = 0; i <= 600; i++) {
-            System.out.print(i + " ");
+            logger.info("i={}", i);
             double j = rand.nextInt(2);
-            System.out.println(j + 10);
+            logger.info("j={}", j + 10);
         }
 
         new WorkloadGenerator(100000);

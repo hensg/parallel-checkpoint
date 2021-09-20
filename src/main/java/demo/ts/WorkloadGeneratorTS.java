@@ -13,12 +13,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author alchieri
  */
 public class WorkloadGeneratorTS {
 
+    private static final Logger logger = LoggerFactory.getLogger(WorkloadGeneratorTS.class);
     private int percent;
     private int[] operations;
 
@@ -63,7 +67,7 @@ public class WorkloadGeneratorTS {
                 while (num < this.operations.length) {
 
                     op = rand.nextInt(4) + 1;
-                    // System.out.println("Sorteou: "+op);
+                    // logger.info("Sorteou: "+op);
                     if (op == BFTTupleSpace.OUT) {
 
                         if (out == 0 || ((double) operations.length / out) > 4) {
@@ -103,10 +107,10 @@ public class WorkloadGeneratorTS {
                 pw.close();
                 fw.close();
 
-                System.out.println("OUT: " + out);
-                System.out.println("RDP: " + rdp);
-                System.out.println("INP: " + inp);
-                System.out.println("CAS: " + cas);
+                logger.info("OUT: " + out);
+                logger.info("RDP: " + rdp);
+                logger.info("INP: " + inp);
+                logger.info("CAS: " + cas);
 
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -175,8 +179,8 @@ public class WorkloadGeneratorTS {
                 pw.close();
                 fw.close();
 
-                System.out.println("Conflitantes: " + cnf);
-                System.out.println("Não Conflitantes: " + ncnf);
+                logger.info("Conflitantes: " + cnf);
+                logger.info("Não Conflitantes: " + ncnf);
 
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -186,7 +190,7 @@ public class WorkloadGeneratorTS {
     }
 
     private void load(String path) {
-        // System.out.println("Vai ler!!!");
+        // logger.info("Vai ler!!!");
         try {
 
             FileReader fr = new FileReader(path);
@@ -196,7 +200,7 @@ public class WorkloadGeneratorTS {
             int j = 0;
             while (((line = rd.readLine()) != null) && (j < operations.length)) {
                 operations[j] = Integer.valueOf(line);
-                // System.out.println("Leu:" + operations[j]);
+                // logger.info("Leu:" + operations[j]);
                 j++;
             }
             fr.close();

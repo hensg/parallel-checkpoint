@@ -17,8 +17,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bftsmart.tom.ParallelAsynchServiceProxy;
 import bftsmart.tom.ParallelServiceProxy;
@@ -32,6 +33,7 @@ import parallelism.ParallelMapping;
  */
 public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
 
+    private static final Logger logger = LoggerFactory.getLogger(PBFTMapMP.class);
     protected ParallelServiceProxy proxy = null;
     protected ByteArrayOutputStream out = null;
     protected boolean parallel = false;
@@ -78,14 +80,10 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             Map<Integer, byte[]> table = (Map<Integer, byte[]>) in.readObject();
             in.close();
             return table;
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        } catch (IOException ex) {
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+        } catch (ClassNotFoundException | IOException ex) {
+            logger.error("Error getting table", ex.getCause());
+            throw new RuntimeException(ex);
         }
-
     }
 
     public byte[] getEntry(Integer tableName, Integer key) {
@@ -119,9 +117,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             }
             return rep;
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            logger.error("Error getting entry", ex.getCause());
+            throw new RuntimeException(ex);
         }
 
     }
@@ -148,7 +145,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
 
                     return null;
                 } else {
-                    // System.out.println("parellel not async");
                     // rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.SYNC_ALL);
                     if (tableName1 == 0) {
                         if (tableName2 == 1) {
@@ -156,19 +152,16 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R12);
                             long now = System.nanoTime();
-                            //// System.out.println(now-last);
                             values.add(now - last);
                         } else if (tableName2 == 2) {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R13);
                             long now = System.nanoTime();
-                            //// System.out.println(now-last);
                             values.add(now - last);
                         } else {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R14);
                             long now = System.nanoTime();
-                            //// System.out.println(now-last);
                             values.add(now - last);
                         }
 
@@ -177,19 +170,16 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R12);
                             long now = System.nanoTime();
-                            //// System.out.println(now-last);
                             values.add(now - last);
                         } else if (tableName2 == 2) {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R13);
                             long now = System.nanoTime();
-                            //// System.out.println(now-last);
                             values.add(now - last);
                         } else {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R14);
                             long now = System.nanoTime();
-                            //// System.out.println(now-last);
                             values.add(now - last);
                         }
                     } else if (tableName1 == 2) {
@@ -197,19 +187,16 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R13);
                             long now = System.nanoTime();
-                            // System.out.println(now-last);
                             values.add(now - last);
                         } else if (tableName2 == 1) {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R23);
                             long now = System.nanoTime();
-                            // System.out.println(now-last);
                             values.add(now - last);
                         } else {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R24);
                             long now = System.nanoTime();
-                            // System.out.println(now-last);
                             values.add(now - last);
                         }
                     } else {
@@ -217,19 +204,16 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R14);
                             long now = System.nanoTime();
-                            // System.out.println(now-last);
                             values.add(now - last);
                         } else if (tableName2 == 1) {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R24);
                             long now = System.nanoTime();
-                            //// System.out.println(now-last);
                             values.add(now - last);
                         } else {
                             long last = System.nanoTime();
                             rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.R34);
                             long now = System.nanoTime();
-                            //// System.out.println(now-last);
                             values.add(now - last);
                         }
                     }
@@ -240,9 +224,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             }
             return rep;
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            logger.error("Error on get entries", ex.getCause());
+            throw new RuntimeException(ex);
         }
 
     }
@@ -280,15 +263,15 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             try {
                 table = (Map<Integer, byte[]>) in.readObject();
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("Class cast error", ex.getCause());
+                System.exit(-1);
             }
             in.close();
             return table;
 
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            logger.error("IO error", ex.getCause());
+            throw new RuntimeException(ex);
         }
     }
 
@@ -317,7 +300,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
 
                     long last = System.nanoTime();
                     rep = proxy.invokeParallel(out.toByteArray(), sb.toString().hashCode());
-                    // System.out.println(System.nanoTime()-last);
                     long now = System.nanoTime();
                     values.add(now - last);
 
@@ -327,9 +309,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             }
             return rep;
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            logger.error("IO error", ex.getCause());
+            throw new RuntimeException(ex);
         }
 
     }
@@ -347,7 +328,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             sb.append('#');
             sb.append(tableName2);
             sb.append('#');
-            // System.out.println("sb hash "+sb.toString().hashCode()+" string =
             // "+sb.toString());
             dos.writeInt(key2);
             dos.writeUTF(new String(value));
@@ -370,9 +350,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             }
             return rep;
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            logger.error("IO error", ex.getCause());
+            throw new RuntimeException(ex);
         }
 
     }
@@ -403,12 +382,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             Map<Integer, byte[]> table = (Map<Integer, byte[]>) in.readObject();
             in.close();
             return table;
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        } catch (IOException ex) {
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+        } catch (ClassNotFoundException | IOException ex) {
+            logger.error("Error removing object", ex.getCause());
+            throw new RuntimeException(ex);
         }
 
     }
@@ -437,8 +413,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
 
             return rep;
         } catch (IOException ex) {
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            logger.error("Error removing entry", ex.getCause());
+            throw new RuntimeException(ex);
         }
 
     }
@@ -472,8 +448,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             int size = new DataInputStream(in).readInt();
             return size;
         } catch (IOException ex) {
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return -1;
+            logger.error("Error getting size", ex.getCause());
+            throw new RuntimeException(ex);
         }
     }
 
@@ -493,27 +469,18 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                     return id;
                 } else {
                     if (tableName == 0) {
-                        // System.out.println("sending put to table0");
-                        // System.out.println("parallel+table0");
-                        // System.out.println("id = "+MultipartitionMapping.W1);
                         long last = System.nanoTime();
                         rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W1);
                         values.add(System.nanoTime() - last);
                     } else if (tableName == 1) {
-                        // System.out.println("parallel+table1");
-                        // System.out.println("sending put to table1");
                         long last = System.nanoTime();
                         rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W2);
                         values.add(System.nanoTime() - last);
                     } else if (tableName == 2) {
-                        // System.out.println("parallel+table2");
-                        // System.out.println("sending put to table2");
                         long last = System.nanoTime();
                         rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W3);
                         values.add(System.nanoTime() - last);
                     } else {
-                        // System.out.println("parallel+table3");
-                        // System.out.println("sending put to table3");
                         long last = System.nanoTime();
                         rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W4);
                         values.add(System.nanoTime() - last);
@@ -528,8 +495,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             int size = new DataInputStream(in).readInt();
             return size;
         } catch (IOException ex) {
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return 0;
+            logger.error("Error getting size1", ex.getCause());
+            throw new RuntimeException(ex);
         }
     }
 
@@ -561,9 +528,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             boolean res = new DataInputStream(in).readBoolean();
             return res;
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
+            logger.error("Error verifying contains key", ex.getCause());
+            throw new RuntimeException(ex);
         }
 
     }
@@ -594,8 +560,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             boolean res = new DataInputStream(in).readBoolean();
             return res;
         } catch (IOException ex) {
-            Logger.getLogger(PBFTMapMP.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
+            logger.error("Error verifying contains key1", ex.getCause());
+            throw new RuntimeException(ex);
         }
     }
 
@@ -606,11 +572,11 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             limit = values.length / 10;
         }
         long count = 0;
+        logger.info("Printing computed average...");
         for (int i = limit; i < values.length - limit; i++) {
-            System.out.println(values[i] / 1000);
+            logger.info("{}", values[i] / 1000);
             count = count + values[i];
         }
-        // System.out.println("count = "+count);
         return count / (values.length - 2 * limit);
     }
 
@@ -665,8 +631,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
     }
 
     public void printValues() {
+        logger.info("Printing values...");
         for (int i = 0; i < values.size(); i++) {
-            System.out.println(values.get(i));
+            logger.info("value[{}]={}", i, values.get(i));
         }
     }
 

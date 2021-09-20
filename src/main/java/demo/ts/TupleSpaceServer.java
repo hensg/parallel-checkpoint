@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.SingleExecutable;
@@ -32,6 +35,7 @@ import parallelism.ParallelServiceReplica;
 // public class TupleSpaceServer implements SingleExecutable, Recoverable {
 public class TupleSpaceServer implements SingleExecutable {
 
+    private static final Logger logger = LoggerFactory.getLogger(TupleSpaceServer.class);
     private int interval;
     private float maxTp = -1;
     private boolean context;
@@ -74,7 +78,7 @@ public class TupleSpaceServer implements SingleExecutable {
                 Object[] f = new Object[j];
                 for (int x = 0; x < f.length; x++) {
                     f[x] = new String("Este Campo Possui Os Dados Do Campo iiiiiiiiiiii:" + i);
-                    // System.out.println("Tamanho "+x+" e i "+j+" igual a "
+                    // logger.info("Tamanho "+x+" e i "+j+" igual a "
                     // +f[x].toString().length());
                 }
                 out(Tuple.createTuple(f));
@@ -82,7 +86,7 @@ public class TupleSpaceServer implements SingleExecutable {
 
         }
         for (int j = 1; j <= 10; j++) {
-            System.out.println("tuples" + j + "fields: " + getTuplesBag(j).size());
+            logger.info("tuples" + j + "fields: " + getTuplesBag(j).size());
         }
 
         try {
@@ -95,16 +99,16 @@ public class TupleSpaceServer implements SingleExecutable {
             System.exit(0);
         }
 
-        System.out.println("Server initialization complete!");
+        logger.info("Server initialization complete!");
     }
 
     protected void initReplica(int minT, int initT, int maxT, int id) {
 
         if (initT == 0) {
-            System.out.println("Replica in sequential execution model.");
+            logger.info("Replica in sequential execution model.");
             replica = new ServiceReplica(id, this, null);
         } else {
-            System.out.println("Replica in parallel execution model.");
+            logger.info("Replica in parallel execution model.");
 
             // replica = new ParallelServiceReplica(id, this, null, numThreads);
             // replica = new ParallelServiceReplica(id, this, null, minT, initT, maxT, new
@@ -141,7 +145,7 @@ public class TupleSpaceServer implements SingleExecutable {
                 // operations on the list
                 case BFTTupleSpace.OUT:
                     Tuple t = (Tuple) new ObjectInputStream(in).readObject();
-                    // System.out.println("add received: " + t);
+                    // logger.info("add received: " + t);
                     out(t);
                     // boolean ret = true;
                     out = new ByteArrayOutputStream();
@@ -210,11 +214,11 @@ public class TupleSpaceServer implements SingleExecutable {
         float tp = -1;
         if (iterations % interval == 0) {
             if (context) {
-                System.out.println("--- (Context)  iterations: " + iterations + " // regency: " + msgCtx.getRegency()
+                logger.info("--- (Context)  iterations: " + iterations + " // regency: " + msgCtx.getRegency()
                         + " // consensus: " + msgCtx.getConsensusId() + " ---");
             }
 
-            System.out.println("--- Measurements after " + iterations + " ops (" + interval + " samples) ---");
+            logger.info("--- Measurements after " + iterations + " ops (" + interval + " samples) ---");
 
             tp = (float) (interval * 1000 / (float) (System.currentTimeMillis() - throughputMeasurementStartTime));
 
@@ -223,7 +227,7 @@ public class TupleSpaceServer implements SingleExecutable {
             }
 
             int now = (int) ((System.currentTimeMillis() - start) / 1000);
-            System.out.println("Throughput = " + tp + " operations/sec at sec: " + now + " (Maximum observed: " + maxTp
+            logger.info("Throughput = " + tp + " operations/sec at sec: " + now + " (Maximum observed: " + maxTp
                     + " ops/sec)");
 
             if (replica instanceof ParallelServiceReplica) {
@@ -310,7 +314,7 @@ public class TupleSpaceServer implements SingleExecutable {
     public static void main(String[] args) {
 
         if (args.length < 7) {
-            System.out.println(
+            logger.info(
                     "Usage: ... TupleSpaceServer <processId> <measurement interval> <minNum threads> <initialNum threads> <maxNum threads> <initial entries> <context?>");
             System.exit(-1);
         }

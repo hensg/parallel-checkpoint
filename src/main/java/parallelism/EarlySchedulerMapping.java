@@ -15,12 +15,16 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author eduardo
  */
 public class EarlySchedulerMapping {
 
+    private static final Logger logger = LoggerFactory.getLogger(EarlySchedulerMapping.class);
     public HibridClassToThreads[] CtoT = null;
 
     public int[] partitions;
@@ -130,7 +134,7 @@ public class EarlySchedulerMapping {
             if (ids.length <= 2) {
                 this.CtoT[i] = new HibridClassToThreads(sb.toString().hashCode(), type, ids);
                 inserted = i + 1;
-                System.out.println("hash = " + sb.toString().hashCode() + " for " + sb.toString());
+                logger.info("hash = {} for {}", sb.toString().hashCode(), sb.toString());
             }
         }
         for (int i = 1; i <= partitions.length; i++) {
@@ -141,7 +145,7 @@ public class EarlySchedulerMapping {
             sb.append('#');
             sb.append('S');
             this.CtoT[inserted + i - 1] = new HibridClassToThreads(sb.toString().hashCode(), ClassToThreads.SYNC, ids);
-            System.out.println("hash = " + sb.toString().hashCode() + " for " + sb.toString());
+            logger.info("hash = {} for {}", sb.toString().hashCode(), sb.toString());
 
         }
 

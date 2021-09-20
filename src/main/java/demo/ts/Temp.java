@@ -10,11 +10,16 @@ import java.io.FileReader;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author eduardo
  */
 public class Temp {
+
+    private static final Logger logger = LoggerFactory.getLogger(Temp.class);
 
     public static void main(String[] args) {
 
@@ -26,7 +31,6 @@ public class Temp {
     }
 
     private static void load(String path) {
-        // System.out.println("Vai ler!!!");
         try {
 
             FileReader fr = new FileReader(path);
@@ -43,39 +47,37 @@ public class Temp {
                     if (i <= 120) {
 
                         String t = st.nextToken();
-                        // System.out.println(t);
 
                         double d = Double.parseDouble(t);
 
                         if (i > nextSec) {
 
-                            System.out.println("entrou para i = " + i + " e next sec = " + nextSec);
+                            logger.info("entrou para i = " + i + " e next sec = " + nextSec);
                             for (int z = nextSec; z < i; z++) {
                                 l.add(d);
 
                             }
                             nextSec = i;
 
-                            System.out.println("saiu com i = " + i + " e next sec = " + nextSec);
+                            logger.info("saiu com i = " + i + " e next sec = " + nextSec);
                         } else {
-                            System.out.println("nao entrou i = " + i + " e next sec = " + nextSec);
+                            logger.info("nao entrou i = " + i + " e next sec = " + nextSec);
                         }
 
                         if (i == nextSec) {
                             l.add(d);
                             nextSec++;
                         }
-                        // System.out.println("adicionou "+nextSec);
                     }
                 } catch (Exception e) {
-                    // e.printStackTrace();
+                    logger.error("Failed parsing tokens", e.getCause());
+                    System.exit(-1);
                 }
-
             }
             fr.close();
             rd.close();
 
-            System.out.println("Size: " + l.size());
+            logger.info("Size: {}", l.size());
 
             double sum = 0;
             int i;
@@ -88,12 +90,13 @@ public class Temp {
              * l.get(i); } double md2 = sum/(l.size()-250);
              * 
              * 
-             * System.out.println("Media: "+((md1+md2)/2));
+             * logger.info("Media: "+((md1+md2)/2));
              */
-            System.out.println("Sum: " + sum);
-            System.out.println("Media: " + (sum / l.size()));
+            logger.info("Sum: {}", sum);
+            logger.info("Media: {}", (sum / l.size()));
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            logger.error("Temp load failed", e.getCause());
+            System.exit(-1);
         }
     }
 

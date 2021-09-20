@@ -10,12 +10,16 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CyclicBarrier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author alchieri
  */
 public class ParallelMapping {
 
+    private static final Logger logger = LoggerFactory.getLogger(ParallelMapping.class);
     public static final int CONC_ALL = -1;
     public static final int SYNC_ALL = -2;
     public static int CONFLICT_RECONFIGURATION = -3;
@@ -28,7 +32,7 @@ public class ParallelMapping {
     public ParallelMapping(int numberOfThreads, HibridClassToThreads[] cToT) {
 
         queues = new BlockingQueue[numberOfThreads];
-        System.out.println("queues length ==" + queues.length);
+        logger.info("Queues length: {}", queues.length);
         this.classes = new LinkedList<HibridClassToThreads>();
         for (int i = 0; i < queues.length; i++) {
             // queues[i] = new LinkedBlockingQueue();
@@ -47,7 +51,8 @@ public class ParallelMapping {
                 }
                 this.classes.get(i).setQueues(q);
             } catch (NullPointerException ex) {
-                System.out.println("error in mapping for i = " + i);
+                logger.error("error in mapping for i = " + i, ex.getCause());
+                System.exit(-1);
             }
         }
 
@@ -70,8 +75,9 @@ public class ParallelMapping {
                     return this.classes.get(i);
                 }
 
-            } catch (NullPointerException exp) {
-                System.out.println("error for i = " + this.classes.size());
+            } catch (NullPointerException ex) {
+                logger.error("error in mapping for i = " + i, ex.getCause());
+                System.exit(-1);
             }
         }
         return null;

@@ -9,11 +9,16 @@ import java.io.Serializable;
 import java.util.Queue;
 import java.util.concurrent.CyclicBarrier;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 /**
  *
  * @author eduardo
  */
 public class HibridClassToThreads implements Serializable {
+
+    private final static Logger logger = LoggerFactory.getLogger(HibridClassToThreads.class);
     public static int CONC = 0; // concurrent
     public static int SYNC = 1; // synchronized
     public int type;
@@ -34,8 +39,8 @@ public class HibridClassToThreads implements Serializable {
 
     public void setQueues(Queue<MessageContextPair>[] q) {
         if (q.length != tIds.length) {
-            System.err.println("INCORRECT MAPPING");
-            System.out.println("q length = " + q.length + " tids length = " + tIds.length);
+            logger.error("INCORRECT MAPPING");
+            logger.error("q length = " + q.length + " tids length = " + tIds.length);
         }
         this.queues = q;
         if (this.type == SYNC) {

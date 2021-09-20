@@ -10,11 +10,16 @@ import bftsmart.tom.MessageContext;
 import bftsmart.tom.core.messages.TOMMessage;
 import java.io.Serializable;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 /**
  *
  * @author eduardo
  */
 public class MessageContextPair implements Serializable, Cloneable {
+
+    private static final Logger logger = LoggerFactory.getLogger(MessageContextPair.class);
     public TOMMessage request;
     public int classId;
     public byte[] operation;
@@ -44,7 +49,7 @@ public class MessageContextPair implements Serializable, Cloneable {
             // call clone in Object.
             return (MessageContextPair) super.clone();
         } catch (CloneNotSupportedException e) {
-            System.out.println(" Cloning not allowed. ");
+            logger.error("Cloning not allowed.", e.getCause());
             return this;
         }
     }

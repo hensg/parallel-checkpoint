@@ -5,6 +5,9 @@
  */
 package demo.ts;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import bftsmart.tom.ServiceReplica;
 
 /**
@@ -13,6 +16,8 @@ import bftsmart.tom.ServiceReplica;
  */
 public class TupleSpaceServerPlus extends TupleSpaceServer {
 
+    private static final Logger logger = LoggerFactory.getLogger(TupleSpaceServerPlus.class);
+    
     public TupleSpaceServerPlus(int id, int interval, int minT, int initT, int maxT, int entries, boolean context) {
         super(id, interval, minT, initT, maxT, entries, context);
     }
@@ -20,10 +25,10 @@ public class TupleSpaceServerPlus extends TupleSpaceServer {
     protected void initReplica(int minT, int initT, int maxT, int id) {
 
         if (initT == 0) {
-            System.out.println("Replica in sequential execution model.");
+            logger.info("Replica in sequential execution model.");
             replica = new ServiceReplica(id, this, null);
         } else {
-            System.out.println("Replica in parallel execution model.");
+            logger.info("Replica in parallel execution model.");
 
             // replica = new ParallelServiceReplica(id, this, null, numThreads);
             /*
@@ -36,7 +41,7 @@ public class TupleSpaceServerPlus extends TupleSpaceServer {
              * 
              * ((ParallelServiceReplica)replica).addExecutionConflictGroup(gid, ids);
              * 
-             * System.out.println("Grupo +"+gid+" threads: "+ids[0]+" e "+ids[1]); } }
+             * logger.info("Grupo +"+gid+" threads: "+ids[0]+" e "+ids[1]); } }
              * 
              */
 
@@ -47,7 +52,7 @@ public class TupleSpaceServerPlus extends TupleSpaceServer {
     public static void main(String[] args) {
 
         if (args.length < 7) {
-            System.out.println(
+            logger.info(
                     "Usage: ... TupleSpaceServer <processId> <measurement interval> <minNum threads> <initialNum threads> <maxNum threads> <initial entries> <context?>");
             System.exit(-1);
         }

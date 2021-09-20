@@ -13,12 +13,16 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author eduardo
  */
 public class ThroughputStatistics {
 
+    private static final Logger logger = LoggerFactory.getLogger(ThroughputStatistics.class);
     private int[][] counters;
     // private boolean[] restart;
     private int period = 1000; // millis
@@ -27,13 +31,12 @@ public class ThroughputStatistics {
     public ArrayList<Float> values;
     private boolean started = false;
     private int now = 0;
-    private PrintWriter pw;
     private String print;
     public int zero = 0;
     private int numT = 0;
 
     // private Timer timer = new Timer();
-    public ThroughputStatistics(int numThreads, String filePath, String print) {
+    public ThroughputStatistics(int numThreads, String print) {
         this.print = print;
         numT = numThreads;
         this.values = new ArrayList();
@@ -43,15 +46,6 @@ public class ThroughputStatistics {
             for (int j = 0; j < interval + 1; j++) {
                 counters[i][j] = 0;
             }
-        }
-
-        try {
-
-            pw = new PrintWriter(new FileWriter(new File(filePath)));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(0);
         }
     }
 
@@ -67,12 +61,8 @@ public class ThroughputStatistics {
 
             float tp = (float) (total * 1000 / (float) timeMillis);
 
-            // System.out.println("Throughput at " + print + " = " + tp + " operations/sec
-            // in sec : " + now);
-            pw.println(time + " " + tp);
+            logger.info("Throughput at {} = {} operations/sec", print, tp);
         }
-        pw.flush();
-
     }
 
     public void printTP(long timeMillis) {
@@ -88,14 +78,9 @@ public class ThroughputStatistics {
 
         float tp = (float) (total * 1000 / (float) timeMillis);
 
-        // System.out.println("Throughput at " + print + " = " + tp + " operations/sec
-        // in sec : " + now);
+        logger.info("Throughput at {} = {} operations/sec", print, tp);
         if (tp > 0)
             values.add(tp);
-        System.out.println(tp);
-
-        // System.out.println("valor de c: "+FIFOQueue.c);
-
     }
 
     boolean stoped = true;
@@ -104,7 +89,6 @@ public class ThroughputStatistics {
     public void start() {
         if (!started) {
             started = true;
-            now = 0;
             (new Timer()).scheduleAtFixedRate(new TimerTask() {
                 public void run() {
                     fakenow++;
@@ -126,11 +110,6 @@ public class ThroughputStatistics {
                         }
 
                     }
-                    if (now == 100) {
-                        float media = media(values, true);
-                        // System.out.println("Average Throughput for experiment = "+media);
-                        // System.exit(0);
-                    }
                 }
             }, period, period);
 
@@ -146,22 +125,6 @@ public class ThroughputStatistics {
         Collections.sort(values);
         int pos = (values.size() - 1) * percent / 100;
         return values.get(pos);
-    }
-
-    public float media(ArrayList<Float> values, boolean percent) {
-        Collections.sort(values);
-        int limit = 0;
-        if (percent) {
-            limit = values.size() / 10;
-        }
-        float count = 0;
-        // System.out.println("Computing Average fo experiment");
-        for (int i = limit; i < values.size() - limit; i++) {
-
-            count = count + values.get(i);
-        }
-        // System.out.println("count = "+count);
-        return count / (values.size() - 2 * limit);
     }
 
     public void computeStatistics(int threadId, int amount) {

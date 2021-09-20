@@ -9,8 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
@@ -27,6 +28,8 @@ import parallelism.ParallelMapping;
  */
 public class ParallelScheduler implements Scheduler {
 
+    private static final Logger logger = LoggerFactory.getLogger(ParallelScheduler.class);
+
     protected ParallelMapping mapping;
     private HibridClassToThreads[] cts;
     public HashMap<Integer, HibridClassToThreads> classes;
@@ -40,14 +43,14 @@ public class ParallelScheduler implements Scheduler {
     public ParallelScheduler(int repID, int numberWorkers, int period) {
         EarlySchedulerMapping e = new EarlySchedulerMapping();
         this.cts = e.generateMappings(numberWorkers);
-        System.out.println("cts size = " + this.cts.length);
+        logger.info("cts size = " + this.cts.length);
         this.classes = new HashMap<Integer, HibridClassToThreads>();
         for (int i = 0; i < cts.length; i++) {
             try {
                 if (cts[i].tIds.length <= 2)
                     this.classes.put(cts[i].classId, cts[i]);
             } catch (NullPointerException ex) {
-                System.out.println("error for i = " + i);
+                logger.info("error for i = " + i);
             }
         }
         this.mapping = new ParallelMapping(numberWorkers, cts);
@@ -60,9 +63,9 @@ public class ParallelScheduler implements Scheduler {
                     conf[i][j] = 1;
                 else
                     conf[i][j] = 0;
-                System.out.print(conf[i][j] + "");
+                logger.info(conf[i][j] + "");
             }
-            System.out.println("");
+            logger.info("");
         }
         this.starter = repID;
         this.workers = numberWorkers;
@@ -86,10 +89,10 @@ public class ParallelScheduler implements Scheduler {
         int i = 0;
         int j = 0;
         int threads = this.workers;
-        // System.out.println("threads = "+threads);
+        // logger.info("threads = "+threads);
         int conflict_size = conflict.size();
         for (i = 0; i < conflict_size; i++) {
-            // System.out.println("conflict get(i) = "+conflict.get(i));
+            // logger.info("conflict get(i) = "+conflict.get(i));
             for (j = 0; j < threads; j++) {
                 if (conflict.get(i) == j)
                     this.conf[conflict.get(i)][j] = 1;
@@ -101,12 +104,12 @@ public class ParallelScheduler implements Scheduler {
 
     public List<Integer> conflictMapping(int[][] conf, int threads, int starter) {
         int i = 0;
-        // System.out.println("starter = "+starter);
+        // logger.info("starter = "+starter);
         // for(int n=0;n<threads;n++){
         // for(int m=0;m<threads;m++){
-        // System.out.print(conf[n][m]);
+        // logger.info(conf[n][m]);
         // }
-        // System.out.println("");
+        // logger.info("");
         // }
         List<Integer> conflict = new LinkedList<Integer>();
         for (i = 0; i < threads; i++) {
@@ -153,14 +156,11 @@ public class ParallelScheduler implements Scheduler {
     @Override
     public void schedule(MessageContextPair request) {
         HibridClassToThreads ct = this.mapping.getClass(request.classId);
-        // System.out.println("cmds = "+cmds);
-        // System.out.println("request class id = "+request.classId);
         if (ct == null) {
             // TRATAR COMO CONFLICT ALL
             // criar uma classe que sincroniza tudo
-            System.err.println("CLASStoTHREADs MAPPING NOT FOUND");
+            logger.error("CLASStoTHREADs MAPPING NOT FOUND");
         }
-        // System.out.println("queues length = "+ct.queues.length);
         if (ct.type == ClassToThreads.CONC) {// conc
             ct.queues[ct.threadIndex].add(request);
             ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
@@ -193,38 +193,39 @@ public class ParallelScheduler implements Scheduler {
             try {
                 dos.writeInt(BFTMapRequestType.CKP);
                 dos.writeUTF(sb.toString());
-                // System.out.println("string for 1 partition = "+sb.toString());
+                // logger.info("string for 1 partition = "+sb.toString());
                 dos.writeInt(request.request.getSequence());
             } catch (IOException ex) {
-                Logger.getLogger(ParallelScheduler.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("Failed to write to data output stream", ex.getCause());
+                System.exit(-1);
             }
             byte[] b = out.toByteArray();
             TOMMessage req = new TOMMessage(1, 1, request.m.getConsensusId() + 1, b, 1);
             if (conflict.size() == 1)
                 sb.append('S');
             req.groupId = sb.toString().hashCode();
-            // System.out.println("after check = "+sb.toString());
+            // logger.info("after check = "+sb.toString());
             MessageContextPair cp = new MessageContextPair(req, req.groupId, 0, b, null);
-            // System.out.println("CP.CLASS ID = "+cp.classId);
+            // logger.info("CP.CLASS ID = "+cp.classId);
             HibridClassToThreads CP_class = this.classes.get(cp.classId);
             if (CP_class == null) {
                 long now = System.nanoTime();
-                // System.out.println("cp null id = "+cp.classId);
+                // logger.info("cp null id = "+cp.classId);
                 int[] ids = new int[conflict.size()];
                 for (int i = 0; i < conflict.size(); i++) {
                     ids[i] = conflict.get(i); // se precisar criar a classe
 
                 }
-                // System.out.println("total ids length = "+ids.length);
+                // logger.info("total ids length = "+ids.length);
                 CP_class = new HibridClassToThreads(sb.toString().hashCode(), HibridClassToThreads.SYNC, ids);
                 this.mapping.setQueue(CP_class);
                 this.classes.put(sb.toString().hashCode(), CP_class);
-                // System.out.println("total overhead for creating class (micro s) =
+                // logger.info("total overhead for creating class (micro s) =
                 // "+(double)((System.nanoTime()-now)/1000.0));
             }
-            // System.out.println("antes = "+CP_class.type);
+            // logger.info("antes = "+CP_class.type);
             // CP_class.type=HibridClassToThreads.SYNC;
-            // System.out.println("depois = "+CP_class.type);
+            // logger.info("depois = "+CP_class.type);
             for (Queue q : CP_class.queues) {
                 q.add(cp);
             }
