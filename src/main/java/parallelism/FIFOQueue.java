@@ -13,6 +13,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author eduardo
@@ -76,9 +79,7 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
 
         } finally {
             lock.unlock();
-
         }
-
     }
 
     @Override

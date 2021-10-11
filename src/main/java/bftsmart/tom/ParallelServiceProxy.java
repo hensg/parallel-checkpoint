@@ -16,12 +16,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import bftsmart.reconfiguration.ReconfigureReply;
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.core.messages.TOMMessageType;
 import bftsmart.tom.util.Extractor;
-import bftsmart.tom.util.Logger;
 import bftsmart.tom.util.TOMUtil;
 
 /**
@@ -30,6 +32,8 @@ import bftsmart.tom.util.TOMUtil;
  * receives the reply, and delivers it to the application.
  */
 public class ParallelServiceProxy extends ServiceProxy {
+
+    private static Logger logger = LoggerFactory.getLogger(ParallelServiceProxy.class);
 
     /**
      * Constructor
@@ -100,9 +104,6 @@ public class ParallelServiceProxy extends ServiceProxy {
         if (requestType == TOMMessageType.UNORDERED_HASHED_REQUEST) {
 
             replyServer = getRandomlyServerId();
-            Logger.println("[" + this.getClass().getName() + "] replyServerId(" + replyServer + ") " + "pos("
-                    + getViewManager().getCurrentViewPos(replyServer) + ")");
-
             hashResponseController = new HashResponseController(getViewManager().getCurrentViewPos(replyServer),
                     getViewManager().getCurrentViewProcesses().length);
 
@@ -115,45 +116,39 @@ public class ParallelServiceProxy extends ServiceProxy {
             TOMulticast(request, reqId, operationId, reqType, groupId);
         }
 
-        Logger.println("Sending request (" + reqType + ") with reqId=" + reqId);
-        Logger.println("Expected number of matching replies: " + replyQuorum);
-
         // This instruction blocks the thread, until a response is obtained.
         // The thread will be unblocked when the method replyReceived is invoked
         // by the client side communication system
         try {
             if (reqType == TOMMessageType.UNORDERED_HASHED_REQUEST) {
                 if (!this.sm.tryAcquire(invokeUnorderedHashedTimeout, TimeUnit.SECONDS)) {
-                    System.out.println("######## UNORDERED HASHED REQUEST TIMOUT ########");
+                    logger.info("######## UNORDERED HASHED REQUEST TIMOUT ########");
                     canSendLock.unlock();
                     return invoke(request, TOMMessageType.ORDERED_REQUEST, groupId);
                 }
             } else if (!this.sm.tryAcquire(invokeTimeout, TimeUnit.SECONDS)) {
-                Logger.println("###################TIMEOUT#######################");
-                Logger.println("Reply timeout for reqId=" + reqId);
-                System.out.print(getProcessId() + " // " + reqId + " // TIMEOUT // ");
-                System.out.println("Replies received: " + receivedReplies);
+                logger.info("###################TIMEOUT#######################");
+                logger.info("Reply timeout for reqId=" + reqId);
+                logger.info(getProcessId() + " // " + reqId + " // TIMEOUT // ");
+                logger.info("Replies received: " + receivedReplies);
                 canSendLock.unlock();
 
                 return null;
             }
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
+            logger.error("Failed to executed unordered hashed req", ex);
+            System.exit(-1);
         }
-
-        Logger.println("Response extracted = " + response);
 
         byte[] ret = null;
 
         if (response == null) {
             // the response can be null if n-f replies are received but there isn't
             // a replyQuorum of matching replies
-            Logger.println("Received n-f replies and no response could be extracted.");
-
             canSendLock.unlock();
             if (reqType == TOMMessageType.UNORDERED_REQUEST || reqType == TOMMessageType.UNORDERED_HASHED_REQUEST) {
                 // invoke the operation again, whitout the read-only flag
-                Logger.println("###################RETRY#######################");
+                logger.info("###################RETRY#######################");
                 return invokeOrdered(request);
             } else {
                 throw new RuntimeException("Received n-f replies without f+1 of them matching.");
@@ -180,7 +175,6 @@ public class ParallelServiceProxy extends ServiceProxy {
             }
         } else if (response.getViewID() > getViewManager().getCurrentViewId()) {
             // Reply to a reconfigure request!
-            Logger.println("Reconfiguration request' reply received!");
             Object r = TOMUtil.getObject(response.getContent());
             if (r instanceof View) { // did not executed the request because it is using an outdated view
                 reconfigureTo((View) r);
@@ -191,17 +185,17 @@ public class ParallelServiceProxy extends ServiceProxy {
                 reconfigureTo(((ReconfigureReply) r).getView());
                 ret = response.getContent();
             } else {
-                Logger.println("Unknown response type");
+                logger.error("Unknown response type");
             }
         } else {
-            Logger.println("Unexpected execution flow");
+            logger.error("Unexpected execution flow");
         }
         // ******* EDUARDO END **************//
 
         canSendLock.unlock();
         return ret;
     }
-
+    
     protected int getReplyQuorum() {
         if (getViewManager().getStaticConf().isBFT()) {
             return (int) Math.ceil((getViewManager().getCurrentViewN() + getViewManager().getCurrentViewF()) / 2) + 1;

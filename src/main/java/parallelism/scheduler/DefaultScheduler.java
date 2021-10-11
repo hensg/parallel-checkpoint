@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,12 +92,15 @@ public class DefaultScheduler implements Scheduler {
             // TRATAR COMO CONFLICT ALL
             // criar uma classe que sincroniza tudo
             logger.error("CLASStoTHREADs MAPPING NOT FOUND");
+            throw new RuntimeException("Class to threads mapping not found");
         }
         if (ct.type == ClassToThreads.CONC) {// conc
             ct.queues[ct.threadIndex].add(request);
+            logger.debug("Added request to queue of thread {}", ct.threadIndex);
             ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
         } else { // sync
             for (Queue q : ct.queues) {
+                logger.debug("Added request to queue {}", q);
                 q.add(request);
             }
         }
@@ -134,6 +138,7 @@ public class DefaultScheduler implements Scheduler {
                 this.classes.put(sb.toString().hashCode(), CP_class);
             }
             for (Queue q : CP_class.queues) {
+                logger.info("Adding checkpoint cmd of class {} to queue {}", CP_class, q.hashCode());
                 q.add(cp);
             }
         }

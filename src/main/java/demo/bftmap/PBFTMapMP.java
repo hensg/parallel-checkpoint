@@ -53,6 +53,14 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
         }
     }
 
+    //@author Henrique
+    public void closeProxy() {
+        if (this.proxy != null)
+            this.proxy.close();
+        if (this.asyncProxy != null)
+            this.asyncProxy.close();
+    }
+
     @SuppressWarnings("unchecked")
     public Map<Integer, byte[]> get(Integer tableName) {
         try {
@@ -66,7 +74,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), null,
                             TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
-
                     return null;
                 } else {
                     rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.CONC_ALL);

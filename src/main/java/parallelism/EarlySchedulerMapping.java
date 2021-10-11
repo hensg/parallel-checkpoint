@@ -134,7 +134,7 @@ public class EarlySchedulerMapping {
             if (ids.length <= 2) {
                 this.CtoT[i] = new HibridClassToThreads(sb.toString().hashCode(), type, ids);
                 inserted = i + 1;
-                logger.info("hash = {} for {}", sb.toString().hashCode(), sb.toString());
+                logger.info("Generated hash {} for op {}", sb.toString().hashCode(), sb.toString());
             }
         }
         for (int i = 1; i <= partitions.length; i++) {
@@ -145,7 +145,7 @@ public class EarlySchedulerMapping {
             sb.append('#');
             sb.append('S');
             this.CtoT[inserted + i - 1] = new HibridClassToThreads(sb.toString().hashCode(), ClassToThreads.SYNC, ids);
-            logger.info("hash = {} for {}", sb.toString().hashCode(), sb.toString());
+            logger.info("Generated hash {} for op {}", sb.toString().hashCode(), sb.toString());
 
         }
 

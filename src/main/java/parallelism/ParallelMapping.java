@@ -5,6 +5,7 @@
  */
 package parallelism;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -76,10 +77,17 @@ public class ParallelMapping {
                 }
 
             } catch (NullPointerException ex) {
-                logger.error("error in mapping for i = " + i, ex.getCause());
-                System.exit(-1);
+                logger.error("error mapping for i = {}", i, ex);
             }
         }
+
+        // @author - Henrique - begin
+        List<Integer> allIds = new ArrayList<>(this.classes.size());
+        for (int i = 0; i < this.classes.size(); i++)
+            allIds.add(this.classes.get(i).classId);
+        logger.error("Failed to get class to threads for id {}. Existing classes ids: {}", id, allIds);
+        // @author - Henrique - end
+
         return null;
     }
 

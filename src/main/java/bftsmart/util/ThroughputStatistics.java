@@ -5,9 +5,6 @@
  */
 package bftsmart.util;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Timer;
@@ -31,13 +28,13 @@ public class ThroughputStatistics {
     public ArrayList<Float> values;
     private boolean started = false;
     private int now = 0;
-    private String print;
+    private int replicaId;
     public int zero = 0;
     private int numT = 0;
 
     // private Timer timer = new Timer();
-    public ThroughputStatistics(int numThreads, String print) {
-        this.print = print;
+    public ThroughputStatistics(int numThreads, int replicaId) {
+        this.replicaId = replicaId;
         numT = numThreads;
         this.values = new ArrayList();
         counters = new int[numThreads][interval + 1];
@@ -61,7 +58,7 @@ public class ThroughputStatistics {
 
             float tp = (float) (total * 1000 / (float) timeMillis);
 
-            logger.info("Throughput at {} = {} operations/sec", print, tp);
+            logger.info("Computed throughput for replica {} is {} operations/sec", this.replicaId, tp);
         }
     }
 
@@ -78,7 +75,7 @@ public class ThroughputStatistics {
 
         float tp = (float) (total * 1000 / (float) timeMillis);
 
-        logger.info("Throughput at {} = {} operations/sec", print, tp);
+        logger.info("Replica {} executing {} operations/sec", this.replicaId, tp);
         if (tp > 0)
             values.add(tp);
     }
@@ -89,6 +86,7 @@ public class ThroughputStatistics {
     public void start() {
         if (!started) {
             started = true;
+            logger.info("Initializing statistics");
             (new Timer()).scheduleAtFixedRate(new TimerTask() {
                 public void run() {
                     fakenow++;
@@ -107,6 +105,9 @@ public class ThroughputStatistics {
                         if (now == interval + 1) {
                             stoped = true;
                             computeThroughput(period);
+                            // @author Henrique - comentei aqui
+                            now = 0;
+                            fakenow = 0;
                         }
 
                     }
