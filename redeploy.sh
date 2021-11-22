@@ -14,7 +14,11 @@ scp target/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar ${user_id}@pc${ssh_client}.emu
 for ssh_entry in "${ssh_list[@]}"
 do
     scp target/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar ${user_id}@pc${ssh_entry}.emulab.net:/srv/
-    ssh -p 22 ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart restart;"
 done
 
+for ssh_entry in "${ssh_list[@]}"
+do
+    ssh -p 22 ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart restart;" &
+done
 
+wait

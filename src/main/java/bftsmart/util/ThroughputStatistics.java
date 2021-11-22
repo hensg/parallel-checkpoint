@@ -104,8 +104,8 @@ public class ThroughputStatistics {
 
                         if (now == interval + 1) {
                             stoped = true;
-                            computeThroughput(period);
                             // @author Henrique - comentei aqui
+                            // computeThroughput(period);
                             now = 0;
                             fakenow = 0;
                         }
