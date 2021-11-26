@@ -205,10 +205,8 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             case BFTMapRequestType.SENDER:
                 sendState();
                 break;
-            case BFTMapRequestType.RECOVERY_FINISHED:
-                break;
             default:
-                throw new RuntimeException("Unmapped operation!");
+                throw new RuntimeException(String.format("Unmapped operation of type {}!", cmd));
             }
             return reply;
         } catch (IOException ex) {
@@ -316,13 +314,15 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
 
     @Override
     public void installSnapshot(byte[] bytes) {
-        logger.info("Installing snapshot...");
+        int rcid;
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         try {
             int _cmd = new DataInputStream(in).readInt(); // remove command from bytearray
 
             ObjectInputStream is = new ObjectInputStream(in);
-            int rcid = is.readInt();
+            rcid = is.readInt();
+            logger.info("Installing snapshot of partition {}", rcid);
+            
 
             byte[] states = (byte[]) is.readObject();
             ByteArrayInputStream bos = new ByteArrayInputStream(states);
@@ -330,7 +330,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             ObjectInputStream ios = new ObjectInputStream(bos);
 
             int particoes = dos.readInt();
-            logger.info("Snaphot has {} partitions to be installed", particoes);
+            logger.info("Snapshot has {} partitions to be installed", particoes);
 
             for (int i = 0; i < particoes; i++) {
                 Map<Integer, byte[]> b = (Map<Integer, byte[]>) ios.readObject();
@@ -341,7 +341,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             logger.error("Error installing snapshot", ex);
             throw new RuntimeException("Error installing snapshot", ex);
         }
-        logger.info("Snapshot installed");
+        logger.info("Snapshot of partition {} installed", rcid);
     }
 
     @Override
