@@ -202,8 +202,13 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
 
     @Override
     public int size() {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        int size = 0;
+        Node aux = this.head;
+        while (aux != null) {
+            size++;
+            aux = aux.next;
+        }
+        return size;
     }
 
     @Override

@@ -39,6 +39,7 @@ public class BFTMapRequestType {
         public static final int METADATA = 18;
         public static final int STATE = 19;
         public static final int LOG = 20;
-        public static final int RECOVERY_FINISHED = 21;
+        public static final int LOG_RECOVERY = 21;
+        public static final int RECOVERY_FINISHED = 22;
 
 }

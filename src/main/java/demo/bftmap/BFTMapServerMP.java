@@ -206,7 +206,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                 sendState();
                 break;
             default:
-                throw new RuntimeException(String.format("Unmapped operation of type {}!", cmd));
+                throw new RuntimeException(String.format("Unmapped operation of type " + cmd));
             }
             return reply;
         } catch (IOException ex) {
@@ -322,7 +322,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             ObjectInputStream is = new ObjectInputStream(in);
             rcid = is.readInt();
             logger.info("Installing snapshot of partition {}", rcid);
-            
+
 
             byte[] states = (byte[]) is.readObject();
             ByteArrayInputStream bos = new ByteArrayInputStream(states);

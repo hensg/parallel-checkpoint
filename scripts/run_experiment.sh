@@ -12,7 +12,7 @@ IFS=',' read -ra ssh_list <<< "$ssh_list"
 
 #Client execution config
 threads=4
-num_ops=40
+num_ops=3000
 
 #Server config
 checkpoint_interval=10000
@@ -26,28 +26,30 @@ function start_experiment() {
     local run=$4
     local client_interval=0
     local client_max_index=3
-    local client_p_read=10
+    local client_p_read=0
     local client_p_conflict=0
     local client_verbose=false
     local client_parallel=true
     local client_async=false
 
-    #echo "Starting experiments, reconfiguring service's replica"
-    #reconfigure_cmd="
-    #    sudo service bft-smart stop;
-    #    sudo sed -i s/'=PARTITIONED=.*'/=PARTITIONED=${partitioned}/g /etc/systemd/system/bft-smart.service;
-    #    sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service;
-    #    sudo rm -f /srv/config/currentView
-    #    sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/*;
-    #    sudo rm -rf /srv/logs/*.log ;
-    #    sudo systemctl daemon-reload;
-    #    sudo service bft-smart start;
-    #"
+    echo "Starting experiments, reconfiguring service's replica"
+    reconfigure_cmd="
+        sudo service bft-smart stop;
+        sudo sed -i s/'=PARTITIONED=.*'/=PARTITIONED=${partitioned}/g /etc/systemd/system/bft-smart.service;
+        sudo sed -i s/'=PARALLEL=.*'/=PARALLEL=${partitioned}/g /etc/systemd/system/bft-smart.service;
+        sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service;
+        sudo sed -i s/'=NUM_DISK=.*'/=NUM_DISKS=1/g /etc/systemd/system/bft-smart.service;
+        sudo rm -f /srv/config/currentView
+        sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/*;
+        sudo rm -rf /srv/logs/*.log ;
+        sudo systemctl daemon-reload;
+        sudo service bft-smart start;
+    "
 
-    #for ssh_entry in "${ssh_list[@]}"; do
-    #     echo "Reconfiguring $ssh_entry"
-    #     ssh -p 22 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd"
-    #done
+    for ssh_entry in "${ssh_list[@]}"; do
+         echo "Reconfiguring $ssh_entry"
+         ssh -p 22 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd"
+    done
 
     echo "Services reconfigured with paralell $partitioned and checkpoint interval $checkpoint_interval"
 
