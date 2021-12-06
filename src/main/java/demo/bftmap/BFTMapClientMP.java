@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import demo.bftmap.Client;
 
 /**
  * Example client that updates a BFT replicated service (a counter).

@@ -36,6 +36,10 @@ public class HibridClassToThreads implements Serializable {
         this.tIds = ids;
     }
 
+    public int[] gettIds() {
+        return tIds;
+    }
+
     public void setQueues(Queue<MessageContextPair>[] q) {
         if (q.length != tIds.length) {
             System.err.println("INCORRECT MAPPING");

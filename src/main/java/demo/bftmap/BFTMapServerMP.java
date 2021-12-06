@@ -41,7 +41,6 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
     public BFTMapServerMP(int id, int interval, int maxThreads, int minThreads, int initThreads, int entries,
             int CPperiod, boolean context, boolean cbase, boolean partition, int numDisks)
             throws IOException, ClassNotFoundException {
-
         logger.info("Initializing BFTMapServerMP");
         if (initThreads <= 0) {
             logger.info("Replica in sequential execution model.");
@@ -70,7 +69,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             logger.info("Table {} has size of {} entries", j, tableMap.getSize(j));
         }
         replica = new ParallelServiceReplica(id, this, this, initThreads, CPperiod, partition, numDisks);
-
+        
         logger.info("Server initialization complete!");
     }
 
@@ -217,7 +216,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
 
     public byte[] getSnapshot(int[] particoes) {
         long start = System.nanoTime();
-        logger.info("Getting snapshot from {} partitions", particoes.length);
+        logger.info("Getting snapshot of {} partitions", particoes.length);
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(bos);
                 ObjectOutputStream out = new ObjectOutputStream(bos)) {
@@ -323,14 +322,12 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             rcid = is.readInt();
             logger.info("Installing snapshot of partition {}", rcid);
 
-
             byte[] states = (byte[]) is.readObject();
             ByteArrayInputStream bos = new ByteArrayInputStream(states);
             DataInputStream dos = new DataInputStream(bos);
             ObjectInputStream ios = new ObjectInputStream(bos);
 
             int particoes = dos.readInt();
-            logger.info("Snapshot has {} partitions to be installed", particoes);
 
             for (int i = 0; i < particoes; i++) {
                 Map<Integer, byte[]> b = (Map<Integer, byte[]>) ios.readObject();
