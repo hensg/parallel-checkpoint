@@ -9,12 +9,10 @@ ssh_client=${1}
 ssh_list=${2}
 IFS=',' read -ra ssh_list <<< "$ssh_list"
 
-#client
-num_threds=60
-num_ops=10000
-
-#Server config
-checkpoint_interval=20000
+#client threads
+num_threads=50
+#num operations per client thread
+num_ops=12000
 
 datetime=$(date +%F_%H-%M-%S)
 
@@ -23,13 +21,15 @@ function start_experiment() {
     local client_num_threads=$2
     local client_num_operations=$3
     local run=$4
+    local server_threads=$5
     local client_interval=0
     local client_max_index=3
     local client_p_read=50
-    local client_p_conflict=0
+    local client_p_conflict=$6
     local client_verbose=false
     local client_parallel=true
     local client_async=false
+    local checkpoint_interval=$7
 
     echo "Ensure client is not running"
     client_cmd="
@@ -42,6 +42,7 @@ function start_experiment() {
         sudo service bft-smart stop;
         sudo sed -i s/'=PARTITIONED=.*'/=PARTITIONED=${partitioned}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=PARALLEL=.*'/=PARALLEL=${partitioned}/g /etc/systemd/system/bft-smart.service;
+        sudo sed -i s/'=THREADS=.*'/=THREADS=${server_threads}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service;
         sudo rm -f /srv/config/currentView
         sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/*;
@@ -98,7 +99,7 @@ function start_experiment() {
 
     echo "Getting remote logs"
 
-    local experiment_dir=experiments/$datetime/partitioned=${partitioned}/run=$run/read=${client_p_read}/conflict=${client_p_conflict}
+    local experiment_dir=experiments/name=sobrecarga/datetime=$datetime/checkpoint=$checkpoint_interval/server_threads=$server_threads/clients=$num_threads/partitioned=${partitioned}/run=$run/read=${client_p_read}/conflict=${client_p_conflict}
     mkdir -p $experiment_dir
 
     scp ${user_id}@pc${ssh_client}.emulab.net:/srv/logs/client.log $experiment_dir/client.log &
@@ -112,6 +113,11 @@ function start_experiment() {
     echo "Experiment has finished"
 }
 
-
-#for i in $(seq 1 1); do start_experiment false $threads $num_ops $i; done
-for i in $(seq 1 1); do start_experiment true $num_threds $num_ops $i; done
+for checkpoint_interval in 160000; do
+    for particoes in 4 8 16; do
+        for conflito in 0 5 50 100; do 
+            start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
+            start_experiment false $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
+        done
+    done
+done

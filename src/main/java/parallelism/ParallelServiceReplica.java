@@ -817,7 +817,7 @@ public class ParallelServiceReplica extends ServiceReplica {
         private final Logger logger = LoggerFactory.getLogger(Checkpointer.class);
         private final ParallelServiceReplica parallelServiceReplica;
         private int cp_id;
-        private boolean doCP;
+
         // public byte[] req = null;
         private MessageContextPair req = null;
 
@@ -828,7 +828,7 @@ public class ParallelServiceReplica extends ServiceReplica {
             this.parallelServiceReplica = parallelServiceReplica;
             this.cp_id = id;
             this.requests = new LinkedList<MessageContextPair>();
-            this.doCP = false;
+
         }
 
         @Override

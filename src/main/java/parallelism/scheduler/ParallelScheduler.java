@@ -192,7 +192,7 @@ public class ParallelScheduler implements Scheduler {
             conf[ct.tIds[k]][executor] = 1;
         }
 
-        if (cmds % CPperiod == 0) { // create CP request
+        if (cmds % (CPperiod / workers) == 0) { // create CP request
             List<Integer> conflict = conflictMapping(conf, workers, starter % workers);
             Collections.sort(conflict);
 

@@ -39,7 +39,6 @@ function start_experiment() {
         sudo sed -i s/'=PARTITIONED=.*'/=PARTITIONED=${partitioned}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=PARALLEL=.*'/=PARALLEL=${partitioned}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service;
-        sudo sed -i s/'=NUM_DISK=.*'/=NUM_DISKS=1/g /etc/systemd/system/bft-smart.service;
         sudo rm -f /srv/config/currentView
         sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/*;
         sudo rm -rf /srv/logs/*.log ;
@@ -86,11 +85,4 @@ function start_experiment() {
 
 num_ops=10000
 
-#for i in $(seq 1 1); do start_experiment false $threads $num_ops $i; done
-for i in $(seq 1 1); do start_experiment true 2 $num_ops $i; done
-for i in $(seq 1 1); do start_experiment true 4 $num_ops $i; done
-for i in $(seq 1 1); do start_experiment true 8 $num_ops $i; done
-for i in $(seq 1 1); do start_experiment true 16 $num_ops $i; done
-for i in $(seq 1 1); do start_experiment true 32 $num_ops $i; done
-for i in $(seq 1 1); do start_experiment true 64 $num_ops $i; done
-for i in $(seq 1 1); do start_experiment true 128 $num_ops $i; done
+for i in 1 10 20 30 40 50 60 70 80 90 100; do start_experiment true $i $num_ops 1; done

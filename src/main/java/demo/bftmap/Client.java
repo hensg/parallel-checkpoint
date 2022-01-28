@@ -203,7 +203,7 @@ class Client extends Thread {
         BFTMapClientMP.logger.info(this.id + " // Standard deviation for " + numberOfOps + " executions (-10%) = " + st.getDP(true) / 1000 + " us ");
         BFTMapClientMP.logger.info(this.id + " // Average time for " + numberOfOps + " executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
         BFTMapClientMP.logger.info(this.id + " // Standard deviation for " + numberOfOps + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
-        BFTMapClientMP.logger.info(this.id + " // 90th percentile for " + numberOfOps + " executions = " + store.getPercentile(90) / 1000 + " us ");
+        BFTMapClientMP.logger.info(this.id + " // 90th percentile for " + numberOfOps + " executions = " + st.getPercentile(90) / 1000 + " us ");
         BFTMapClientMP.logger.info(this.id + " // 95th percentile for " + numberOfOps + " executions = " + st.getPercentile(95) / 1000 + " us ");
         BFTMapClientMP.logger.info(this.id + " // 99th percentile for " + numberOfOps + " executions = " + st.getPercentile(99) / 1000 + " us ");
     }
