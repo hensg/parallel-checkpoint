@@ -74,5 +74,5 @@ for i,j in zip(throughput_reqsec, latency):
     plt.annotate(str(nclients[k]),  xy=(i, j), textcoords="offset points", xytext=(0,10), ha="center")
     k+=1
 
-fig.tight_layout()
-plt.show()
+plt.savefig('images/name=latencyvsthroughput.png', dpi=355)
+plt.close()

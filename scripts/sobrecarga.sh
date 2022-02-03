@@ -10,9 +10,9 @@ ssh_list=${2}
 IFS=',' read -ra ssh_list <<< "$ssh_list"
 
 #client threads
-num_threads=50
+num_threads=60
 #num operations per client thread
-num_ops=12000
+num_ops=1200
 
 datetime=$(date +%F_%H-%M-%S)
 
@@ -113,7 +113,7 @@ function start_experiment() {
     echo "Experiment has finished"
 }
 
-for checkpoint_interval in 160000; do
+for checkpoint_interval in 16000; do
     for particoes in 4 8 16; do
         for conflito in 0 5 50 100; do 
             start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;

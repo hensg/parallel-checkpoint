@@ -88,7 +88,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint):
         ax.legend(labels=['requests', 'checkpointing'], loc='upper right')
 
     fig.tight_layout()
-    plt.savefig('images/sobrecarga/parallel_'+parallel+'_read_'+read+'_conflict_'+
+    plt.savefig('images/name=sobrecarga/parallel_'+parallel+'_read_'+read+'_conflict_'+
                 conflict+'_threads_'+threads+'_checkpoint_'+checkpoint+'.png', dpi=355)
     plt.close()
 
