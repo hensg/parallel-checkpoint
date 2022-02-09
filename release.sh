@@ -13,7 +13,7 @@ popd
 
 pushd ..
 rm -f emulab.tar.gz
-tar -zcf emulab.tar.gz emulab/
+tar -zcf emulab.tar.gz emulab-parallel-checkpoint/
 popd
 
-gh release upload 1.0-beta target/bft-smart.tar.gz ../emulab.tar.gz --clobber --repo hensg/emulab-parallel-checkpoint
+gh release upload 0.0.1 target/bft-smart.tar.gz ../emulab.tar.gz --clobber --repo hensg/emulab-parallel-checkpoint
