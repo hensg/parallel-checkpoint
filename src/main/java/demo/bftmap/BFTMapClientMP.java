@@ -105,6 +105,7 @@ public class BFTMapClientMP {
                 c[i].join(1000 * 60);
                 // @author Henrique - add close proxy calll
                 c[i].closeProxy();
+                c[i].closeLatencyLoggger();
                 logger.info("Client thread {} completed", c[i].id);
             } catch (InterruptedException ex) {
                 logger.error("Waiting thread finish... interrupted", ex);

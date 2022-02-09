@@ -1,15 +1,43 @@
 package demo.bftmap;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bftsmart.util.Storage;
 
 class Client extends Thread {
+
+    class ClientLatencyLogger implements Runnable {
+        private Storage metricStore;
+        private int numOps;
+
+        public ClientLatencyLogger(int numOps) {
+            this.numOps = numOps;
+            this.metricStore = new Storage(numOps);
+        }
+
+        public void insert(long latency) {
+            metricStore.store(latency);
+        }
+
+        private void reset() {
+            this.metricStore = new Storage(numOps);
+        }
+
+        @Override
+        public void run() {
+            BFTMapClientMP.logger.info("Latency: {} us", metricStore.getAverage(false) / 1000);
+            reset();
+        }
+    }
 
     int id;
     int numberOfOps;
@@ -30,6 +58,7 @@ class Client extends Thread {
     int p_conflict;
     int p_read;
     // int percent;
+    ScheduledExecutorService latencyExec = Executors.newSingleThreadScheduledExecutor();
 
     public Client(int id, int numberOfOps, int interval, int maxIndex, boolean verbose, boolean parallel, boolean async,
             int numThreads, int p_read, int p_conflict) {
@@ -56,6 +85,10 @@ class Client extends Thread {
         store.closeProxy();
     }
 
+    public void closeLatencyLoggger() {
+        this.latencyExec.shutdown();
+    }
+
     /*
      * private boolean insertValue(int index) {
      * 
@@ -70,6 +103,9 @@ class Client extends Thread {
 
         Storage st = new Storage(numberOfOps);
         String tableName = "table";
+
+        ClientLatencyLogger latencyLogger = new ClientLatencyLogger(numberOfOps);
+        latencyExec.scheduleAtFixedRate(latencyLogger, 0, 1, TimeUnit.SECONDS);
 
         BFTMapClientMP.logger.info("Executing experiment for {} ops", numberOfOps);
         // if(id==initId){
@@ -181,7 +217,9 @@ class Client extends Thread {
                     BFTMapClientMP.logger.error("Sending data operation failed, message: {}", ex.getMessage());
                 }
                 // logger.info(st.store(System.nanoTime() - last_send_instant));
-                st.store(System.nanoTime() - last_send_instant);
+                long latency = System.nanoTime() - last_send_instant;
+                st.store(latency);
+                latencyLogger.insert(latency);
             }
 
             if (interval > 0) {
@@ -199,13 +237,20 @@ class Client extends Thread {
         BFTMapClientMP.logger.info("Total of operations sent successfully by client {} = {}", id, success_ops);
         BFTMapClientMP.logger.info("Total conflict of client {} = {}", id, BFTMapClientMP.var);
 
-        BFTMapClientMP.logger.info(this.id + " // Average time for " + numberOfOps + " executions (-10%) = " + st.getAverage(true) / 1000 + " us ");
-        BFTMapClientMP.logger.info(this.id + " // Standard deviation for " + numberOfOps + " executions (-10%) = " + st.getDP(true) / 1000 + " us ");
-        BFTMapClientMP.logger.info(this.id + " // Average time for " + numberOfOps + " executions (all samples) = " + st.getAverage(false) / 1000 + " us ");
-        BFTMapClientMP.logger.info(this.id + " // Standard deviation for " + numberOfOps + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
-        BFTMapClientMP.logger.info(this.id + " // 90th percentile for " + numberOfOps + " executions = " + st.getPercentile(90) / 1000 + " us ");
-        BFTMapClientMP.logger.info(this.id + " // 95th percentile for " + numberOfOps + " executions = " + st.getPercentile(95) / 1000 + " us ");
-        BFTMapClientMP.logger.info(this.id + " // 99th percentile for " + numberOfOps + " executions = " + st.getPercentile(99) / 1000 + " us ");
+        BFTMapClientMP.logger.info(this.id + " // Average time for " + numberOfOps + " executions (-10%) = "
+                + st.getAverage(true) / 1000 + " us ");
+        BFTMapClientMP.logger.info(this.id + " // Standard deviation for " + numberOfOps + " executions (-10%) = "
+                + st.getDP(true) / 1000 + " us ");
+        BFTMapClientMP.logger.info(this.id + " // Average time for " + numberOfOps + " executions (all samples) = "
+                + st.getAverage(false) / 1000 + " us ");
+        BFTMapClientMP.logger.info(this.id + " // Standard deviation for " + numberOfOps
+                + " executions (all samples) = " + st.getDP(false) / 1000 + " us ");
+        BFTMapClientMP.logger.info(this.id + " // 90th percentile for " + numberOfOps + " executions = "
+                + st.getPercentile(90) / 1000 + " us ");
+        BFTMapClientMP.logger.info(this.id + " // 95th percentile for " + numberOfOps + " executions = "
+                + st.getPercentile(95) / 1000 + " us ");
+        BFTMapClientMP.logger.info(this.id + " // 99th percentile for " + numberOfOps + " executions = "
+                + st.getPercentile(99) / 1000 + " us ");
     }
 
     private boolean createTable(PBFTMapMP bftMap, Integer nameTable) throws Exception {
