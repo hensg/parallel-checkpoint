@@ -2,6 +2,7 @@
 
 import argparse
 import re
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -19,10 +20,28 @@ parser.add_argument('--dir', type=str, required=True)
 
 args = parser.parse_args()
 
+
+PERCENTILE=95
+
 def _generate(parallel, read, conflict, run, threads, checkpoint):
     prefix = ('**/checkpoint='+checkpoint+ '/server_threads='+threads+'/**/partitioned='+
         parallel+'/**/read='+read+'/conflict='+conflict+'/')
-    print(prefix)
+    print("Generating image for: " + prefix)
+
+    latency = []
+    latency_datetime = []
+    for path in Path(args.dir).rglob(prefix + '/client.log'):
+        with open(path) as file:
+            lats = []
+            for line in file:
+                dt = re.findall('[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}', line)
+                rs = re.findall('95th percentile for [0-9]+ executions = ([0-9]+) us', line)
+                if rs:
+                    latency.append(int(rs[0])/1000)
+                    latency_datetime.append(datetime.strptime(dt[0], '%H:%M:%S.%f'))
+                    #lats.append(int(rs[0])/1000)
+        #latency.append(np.percentile(lats,PERCENTILE))
+
     checkpoint_intervals = {}
     for path in Path(args.dir).rglob(prefix+'/server*.log'):
         node = re.findall('server_([0-9]{3}).log', str(path))[0]
@@ -85,6 +104,13 @@ def _generate(parallel, read, conflict, run, threads, checkpoint):
             if len(cs) == 2:
                 ax.fill_betweenx([0, Y_MAX], cs[0], cs[1], alpha=0.2, color='C1')
                 cs = []
+
+        #ax2 = ax.twinx()
+        #color = 'tab:green'
+        #ax2.set_ylabel('latency(millis)', color=color)  # we already handled the x-label with ax1
+        #ax2.plot(latency_datetime, latency, color=color)
+        #ax2.tick_params(axis='y', labelcolor=color)
+
         ax.legend(labels=['requests', 'checkpointing'], loc='upper right')
 
     fig.tight_layout()
@@ -106,5 +132,10 @@ for path in Path(args.dir).rglob('*client.log'):
     run = re.findall('run=([0-9]+)', str(path))[0]
     threads = re.findall('server_threads=([0-9]+)', str(path))[0]
     checkpoint = re.findall('checkpoint=([0-9]+)', str(path))[0]
+
+    try:
+        os.mkdir('images/name=sobrecarga/')
+    except OSError as error:
+        pass
 
     _generate(parallel, read, conflict, run, threads, checkpoint)

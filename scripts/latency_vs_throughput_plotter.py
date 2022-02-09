@@ -46,7 +46,7 @@ for client in nclients:
             for line in file:
                 rs = re.findall('95th percentile for [0-9]+ executions = ([0-9]+) us', line)
                 if rs:
-                    lats.append(int(rs[0]))
+                    lats.append(int(rs[0])/1000)
         latency.append(np.percentile(lats,PERCENTILE))
 
 throughput_reqsec = []
@@ -65,9 +65,9 @@ fig = plt.figure()
 fig.suptitle('parallel={}, read={}%, conflict={}%'.format(
     parallel, read, conflict))
 plt.title('Replica')
-plt.xlabel('req/sec')
-plt.xticks(rotation=45)
-plt.ylabel('latency')
+plt.xlabel('requests/second')
+#plt.xticks(rotation=45)
+plt.ylabel('latency (milliseconds)')
 plt.plot(throughput_reqsec, latency, marker="D", label='requests')
 k=0
 for i,j in zip(throughput_reqsec, latency):
