@@ -18,6 +18,12 @@ package demo.bftmap;
 
 //import bftsmart.tom.parallelism.ParallelMapping;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +34,31 @@ import org.slf4j.LoggerFactory;
  */
 public class BFTMapClientMP {
 
+    static class ClientLatencyLogger implements Runnable {
+        private List<Long> data;
+        private static final int PERCENTILE = 95;
+
+        public ClientLatencyLogger(int numOps) {
+            this.data = new ArrayList<>(numOps);
+        }
+
+        public void insert(long latencyNano) {
+            this.data.add(latencyNano);
+        }
+
+        private void reset() {
+            this.data.clear();
+        }
+
+        @Override
+        public void run() {
+            Collections.sort(this.data);
+            int index = (int) Math.ceil(PERCENTILE / 100.0 * this.data.size());
+            BFTMapClientMP.logger.info("Latency: {} ns", this.data.get(index - 1));
+            reset();
+        }
+    }
+
     static final Logger logger = LoggerFactory.getLogger(BFTMapClientMP.class);
 
     static int var = 0;
@@ -37,6 +68,9 @@ public class BFTMapClientMP {
     public static int op = BFTMapRequestType.PUT;
     public static boolean stop = false;
     public static boolean created = false;
+
+    static final ScheduledExecutorService latencyExec = Executors.newSingleThreadScheduledExecutor();
+    static ClientLatencyLogger latencyLogger;
 
     @SuppressWarnings("static-access")
     public static void main(String[] args) throws IOException {
@@ -82,6 +116,8 @@ public class BFTMapClientMP {
         // } catch (InterruptedException ex) {
         // Logger.getLogger(ListClient.class.getName()).log(Level.SEVERE, null, ex);
         // }
+        latencyLogger = new ClientLatencyLogger(numberOfOps);
+        BFTMapClientMP.latencyExec.scheduleAtFixedRate(latencyLogger, 0, 1, TimeUnit.SECONDS);
 
         for (int i = 0; i < numThreads; i++) {
             c[i].start();
@@ -105,12 +141,12 @@ public class BFTMapClientMP {
                 c[i].join(1000 * 60);
                 // @author Henrique - add close proxy calll
                 c[i].closeProxy();
-                c[i].closeLatencyLoggger();
                 logger.info("Client thread {} completed", c[i].id);
             } catch (InterruptedException ex) {
                 logger.error("Waiting thread finish... interrupted", ex);
             }
         }
+        latencyExec.shutdown();
         logger.info("Finished all client threads execution...");
     }
 
