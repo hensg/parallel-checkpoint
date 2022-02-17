@@ -79,13 +79,14 @@ def _generate(parallel, read, conflict, run, threads, checkpoint):
         throughput_reqsec[node] = np.array(throughput_reqsec[node])
 
 
-    Y_MAX = 23000
+    Y_MAX =50000
     fig = plt.figure()
     fig.suptitle('parallel={}, read={}%, conflict={}%'.format(
         parallel, read, conflict))
     i = 1
     for node in checkpoint_intervals:
-        plt.subplot(2, 2, i)
+        #plt.subplot(2, 2, i)
+        plt.subplot(1, 1, i)
         plt.title('Replica ' + str(i))
         plt.xlabel('datetime')
         plt.xticks(rotation=45)
@@ -112,10 +113,11 @@ def _generate(parallel, read, conflict, run, threads, checkpoint):
         #ax2.tick_params(axis='y', labelcolor=color)
 
         ax.legend(labels=['requests', 'checkpointing'], loc='upper right')
+        break
 
     fig.tight_layout()
-    plt.savefig('images/name=sobrecarga/parallel_'+parallel+'_read_'+read+'_conflict_'+
-                conflict+'_threads_'+threads+'_checkpoint_'+checkpoint+'.png', dpi=355)
+    plt.savefig('images/name=sobrecarga/read_'+read+'_conflict_'+
+                conflict+'_threads_'+threads+'_checkpoint_'+checkpoint+'_parallel_'+parallel+'.png', dpi=355)
     plt.close()
 
 parallel = None

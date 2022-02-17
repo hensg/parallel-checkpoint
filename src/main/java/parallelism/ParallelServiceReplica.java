@@ -659,7 +659,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                     int tries = 1;
                     while (tries <= 3) {
                         try {
-                            logger.info("Connecting to {}", add);
+                            // logger.info("Connecting to {}", add);
                             sockets[i] = new Socket();
                             sockets[i].connect(new InetSocketAddress(add, port));
                             tries = 999;

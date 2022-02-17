@@ -25,6 +25,14 @@
                 <TimeBasedTriggeringPolicy interval="1" modulate="true" />
             </Policies>
         </RollingFile>
+        <RollingFile name="fileLoggerClientLatency" fileName="logs/client_latency.log" filePattern="logs/client_latency-%d{yyyy-MM-dd}.log">
+            <PatternLayout>
+                <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1.} - %msg%n%ex{full}</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1.} - %msg%n%ex{full}" />
         </Console>
@@ -32,6 +40,9 @@
     <Loggers>
         <logger name="demo.bftmap.BFTMapClientMP" additivity="false">
             <appender-ref ref="fileLoggerClient" />
+        </logger>
+        <logger name="demo.bftmap.ClientLatencyLogger" additivity="false">
+            <appender-ref ref="fileLoggerClientLatency" />
         </logger>
         <logger name="bftsmart.util.ThroughputStatistics" additivity="false">
             <appender-ref ref="throughputLogger" />

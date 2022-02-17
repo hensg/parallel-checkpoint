@@ -12,7 +12,7 @@ IFS=',' read -ra ssh_list <<< "$ssh_list"
 #client threads
 num_threads=50
 #num operations per client thread
-num_ops=8000
+num_ops=25000
 
 datetime=$(date +%F_%H-%M-%S)
 
@@ -35,7 +35,7 @@ function start_experiment() {
     client_cmd="
         sudo killall -9 /usr/bin/java;
     "
-    ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=15 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd &
+    ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd &
 
     echo "Starting experiments, reconfiguring service's replica"
     reconfigure_cmd="
@@ -52,11 +52,11 @@ function start_experiment() {
 
     for ssh_entry in "${ssh_list[@]}"; do
          echo "Reconfiguring $ssh_entry"
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=15 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd" &
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd" &
     done
     wait
     for ssh_entry in "${ssh_list[@]}"; do
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=15 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;" &
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;" &
     done
     wait 
 
@@ -70,7 +70,7 @@ function start_experiment() {
          sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
          kill %1;
     "
-    ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=15 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
+    ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
 
     echo "Client finished sending requests"
 
@@ -103,6 +103,7 @@ function start_experiment() {
     mkdir -p $experiment_dir
 
     scp ${user_id}@pc${ssh_client}.emulab.net:/srv/logs/client.log $experiment_dir/client.log &
+    scp ${user_id}@pc${ssh_client}.emulab.net:/srv/logs/client_latency.log $experiment_dir/client_latency.log &
     for ssh_entry in "${ssh_list[@]}"; do
          scp ${user_id}@pc${ssh_entry}.emulab.net:/srv/logs/throughput.log $experiment_dir/throughput_$ssh_entry.log &
          scp ${user_id}@pc${ssh_entry}.emulab.net:/srv/logs/server.log $experiment_dir/server_$ssh_entry.log &
@@ -113,9 +114,12 @@ function start_experiment() {
     echo "Experiment has finished"
 }
 
-for checkpoint_interval in 20000 80000 160000; do
-    for particoes in 4 8 16; do
-        for conflito in 0 5 50 100; do 
+#for checkpoint_interval in 300000 200000 100000; do
+#    for particoes in 4 8 16; do
+#        for conflito in 0 5 50 100; do 
+for checkpoint_interval in 700000; do
+    for particoes in 4; do
+        for conflito in 0 5; do 
             start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
             start_experiment false $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
         done
