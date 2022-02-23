@@ -16,109 +16,150 @@ import pandas as pd
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dir', type=str, required=True)
+parser.add_argument("--dir", type=str, required=True)
 
 args = parser.parse_args()
 
+Y_MAX = 25000
 
-PERCENTILE=95
 
 def _generate(parallel, read, conflict, run, threads, checkpoint):
-    prefix = ('**/checkpoint='+checkpoint+ '/server_threads='+threads+'/**/partitioned='+
-        parallel+'/**/read='+read+'/conflict='+conflict+'/')
+    prefix = (
+        "**/checkpoint="
+        + checkpoint
+        + "/server_threads="
+        + threads
+        + "/**/partitioned="
+        + parallel
+        + "/**/read="
+        + read
+        + "/conflict="
+        + conflict
+        + "/"
+    )
     print("Generating image for: " + prefix)
 
-    latency = []
-    latency_datetime = []
-    for path in Path(args.dir).rglob(prefix + '/client.log'):
-        with open(path) as file:
-            lats = []
-            for line in file:
-                dt = re.findall('[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}', line)
-                rs = re.findall('95th percentile for [0-9]+ executions = ([0-9]+) us', line)
-                if rs:
-                    latency.append(int(rs[0])/1000)
-                    latency_datetime.append(datetime.strptime(dt[0], '%H:%M:%S.%f'))
-                    #lats.append(int(rs[0])/1000)
-        #latency.append(np.percentile(lats,PERCENTILE))
-
     checkpoint_intervals = {}
-    for path in Path(args.dir).rglob(prefix+'/server*.log'):
-        node = re.findall('server_([0-9]{3}).log', str(path))[0]
+    for path in Path(args.dir).rglob(prefix + "/server*.log"):
+        node = re.findall("server_([0-9]{3}).log", str(path))[0]
         with open(path) as file:
             for line in file:
-                if 'Initializing checkpointing procedure' in line or 'Checkpointing has finished' in line:
-                    dt = re.findall('[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}', line)
+                if (
+                    "Initializing checkpointing procedure" in line
+                    or "Checkpointing has finished" in line
+                ):
+                    dt = re.findall("[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}", line)
                     if node not in checkpoint_intervals:
                         checkpoint_intervals[node] = []
                     checkpoint_intervals[node].append(
-                        datetime.strptime(dt[0], '%H:%M:%S.%f'))
+                        datetime.strptime(dt[0], "%H:%M:%S.%f")
+                    )
 
+    first_throughput_datetime = None
     throughput_datetime = {}
     throughput_reqsec = {}
-    for path in Path(args.dir).rglob(prefix+'*throughput_*.log'):
+    for path in Path(args.dir).rglob(prefix + "*throughput_*.log"):
         idle = True
-        node = re.findall('throughput_([0-9]{3}).log', str(path))[0]
+        node = re.findall("throughput_([0-9]{3}).log", str(path))[0]
         with open(path) as file:
             for line in file:
-                if 'ThroughputStatistics - Replica' in line:
-                    rs = re.findall('([0-9]+\.[0-9]+) operations/sec', line)
+                if "ThroughputStatistics - Replica" in line:
+                    rs = re.findall("([0-9]+\.[0-9]+) operations/sec", line)
                     if rs:
-                        dt = re.findall(
-                            '([0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3})', line)
+                        dt = re.findall("([0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3})", line)
                         if node not in throughput_datetime:
                             throughput_datetime[node] = []
                             throughput_reqsec[node] = []
                         if float(rs[0]) > 0:
                             idle = False
                         if not idle:
-                            throughput_datetime[node].append(
-                                datetime.strptime(dt[0], '%H:%M:%S.%f'))
+                            dt_through = datetime.strptime(dt[0], "%H:%M:%S.%f")
+                            throughput_datetime[node].append(dt_through)
                             throughput_reqsec[node].append(float(rs[0]))
-        throughput_datetime[node] = np.array(throughput_datetime[node])
-        throughput_reqsec[node] = np.array(throughput_reqsec[node])
+                            if not first_throughput_datetime:
+                                first_throughput_datetime = dt_through
 
+        if node in throughput_datetime:
+            throughput_reqsec[node] = np.array(throughput_reqsec[node])
+            throughput_datetime[node] = np.array(throughput_datetime[node])
 
-    Y_MAX =50000
+    latency_by_time = {}
+    for path in Path(args.dir).rglob(prefix + "/client_latency.log"):
+        with open(path) as file:
+            for line in file:
+                dt = re.findall("([0-9]{2}:[0-9]{2}:[0-9]{2})", line)
+                rs = re.findall("([0-9]+) ns", line)
+                if rs:
+                    log_date = datetime.strptime(dt[0], "%H:%M:%S")
+                    if first_throughput_datetime and log_date > first_throughput_datetime:
+                        latency_ms = int(rs[0]) / 1e6
+                        if log_date not in latency_by_time:
+                            latency_by_time[log_date] = []
+
+                        latency_by_time[log_date].append(latency_ms)
+
+    latency_percentil_by_time = {}
+    for date in latency_by_time:
+        percentile = np.percentile(latency_by_time[date], 95)
+        latency_percentil_by_time[date] = percentile
+
     fig = plt.figure()
-    fig.suptitle('parallel={}, read={}%, conflict={}%'.format(
-        parallel, read, conflict))
+    fig.suptitle("parallel={}, read={}%, conflict={}%".format(parallel, read, conflict))
     i = 1
     for node in checkpoint_intervals:
-        #plt.subplot(2, 2, i)
+        # plt.subplot(2, 2, i)
         plt.subplot(1, 1, i)
-        plt.title('Replica ' + str(i))
-        plt.xlabel('datetime')
+        plt.title("Replica " + str(i))
+        plt.xlabel("datetime")
         plt.xticks(rotation=45)
-        plt.ylabel('req/sec')
-        plt.plot(throughput_datetime[node],
-                 throughput_reqsec[node], label='requests')
-        #seclocator = matdates.SecondLocator(interval=4)
+        plt.ylabel("req/sec")
+        plt.plot(throughput_datetime[node], throughput_reqsec[node], label="requests")
+        # seclocator = matdates.SecondLocator(interval=4)
         ax = plt.gca()
-        #ax.xaxis.set_major_locator(seclocator)
+        # ax.xaxis.set_major_locator(seclocator)
         ax.set_ylim([0, Y_MAX])
         i += 1
         cs = []
         for ch in checkpoint_intervals[node]:
-            ax.axvline(ch, color='r', linestyle='--', label='checkpointing')
+            ax.axvline(ch, color="r", linestyle="--", label="checkpointing")
             cs.append(ch)
             if len(cs) == 2:
-                ax.fill_betweenx([0, Y_MAX], cs[0], cs[1], alpha=0.2, color='C1')
+                ax.fill_betweenx([0, Y_MAX], cs[0], cs[1], alpha=0.2, color="C1")
                 cs = []
 
-        #ax2 = ax.twinx()
-        #color = 'tab:green'
-        #ax2.set_ylabel('latency(millis)', color=color)  # we already handled the x-label with ax1
-        #ax2.plot(latency_datetime, latency, color=color)
-        #ax2.tick_params(axis='y', labelcolor=color)
+        ax2 = ax.twinx()
+        color = "tab:green"
+        ax2.set_ylabel("latency(millis)", color=color)
+        ax2.plot(
+            latency_percentil_by_time.keys(),
+            latency_percentil_by_time.values(),
+            color=color,
+            linestyle="-",
+        )
+        ax2.tick_params(axis="y", labelcolor=color)
+        ax2.set_ylim([0, Y_MAX])
 
-        ax.legend(labels=['requests', 'checkpointing'], loc='upper right')
+        ax2.legend(labels=["latency"], loc="lower right")
+        ax.legend(labels=["requests", "checkpointing"], loc="upper right")
         break
 
     fig.tight_layout()
-    plt.savefig('images/name=sobrecarga/read_'+read+'_conflict_'+
-                conflict+'_threads_'+threads+'_checkpoint_'+checkpoint+'_parallel_'+parallel+'.png', dpi=355)
+    plt.savefig(
+        "images/name=sobrecarga/read_"
+        + read
+        + "_conflict_"
+        + conflict
+        + "_threads_"
+        + threads
+        + "_checkpoint_"
+        + checkpoint
+        + "_parallel_"
+        + parallel
+        + ".png",
+        dpi=355,
+    )
     plt.close()
+
 
 parallel = None
 read = None
@@ -127,16 +168,16 @@ run = None
 checkpoint = None
 threads = None
 
-for path in Path(args.dir).rglob('*client.log'):
-    parallel = (re.findall('partitioned=(true|false)', str(path))[0])
-    read = re.findall('read=([0-9]+)', str(path))[0]
-    conflict = (re.findall('conflict=([0-9]+)', str(path))[0])
-    run = re.findall('run=([0-9]+)', str(path))[0]
-    threads = re.findall('server_threads=([0-9]+)', str(path))[0]
-    checkpoint = re.findall('checkpoint=([0-9]+)', str(path))[0]
+for path in Path(args.dir).rglob("*client.log"):
+    parallel = re.findall("partitioned=(true|false)", str(path))[0]
+    read = re.findall("read=([0-9]+)", str(path))[0]
+    conflict = re.findall("conflict=([0-9]+)", str(path))[0]
+    run = re.findall("run=([0-9]+)", str(path))[0]
+    threads = re.findall("server_threads=([0-9]+)", str(path))[0]
+    checkpoint = re.findall("checkpoint=([0-9]+)", str(path))[0]
 
     try:
-        os.mkdir('images/name=sobrecarga/')
+        os.mkdir("images/name=sobrecarga/")
     except OSError as error:
         pass
 

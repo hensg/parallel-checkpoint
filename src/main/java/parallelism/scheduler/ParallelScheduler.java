@@ -192,7 +192,10 @@ public class ParallelScheduler implements Scheduler {
             conf[ct.tIds[k]][executor] = 1;
         }
 
-        if (cmds % (CPperiod / workers) == 0) { // create CP request
+        //FIXME: Adiantar o checkpoint para bater com o do scheduler serial.
+        // Cuidar com o adiantamento causado por conflito que pode acabar
+        // gerando mais CP
+        if (cmds % (CPperiod / workers) == 0) { // create cp request
             List<Integer> conflict = conflictMapping(conf, workers, starter % workers);
             Collections.sort(conflict);
 
@@ -204,6 +207,7 @@ public class ParallelScheduler implements Scheduler {
                 sb.append('#');
 
             }
+            logger.info("Conflict checkpointing: {}", sb.toString());
             try {
                 dos.writeInt(BFTMapRequestType.CKP);
                 dos.writeUTF(sb.toString());

@@ -55,6 +55,8 @@ import parallelism.scheduler.DefaultScheduler;
 import parallelism.scheduler.ParallelScheduler;
 import parallelism.scheduler.Scheduler;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class ParallelServiceReplica extends ServiceReplica {
 
     private final Logger logger = LoggerFactory.getLogger(ParallelServiceReplica.class);
@@ -72,6 +74,7 @@ public class ParallelServiceReplica extends ServiceReplica {
     private String[] paths;
     private int scheduled = 0;
     private int numDisks;
+    protected AtomicInteger numCheckpointsExecuted = new AtomicInteger();
 
     public ParallelServiceReplica(int id, Executable executor, Recoverable recoverer, int initialWorkers, int period,
             boolean part, int numDisks) throws IOException, ClassNotFoundException {
@@ -295,6 +298,12 @@ public class ParallelServiceReplica extends ServiceReplica {
                         ByteArrayInputStream in = new ByteArrayInputStream(msg.request.getContent());
                         DataInputStream dis = new DataInputStream(in);
                         int cmd = dis.readInt();
+                        //if (cmd == BFTMapRequestType.CKP) {
+                        //    if (this.parallelServiceReplica.numCheckpointsExecuted.get() >= this.parallelServiceReplica.desiredCheckpoints)
+                        //        continue;
+                        //    else
+                        //        this.parallelServiceReplica.numCheckpointsExecuted.incrementAndGet();
+                        //}
 
                         if (cmd == BFTMapRequestType.RECOVERER) {
                             msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
