@@ -522,10 +522,15 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
 
                     return false;
                 } else {
-                    // inserir medicao de tempo aqui
-                    // rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.CONC_ALL);
-                    rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.GR);
-                    // inserir medicaço de tempo aqui
+                    if (key == 0) {
+                        rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W1);
+                    } else if (key == 1) {
+                        rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W2);
+                    } else if (key == 2) {
+                        rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W3);
+                    } else {
+                        rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W4);
+                    }
                 }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());

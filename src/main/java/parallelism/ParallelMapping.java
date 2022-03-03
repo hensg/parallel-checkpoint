@@ -81,12 +81,6 @@ public class ParallelMapping {
             }
         }
 
-        // @author - Henrique - begin
-        List<Integer> allIds = new ArrayList<>(this.classes.size());
-        for (int i = 0; i < this.classes.size(); i++)
-            allIds.add(this.classes.get(i).classId);
-        logger.error("Failed to get class to threads for id {}. Existing classes ids: {}", id, allIds);
-        // @author - Henrique - end
 
         return null;
     }

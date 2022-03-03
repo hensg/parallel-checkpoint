@@ -329,10 +329,10 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
 
             int particoes = dos.readInt();
 
-            for (int i = 0; i < particoes; i++) {
-                Map<Integer, byte[]> b = (Map<Integer, byte[]>) ios.readObject();
-                this.tableMap.addTable(rcid, b);
-            }
+            // for (int i = 0; i < particoes; i++) {
+            Map<Integer, byte[]> b = (Map<Integer, byte[]>) ios.readObject();
+            this.tableMap.addTable(rcid, b);
+            // }
 
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("Error installing snapshot", ex);

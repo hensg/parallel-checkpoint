@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,17 +18,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author eduardo
  */
-public class ThroughputStatistics {
+public class ThroughputStatistics implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ThroughputStatistics.class);
     private int[][] counters;
     // private boolean[] restart;
-    private int period = 1000; // millis
+    private final int period = 1000; // millis
 
-    private int interval = 100;
+    private final int interval = 1000000;
     public ArrayList<Float> values;
     private boolean started = false;
-    private int now = 0;
+    private AtomicInteger now = new AtomicInteger(0);
     private int replicaId;
     public int zero = 0;
     private int numT = 0;
@@ -63,14 +64,10 @@ public class ThroughputStatistics {
     }
 
     public void printTP(long timeMillis) {
+        int nnow = now.get();
         int total = 0;
         for (int i = 0; i < numT; i++) {
-            total = total + counters[i][now];
-            /*
-             * if (!restart[i]) { total = total + counters[i]; counters[i] = 0; restart[i] =
-             * true; }
-             */
-
+            total = total + counters[i][nnow];
         }
 
         float tp = (float) (total * 1000 / (float) timeMillis);
@@ -83,38 +80,17 @@ public class ThroughputStatistics {
     boolean stoped = true;
     int fakenow = 0;
 
-    public void start() {
-        if (!started) {
-            started = true;
-            logger.info("Initializing statistics");
-            (new Timer()).scheduleAtFixedRate(new TimerTask() {
-                public void run() {
-                    fakenow++;
-                    if (fakenow == 1) {
-                        stoped = false;
-                        for (int i = 0; i < numT; i++) {
-                            counters[i][0] = 0;
-                        }
-                    } else if (!stoped) {
-
-                        if (now <= interval) {
-                            printTP(period);
-                            now++;
-                        }
-
-                        if (now == interval + 1) {
-                            stoped = true;
-                            // @author Henrique - comentei aqui
-                            // computeThroughput(period);
-                            now = 0;
-                            fakenow = 0;
-                        }
-
-                    }
-                }
-            }, period, period);
-
-        }
+    @Override
+    public void run() {
+        if (now.get() == interval + 1) {              
+            for (int i = 0; i < numT; i++) {
+                counters[i][0] = 0;
+            }
+            now.set(0);     
+        } else {
+            printTP(period);
+            now.incrementAndGet();
+        }            
     }
 
     /*
@@ -133,9 +109,9 @@ public class ThroughputStatistics {
          * if (restart[threadId]) { counters[threadId] = amount; restart[threadId] =
          * false; } else { counters[threadId] = counters[threadId] + amount; }
          */
-        if (!stoped) {
-            counters[threadId][now] = counters[threadId][now] + amount;
-        }
+        // if (!stoped) {
+        counters[threadId][now.get()] = counters[threadId][now.get()] + amount;
+        // }
 
     }
 

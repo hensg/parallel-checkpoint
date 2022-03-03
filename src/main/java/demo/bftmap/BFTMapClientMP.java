@@ -71,53 +71,23 @@ public class BFTMapClientMP {
         logger.info("Going to execute {} operations, conflict={}%, parallel={}", numberOfOps * numThreads, p_conflict, parallel);
 
         for (int i = 0; i < numThreads; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                logger.error("", ex.getCause());
-            }
-
-            //logger.info("Launching client {}", (initId + i));
             c[i] = new Client(initId + i, numberOfOps, interval, max, verbose, parallel, async, numThreads, p_read,
                     p_conflict);
-            // c[i].start();
-        }
-
-        // try {
-        // Thread.sleep(30000);
-        // } catch (InterruptedException ex) {
-        // Logger.getLogger(ListClient.class.getName()).log(Level.SEVERE, null, ex);
-        // }
-        
-
+        }    
         for (int i = 0; i < numThreads; i++) {
             c[i].start();
         }
 
-        // @author Henrique - commented useless threads
-        // (new Timer()).scheduleAtFixedRate(new TimerTask() {
-        // public void run() {
-        // // change();
-        // }
-        // }, 60000, 60000); // a cada 1 minuto
-
-        // (new Timer()).schedule(new TimerTask() {
-        // public void run() {
-        // stop();
-        // }
-        // }, 5 * 60000); // depois de 5 minutos
-
         for (int i = 0; i < numThreads; i++) {
             try {
-                c[i].join(1000 * 60);
-                // @author Henrique - add close proxy calll
+                c[i].join(1000 * 60 * 10);
                 c[i].closeProxy();
-                // logger.info("Client thread {} completed", c[i].id);
             } catch (InterruptedException ex) {
                 logger.error("Waiting thread finish... interrupted", ex);
             }
         }
         logger.info("Finished all client threads execution...");
+        System.exit(0);
     }
 
     public static void stop() {

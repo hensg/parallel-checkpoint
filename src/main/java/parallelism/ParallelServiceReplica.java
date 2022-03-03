@@ -33,6 +33,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +55,7 @@ import bftsmart.tom.util.TOMUtil;
 import bftsmart.util.MultiOperationRequest;
 import bftsmart.util.ThroughputStatistics;
 import demo.bftmap.BFTMapRequestType;
+import demo.bftmap.BFTMapServerMP;
 import parallelism.scheduler.DefaultScheduler;
 import parallelism.scheduler.ParallelScheduler;
 import parallelism.scheduler.Scheduler;
@@ -75,6 +80,7 @@ public class ParallelServiceReplica extends ServiceReplica {
     private int scheduled = 0;
     private int numDisks;
     protected AtomicInteger numCheckpointsExecuted = new AtomicInteger();
+    ScheduledExecutorService statisticsThreadExecutor =  Executors.newSingleThreadScheduledExecutor();
 
     public ParallelServiceReplica(int id, Executable executor, Recoverable recoverer, int initialWorkers, int period,
             boolean part, int numDisks) throws IOException, ClassNotFoundException {
@@ -94,8 +100,9 @@ public class ParallelServiceReplica extends ServiceReplica {
             logger.info("SINGLE PARTITION WITH {} THREADS", initialWorkers);
             this.scheduler = new DefaultScheduler(initialWorkers, period);
         }
+
         statistics = new ThroughputStatistics(this.scheduler.getNumWorkers(), id);
-        statistics.start();
+        statisticsThreadExecutor.scheduleAtFixedRate(statistics, 0, 1, TimeUnit.SECONDS);
 
         logger.info("Initializing recover threads");
         this.recoverers = new RecoverThread[initialWorkers];
@@ -734,7 +741,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                     } else {
                         logger.info("Received the checkpoint of partition {} with size {} from {}", this.rc_id, state.length, requests.get(this.rc_id));
 
-                        logger.info("Scheduling checkpoint installation with rc_id {}", this.rc_id);
+                        logger.info("Scheduling checkpoint installation of partition {}", this.rc_id);
                         bos = new ByteArrayOutputStream();
                         dos = new DataOutputStream(bos);
                         dos.writeInt(BFTMapRequestType.RECOVERER);
@@ -746,11 +753,11 @@ public class ParallelServiceReplica extends ServiceReplica {
                         bos.flush();
                         
                         TOMMessage req = new TOMMessage(this.parallelServiceReplica.id, 1, 1, bos.toByteArray(), 1);
-                        req.groupId = (Integer.toString(this.rc_id) + "#S").hashCode();
-                        this.parallelServiceReplica.scheduler
-                            .schedule(new MessageContextPair(req, req.groupId, 0, null, new MessageContext(cid, cid, TOMMessageType.REPLY, cid,
-                                this.parallelServiceReplica.scheduled, rc_id, rc_id, state, cid, cid, cid,
-                                rc_id, cid, cid, null, req, this.parallelServiceReplica.partition)));
+                        req.groupId = (Integer.toString(this.rc_id) + "#").hashCode();
+                        MessageContextPair msg = new MessageContextPair(req, req.groupId, 0, null, new MessageContext(cid, cid, TOMMessageType.REPLY, cid,
+                            this.parallelServiceReplica.scheduled, rc_id, rc_id, state, cid, cid, cid,
+                            rc_id, cid, cid, null, req, this.parallelServiceReplica.partition));
+                        this.parallelServiceReplica.scheduler.schedule(msg);
                         
                         logger.info("Requesting log of partition {}", this.rc_id);
                         os2.writeInt(BFTMapRequestType.LOG);
