@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.Queue;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
@@ -18,7 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
+import bftsmart.tom.core.messages.TOMMessage;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import parallelism.ClassToThreads;
+import parallelism.HibridClassToThreads;
+import parallelism.MessageContextPair;
+import parallelism.Operation;
 import parallelism.ParallelServiceReplica;
 
 public final class BFTMapServerMP extends DefaultSingleRecoverable implements Serializable {
@@ -201,6 +207,12 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             case BFTMapRequestType.RECOVERER:
                 installSnapshot(command);
                 break;
+            case BFTMapRequestType.LOG_RECOVERY:
+                installLogs(command);
+                break;
+            case BFTMapRequestType.RECOVERY_FINISHED:
+                recoveryFinished(command);
+                break;
             case BFTMapRequestType.SENDER:
                 sendState();
                 break;
@@ -312,14 +324,14 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
     }
 
     @Override
-    public void installSnapshot(byte[] bytes) {
-        int rcid;
+    public void installSnapshot(byte[] bytes) {        
+        int rcid = -1;
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         try {
             int _cmd = new DataInputStream(in).readInt(); // remove command from bytearray
 
             ObjectInputStream is = new ObjectInputStream(in);
-            rcid = is.readInt();
+            rcid = is.readInt();            
             logger.info("Installing snapshot of partition {}", rcid);
 
             byte[] states = (byte[]) is.readObject();
@@ -335,10 +347,46 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             // }
 
         } catch (IOException | ClassNotFoundException ex) {
-            logger.error("Error installing snapshot", ex);
+            logger.error("Error installing snapshot of partition {}", rcid, ex);
             throw new RuntimeException("Error installing snapshot", ex);
         }
         logger.info("Snapshot of partition {} installed", rcid);
+    }
+
+
+    private void installLogs(byte[] bytes) {        
+        int rcid = -1;
+        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+        try {
+            int _cmd = new DataInputStream(in).readInt(); // remove command from bytearray
+
+            ObjectInputStream is = new ObjectInputStream(in);
+            rcid = is.readInt();          
+            logger.info("Installing logs of partition {}", rcid);
+
+            Queue<Operation> log = (Queue<Operation>)is.readObject();
+            ((ParallelServiceReplica)this.replica).scheduleLog(log);
+
+        } catch (IOException | ClassNotFoundException ex) {
+            logger.error("Error installing logs of partition {}", rcid, ex);
+            throw new RuntimeException("Error installing logs", ex);
+        }
+        logger.info("Logs of partition {} installed", rcid);
+    }
+
+
+    private void recoveryFinished(byte[] bytes) {
+        int rcid = -1;
+        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+        try {
+            int _cmd = new DataInputStream(in).readInt(); // remove command from bytearray
+
+            ObjectInputStream is = new ObjectInputStream(in);
+            rcid = is.readInt();          
+            logger.info("Recovery finished for partition {}", rcid);
+        } catch (Exception ex) {            
+            throw new RuntimeException("Error on recovery finished", ex);
+        }        
     }
 
     @Override

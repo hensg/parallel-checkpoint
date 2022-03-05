@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +54,6 @@ import bftsmart.tom.util.TOMUtil;
 import bftsmart.util.MultiOperationRequest;
 import bftsmart.util.ThroughputStatistics;
 import demo.bftmap.BFTMapRequestType;
-import demo.bftmap.BFTMapServerMP;
 import parallelism.scheduler.DefaultScheduler;
 import parallelism.scheduler.ParallelScheduler;
 import parallelism.scheduler.Scheduler;
@@ -208,20 +206,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                                 true);
                         m.setLastInBatch();
                         msg = new MessageContextPair(request, request.groupId, 0, reqs.operations[0].data, m);
+                        this.scheduler.schedule(msg);
                         
-                        // @henrique - begin
-                        // if (recovering) {
-                        //     msgBuffer.add(msg);
-                        // } else {
-                        //     if (msgBuffer.size() > 0) {
-                        //         for (MessageContextPair msgCP: msgBuffer) {
-                        //             this.scheduler.schedule(msgCP);
-                        //         }
-                        //         msgBuffer.clear();
-                        //     }
-                            this.scheduler.schedule(msg);
-                        // }
-                        // @henrique - end
 
                     } else if (request.getReqType() == TOMMessageType.RECONFIG) {
 
@@ -258,6 +244,23 @@ public class ParallelServiceReplica extends ServiceReplica {
 
     public int getLastExec() {
         return this.tomLayer.getLastExec();
+    }
+
+    public void scheduleLog(Queue<Operation> log) {
+        for (Operation o : log) {
+            HibridClassToThreads ct = this.scheduler.getMapping().getClass(o.classID);
+            TOMMessage message = new TOMMessage(this.id, 1, o.sequence, o.content, 1);
+            MessageContextPair request = new MessageContextPair(message, o.classID, 0, null, null); 
+            
+            if (ct.type == ClassToThreads.CONC) {// conc
+                ct.queues[ct.threadIndex].add(request);
+                ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
+            } else { // sync
+                for (Queue q : ct.queues) {
+                   q.add(request);
+                }
+            }
+        }
     }
 
     class ServiceReplicaWorker extends Thread {
@@ -753,7 +756,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                         bos.flush();
                         
                         TOMMessage req = new TOMMessage(this.parallelServiceReplica.id, 1, 1, bos.toByteArray(), 1);
-                        req.groupId = (Integer.toString(this.rc_id) + "#").hashCode();
+                        req.groupId = (Integer.toString(this.rc_id) + "#S").hashCode();
                         MessageContextPair msg = new MessageContextPair(req, req.groupId, 0, null, new MessageContext(cid, cid, TOMMessageType.REPLY, cid,
                             this.parallelServiceReplica.scheduled, rc_id, rc_id, state, cid, cid, cid,
                             rc_id, cid, cid, null, req, this.parallelServiceReplica.partition));
@@ -766,24 +769,41 @@ public class ParallelServiceReplica extends ServiceReplica {
                         Queue<Operation> log = (Queue<Operation>) is2.readObject();
                         logger.info("Received log of partition {} with {} operations", this.rc_id, log.size());
 
-                        logger.info("Starting to schedule log of partition {}", this.rc_id);
-                        for (Operation o : log) {
-                            HibridClassToThreads ct = this.parallelServiceReplica.scheduler.getMapping().getClass(o.classID);
-                            TOMMessage message = new TOMMessage(this.parallelServiceReplica.id, 1, o.sequence, o.content, 1);
-                            MessageContextPair request = new MessageContextPair(message, o.classID, 0, null, null); 
+                        logger.info("Scheduling log installation of partition {}", this.rc_id);
+                        bos = new ByteArrayOutputStream();
+                        dos = new DataOutputStream(bos);
+                        dos.writeInt(BFTMapRequestType.LOG_RECOVERY);
+                        dos.flush();
+                        oos = new ObjectOutputStream(bos);
+                        oos.writeInt(this.rc_id);
+                        oos.writeObject(log);
+                        oos.flush();
+                        bos.flush();
+
+                        req = new TOMMessage(this.parallelServiceReplica.id, 1, 1, bos.toByteArray(), 1);
+                        req.groupId = (Integer.toString(this.rc_id) + "#S").hashCode();
+                        msg = new MessageContextPair(req, req.groupId, 0, null, new MessageContext(cid, cid, TOMMessageType.REPLY, cid,
+                            this.parallelServiceReplica.scheduled, rc_id, rc_id, state, cid, cid, cid,
+                            rc_id, cid, cid, null, req, this.parallelServiceReplica.partition));
+                        this.parallelServiceReplica.scheduler.schedule(msg);
+
+                        // for (Operation o : log) {
+                        //     HibridClassToThreads ct = this.parallelServiceReplica.scheduler.getMapping().getClass(o.classID);
+                        //     TOMMessage message = new TOMMessage(this.parallelServiceReplica.id, 1, o.sequence, o.content, 1);
+                        //     MessageContextPair request = new MessageContextPair(message, o.classID, 0, null, null); 
                             
-                            if (ct.type == ClassToThreads.CONC) {// conc
-                                ct.queues[ct.threadIndex].add(request);
-                                ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
-                            } else { // sync
-                                for (Queue q : ct.queues) {
-                                   q.add(request);
-                                }
-                                // insere apenas na primeira, para não duplicar
-                            }
-                        }
+                        //     if (ct.type == ClassToThreads.CONC) {// conc
+                        //         ct.queues[ct.threadIndex].add(request);
+                        //         ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
+                        //     } else { // sync
+                        //         for (Queue q : ct.queues) {
+                        //            q.add(request);
+                        //         }
+                        //         // insere apenas na primeira, para não duplicar
+                        //     }
+                        // }
                         // this.parallelServiceReplica.statistics.computeStatistics(this.rc_id, 1);
-                        logger.info("Log of partition {} installed", this.rc_id);
+                        // logger.info("Log of partition {} installed", this.rc_id);
                     }
                 } catch (Exception ex) {
                     logger.warn("Failed requesting state to another replica.", ex);
