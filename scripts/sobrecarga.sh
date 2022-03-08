@@ -14,6 +14,7 @@ num_threads=50
 #num operations per client thread
 num_ops=30000
 
+NO_CHECKPOINT=999999999
 datetime=$(date +%F_%H-%M-%S)
 
 function start_experiment() { 
@@ -107,7 +108,6 @@ function start_experiment() {
     for ssh_entry in "${ssh_list[@]}"; do
          scp ${user_id}@pc${ssh_entry}.emulab.net:/srv/logs/throughput.log $experiment_dir/throughput_$ssh_entry.log &
          scp ${user_id}@pc${ssh_entry}.emulab.net:/srv/logs/server.log $experiment_dir/server_$ssh_entry.log &
-         scp ${user_id}@pc${ssh_entry}.emulab.net:/srv/logs/stdout.log $experiment_dir/stdout$ssh_entry.log &
     done
     wait 
     echo "Logs copied to $experiment_dir folder"
@@ -115,7 +115,7 @@ function start_experiment() {
 }
 
 
-for checkpoint_interval in 400000 600000 800000; do
+for checkpoint_interval in 400000 600000 800000 "${NO_CHECKPOINT}"; do
     for particoes in 4 8 16; do
         for conflito in 0; do 
             start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;

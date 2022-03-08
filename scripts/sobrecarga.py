@@ -69,17 +69,16 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                         if node not in throughput_datetime:
                             throughput_datetime[node] = []
                             throughput_reqsec[node] = []
-                        if (float(rs[0]) > 1000):
+                        if float(rs[0]) > 1000:
                             idle = False
                         if not idle:
                             dt_through = datetime.strptime(dt[0], "%H:%M:%S.%f")
                             throughput_datetime[node].append(dt_through)
                             throughput_reqsec[node].append(float(rs[0]))
 
-
         if node in throughput_datetime:
-            throughput_reqsec[node] = np.array(throughput_reqsec[node])
-            throughput_datetime[node] = np.array(throughput_datetime[node])
+            throughput_reqsec[node] = np.array(throughput_reqsec[node][3:-3])
+            throughput_datetime[node] = np.array(throughput_datetime[node][3:-3])
 
     normal_latency = False
     latency_by_time = {}
@@ -105,7 +104,11 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         latency_percentil_by_time[date] = percentile
 
     fig = plt.figure()
-    fig.suptitle("parallel={}, read={}%, conflict={}%, checkpoint={}".format(parallel, read, conflict, checkpoint))
+    fig.suptitle(
+        "parallel={}, read={}%, conflict={}%, checkpoint={}".format(
+            parallel, read, conflict, checkpoint
+        )
+    )
     i = 1
     for node in throughput_datetime:
         # plt.subplot(2, 2, i)
@@ -114,7 +117,11 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         plt.xlabel("datetime")
         plt.xticks(rotation=45)
         plt.ylabel("req/sec")
-        plt.plot(throughput_datetime[node][2:-3], throughput_reqsec[node][2:-3], label="requests")
+        plt.plot(
+            throughput_datetime[node],
+            throughput_reqsec[node],
+            label="requests",
+        )
         # seclocator = matdates.SecondLocator(interval=4)
         ax = plt.gca()
         # ax.xaxis.set_major_locator(seclocator)
@@ -135,7 +142,8 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     fig.tight_layout()
     plt.savefig(
         "images/name=sobrecarga"
-        + "/datetime=" + datetime_exp
+        + "/datetime="
+        + datetime_exp
         + "/read_"
         + read
         + "_conflict_"
@@ -151,9 +159,12 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     )
     plt.close()
 
-
     fig = plt.figure()
-    fig.suptitle("parallel={}, read={}%, conflict={}%, checkpoint={}".format(parallel, read, conflict, checkpoint))
+    fig.suptitle(
+        "parallel={}, read={}%, conflict={}%, checkpoint={}".format(
+            parallel, read, conflict, checkpoint
+        )
+    )
     i = 1
     for node in throughput_datetime:
         # plt.subplot(2, 2, i)
@@ -162,7 +173,12 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         plt.xlabel("datetime")
         plt.xticks(rotation=45)
         plt.ylabel("latency (millis)")
-        plt.plot([*latency_percentil_by_time.keys()], [*latency_percentil_by_time.values()], 'g', label="requests")
+        plt.plot(
+            [*latency_percentil_by_time.keys()][3:-3],
+            [*latency_percentil_by_time.values()][3:-3],
+            "g",
+            label="requests",
+        )
         ax = plt.gca()
         ax.set_ylim([0, 10000])
         i += 1
@@ -180,7 +196,8 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     fig.tight_layout()
     plt.savefig(
         "images/name=sobrecarga"
-        + "/datetime=" + datetime_exp
+        + "/datetime="
+        + datetime_exp
         + "/read_"
         + read
         + "_conflict_"
@@ -197,6 +214,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     )
     plt.close()
 
+
 parallel = None
 read = None
 conflict = None
@@ -211,10 +229,12 @@ for path in Path(args.dir).rglob("*client.log"):
     run = re.findall("run=([0-9]+)", str(path))[0]
     threads = re.findall("server_threads=([0-9]+)", str(path))[0]
     checkpoint = re.findall("checkpoint=([0-9]+)", str(path))[0]
-    dt = re.findall("datetime=([0-9]+-[0-9]+-[0-9]+_[0-9]+-[0-9]+-[0-9]+)", str(path))[0]
+    dt = re.findall("datetime=([0-9]+-[0-9]+-[0-9]+_[0-9]+-[0-9]+-[0-9]+)", str(path))[
+        0
+    ]
 
     try:
-        os.mkdir("images/name=sobrecarga/datetime="+dt)
+        os.mkdir("images/name=sobrecarga/datetime=" + dt)
     except OSError as error:
         pass
 
