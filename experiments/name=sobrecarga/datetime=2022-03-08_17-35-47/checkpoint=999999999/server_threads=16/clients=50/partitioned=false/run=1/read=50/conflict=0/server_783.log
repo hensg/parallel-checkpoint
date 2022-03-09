@@ -1,0 +1,737 @@
+[INFO ] 2022-03-08 14:26:04.391 [main] d.b.BFTMapServerMP - Initializing BFTMapServerMP
+[INFO ] 2022-03-08 14:26:04.393 [main] d.b.BFTMapServerMP - Replica in parallel execution model.
+[INFO ] 2022-03-08 14:26:05.173 [main] d.b.BFTMapServerMP - Number of tables = 16
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 0 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 1 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 2 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 3 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 4 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 5 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 6 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 7 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 8 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 9 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.174 [main] d.b.BFTMapServerMP - Table 10 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.175 [main] d.b.BFTMapServerMP - Table 11 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.175 [main] d.b.BFTMapServerMP - Table 12 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.175 [main] d.b.BFTMapServerMP - Table 13 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.175 [main] d.b.BFTMapServerMP - Table 14 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.175 [main] d.b.BFTMapServerMP - Table 15 has size of 61360 entries
+[INFO ] 2022-03-08 14:26:05.483 [main] p.ParallelServiceReplica - SINGLE PARTITION WITH 16 THREADS
+[INFO ] 2022-03-08 14:26:05.505 [main] p.EarlySchedulerMapping - Generated hash 1523 for op 0#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1554 for op 1#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1585 for op 2#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1616 for op 3#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1647 for op 4#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1678 for op 5#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1709 for op 6#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1740 for op 7#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1771 for op 8#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 1802 for op 9#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 48612 for op 10#
+[INFO ] 2022-03-08 14:26:05.506 [main] p.EarlySchedulerMapping - Generated hash 48643 for op 11#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 48674 for op 12#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 48705 for op 13#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 48736 for op 14#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 48767 for op 15#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 1465157 for op 0#1#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 1465188 for op 0#2#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 1465219 for op 0#3#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 1465250 for op 0#4#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 1465281 for op 0#5#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 1465312 for op 0#6#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 1465343 for op 0#7#
+[INFO ] 2022-03-08 14:26:05.507 [main] p.EarlySchedulerMapping - Generated hash 1465374 for op 0#8#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 1465405 for op 0#9#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 45420305 for op 0#10#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 45420336 for op 0#11#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 45420367 for op 0#12#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 45420398 for op 0#13#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 45420429 for op 0#14#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 45420460 for op 0#15#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 1494979 for op 1#2#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 1495010 for op 1#3#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 1495041 for op 1#4#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 1495072 for op 1#5#
+[INFO ] 2022-03-08 14:26:05.508 [main] p.EarlySchedulerMapping - Generated hash 1495103 for op 1#6#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 1495134 for op 1#7#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 1495165 for op 1#8#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 1495196 for op 1#9#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 46343826 for op 1#10#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 46343857 for op 1#11#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 46343888 for op 1#12#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 46343919 for op 1#13#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 46343950 for op 1#14#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 46343981 for op 1#15#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 1524801 for op 2#3#
+[INFO ] 2022-03-08 14:26:05.509 [main] p.EarlySchedulerMapping - Generated hash 1524832 for op 2#4#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 1524863 for op 2#5#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 1524894 for op 2#6#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 1524925 for op 2#7#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 1524956 for op 2#8#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 1524987 for op 2#9#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 47267347 for op 2#10#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 47267378 for op 2#11#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 47267409 for op 2#12#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 47267440 for op 2#13#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 47267471 for op 2#14#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 47267502 for op 2#15#
+[INFO ] 2022-03-08 14:26:05.510 [main] p.EarlySchedulerMapping - Generated hash 1554623 for op 3#4#
+[INFO ] 2022-03-08 14:26:05.511 [main] p.EarlySchedulerMapping - Generated hash 1554654 for op 3#5#
+[INFO ] 2022-03-08 14:26:05.511 [main] p.EarlySchedulerMapping - Generated hash 1554685 for op 3#6#
+[INFO ] 2022-03-08 14:26:05.511 [main] p.EarlySchedulerMapping - Generated hash 1554716 for op 3#7#
+[INFO ] 2022-03-08 14:26:05.511 [main] p.EarlySchedulerMapping - Generated hash 1554747 for op 3#8#
+[INFO ] 2022-03-08 14:26:05.511 [main] p.EarlySchedulerMapping - Generated hash 1554778 for op 3#9#
+[INFO ] 2022-03-08 14:26:05.511 [main] p.EarlySchedulerMapping - Generated hash 48190868 for op 3#10#
+[INFO ] 2022-03-08 14:26:05.511 [main] p.EarlySchedulerMapping - Generated hash 48190899 for op 3#11#
+[INFO ] 2022-03-08 14:26:05.511 [main] p.EarlySchedulerMapping - Generated hash 48190930 for op 3#12#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 48190961 for op 3#13#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 48190992 for op 3#14#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 48191023 for op 3#15#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 1584445 for op 4#5#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 1584476 for op 4#6#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 1584507 for op 4#7#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 1584538 for op 4#8#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 1584569 for op 4#9#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 49114389 for op 4#10#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 49114420 for op 4#11#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 49114451 for op 4#12#
+[INFO ] 2022-03-08 14:26:05.512 [main] p.EarlySchedulerMapping - Generated hash 49114482 for op 4#13#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 49114513 for op 4#14#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 49114544 for op 4#15#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 1614267 for op 5#6#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 1614298 for op 5#7#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 1614329 for op 5#8#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 1614360 for op 5#9#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 50037910 for op 5#10#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 50037941 for op 5#11#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 50037972 for op 5#12#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 50038003 for op 5#13#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 50038034 for op 5#14#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 50038065 for op 5#15#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 1644089 for op 6#7#
+[INFO ] 2022-03-08 14:26:05.513 [main] p.EarlySchedulerMapping - Generated hash 1644120 for op 6#8#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 1644151 for op 6#9#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 50961431 for op 6#10#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 50961462 for op 6#11#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 50961493 for op 6#12#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 50961524 for op 6#13#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 50961555 for op 6#14#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 50961586 for op 6#15#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 1673911 for op 7#8#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 1673942 for op 7#9#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 51884952 for op 7#10#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 51884983 for op 7#11#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 51885014 for op 7#12#
+[INFO ] 2022-03-08 14:26:05.514 [main] p.EarlySchedulerMapping - Generated hash 51885045 for op 7#13#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 51885076 for op 7#14#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 51885107 for op 7#15#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 1703733 for op 8#9#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 52808473 for op 8#10#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 52808504 for op 8#11#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 52808535 for op 8#12#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 52808566 for op 8#13#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 52808597 for op 8#14#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 52808628 for op 8#15#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 53731994 for op 9#10#
+[INFO ] 2022-03-08 14:26:05.515 [main] p.EarlySchedulerMapping - Generated hash 53732025 for op 9#11#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 53732056 for op 9#12#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 53732087 for op 9#13#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 53732118 for op 9#14#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 53732149 for op 9#15#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1448248735 for op 10#11#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1448248766 for op 10#12#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1448248797 for op 10#13#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1448248828 for op 10#14#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1448248859 for op 10#15#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1449172287 for op 11#12#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1449172318 for op 11#13#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1449172349 for op 11#14#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1449172380 for op 11#15#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1450095839 for op 12#13#
+[INFO ] 2022-03-08 14:26:05.516 [main] p.EarlySchedulerMapping - Generated hash 1450095870 for op 12#14#
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 1450095901 for op 12#15#
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 1451019391 for op 13#14#
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 1451019422 for op 13#15#
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 1451942943 for op 14#15#
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 47296 for op 0#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 48257 for op 1#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 49218 for op 2#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 50179 for op 3#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 51140 for op 4#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 52101 for op 5#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 53062 for op 6#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 54023 for op 7#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 54984 for op 8#S
+[INFO ] 2022-03-08 14:26:05.517 [main] p.EarlySchedulerMapping - Generated hash 55945 for op 9#S
+[INFO ] 2022-03-08 14:26:05.518 [main] p.EarlySchedulerMapping - Generated hash 1507055 for op 10#S
+[INFO ] 2022-03-08 14:26:05.518 [main] p.EarlySchedulerMapping - Generated hash 1508016 for op 11#S
+[INFO ] 2022-03-08 14:26:05.518 [main] p.EarlySchedulerMapping - Generated hash 1508977 for op 12#S
+[INFO ] 2022-03-08 14:26:05.518 [main] p.EarlySchedulerMapping - Generated hash 1509938 for op 13#S
+[INFO ] 2022-03-08 14:26:05.518 [main] p.EarlySchedulerMapping - Generated hash 1510899 for op 14#S
+[INFO ] 2022-03-08 14:26:05.518 [main] p.EarlySchedulerMapping - Generated hash 1511860 for op 15#S
+[INFO ] 2022-03-08 14:26:05.519 [main] p.ParallelMapping - Queues length: 16
+[INFO ] 2022-03-08 14:26:05.582 [main] p.ParallelServiceReplica - Initializing recover threads
+[INFO ] 2022-03-08 14:26:05.583 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 0 at port 6666
+[INFO ] 2022-03-08 14:26:05.583 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 1 at port 6667
+[INFO ] 2022-03-08 14:26:05.584 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 2 at port 6668
+[INFO ] 2022-03-08 14:26:05.584 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 3 at port 6669
+[INFO ] 2022-03-08 14:26:05.584 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 4 at port 6670
+[INFO ] 2022-03-08 14:26:05.584 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 5 at port 6671
+[INFO ] 2022-03-08 14:26:05.585 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 6 at port 6672
+[INFO ] 2022-03-08 14:26:05.585 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 7 at port 6673
+[INFO ] 2022-03-08 14:26:05.585 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 8 at port 6674
+[INFO ] 2022-03-08 14:26:05.585 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 9 at port 6675
+[INFO ] 2022-03-08 14:26:05.586 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 10 at port 6676
+[INFO ] 2022-03-08 14:26:05.586 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 11 at port 6677
+[INFO ] 2022-03-08 14:26:05.586 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 12 at port 6678
+[INFO ] 2022-03-08 14:26:05.586 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 13 at port 6679
+[INFO ] 2022-03-08 14:26:05.587 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 14 at port 6680
+[INFO ] 2022-03-08 14:26:05.587 [main] p.ParallelServiceReplica$RecoverThread - Recover thread ID 15 at port 6681
+[INFO ] 2022-03-08 14:26:05.587 [main] p.ParallelServiceReplica - Successfully initialized 16 recover threads
+[INFO ] 2022-03-08 14:26:05.589 [Thread-37] p.ParallelServiceReplica$Receiver - Started recovery of partition 1
+[INFO ] 2022-03-08 14:26:05.589 [Thread-36] p.ParallelServiceReplica$Receiver - Started recovery of partition 0
+[WARN ] 2022-03-08 14:26:05.590 [Thread-37] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 1 found
+[INFO ] 2022-03-08 14:26:05.589 [Thread-38] p.ParallelServiceReplica$Receiver - Started recovery of partition 2
+[WARN ] 2022-03-08 14:26:05.590 [Thread-36] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 0 found
+[INFO ] 2022-03-08 14:26:05.590 [Thread-39] p.ParallelServiceReplica$Receiver - Started recovery of partition 3
+[WARN ] 2022-03-08 14:26:05.590 [Thread-37] p.ParallelServiceReplica$Receiver - NO local metadata for partition 1 
+[WARN ] 2022-03-08 14:26:05.590 [Thread-38] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 2 found
+[WARN ] 2022-03-08 14:26:05.590 [Thread-36] p.ParallelServiceReplica$Receiver - NO local metadata for partition 0 
+[WARN ] 2022-03-08 14:26:05.590 [Thread-39] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 3 found
+[INFO ] 2022-03-08 14:26:05.590 [Thread-40] p.ParallelServiceReplica$Receiver - Started recovery of partition 4
+[INFO ] 2022-03-08 14:26:05.590 [Thread-41] p.ParallelServiceReplica$Receiver - Started recovery of partition 5
+[WARN ] 2022-03-08 14:26:05.590 [Thread-38] p.ParallelServiceReplica$Receiver - NO local metadata for partition 2 
+[WARN ] 2022-03-08 14:26:05.590 [Thread-39] p.ParallelServiceReplica$Receiver - NO local metadata for partition 3 
+[WARN ] 2022-03-08 14:26:05.590 [Thread-41] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 5 found
+[WARN ] 2022-03-08 14:26:05.591 [Thread-40] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 4 found
+[INFO ] 2022-03-08 14:26:05.590 [Thread-42] p.ParallelServiceReplica$Receiver - Started recovery of partition 6
+[INFO ] 2022-03-08 14:26:05.591 [Thread-39] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.591 [Thread-36] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[WARN ] 2022-03-08 14:26:05.591 [Thread-41] p.ParallelServiceReplica$Receiver - NO local metadata for partition 5 
+[WARN ] 2022-03-08 14:26:05.591 [Thread-40] p.ParallelServiceReplica$Receiver - NO local metadata for partition 4 
+[INFO ] 2022-03-08 14:26:05.591 [Thread-38] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.591 [Thread-37] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[WARN ] 2022-03-08 14:26:05.591 [Thread-42] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 6 found
+[INFO ] 2022-03-08 14:26:05.591 [Thread-43] p.ParallelServiceReplica$Receiver - Started recovery of partition 7
+[INFO ] 2022-03-08 14:26:05.591 [Thread-41] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.591 [Thread-44] p.ParallelServiceReplica$Receiver - Started recovery of partition 8
+[INFO ] 2022-03-08 14:26:05.591 [Thread-45] p.ParallelServiceReplica$Receiver - Started recovery of partition 9
+[WARN ] 2022-03-08 14:26:05.591 [Thread-43] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 7 found
+[INFO ] 2022-03-08 14:26:05.591 [Thread-40] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[WARN ] 2022-03-08 14:26:05.591 [Thread-42] p.ParallelServiceReplica$Receiver - NO local metadata for partition 6 
+[WARN ] 2022-03-08 14:26:05.792 [Thread-44] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 8 found
+[INFO ] 2022-03-08 14:26:05.792 [Thread-49] p.ParallelServiceReplica$Receiver - Started recovery of partition 13
+[WARN ] 2022-03-08 14:26:05.792 [Thread-44] p.ParallelServiceReplica$Receiver - NO local metadata for partition 8 
+[INFO ] 2022-03-08 14:26:05.792 [Thread-48] p.ParallelServiceReplica$Receiver - Started recovery of partition 12
+[INFO ] 2022-03-08 14:26:05.792 [Thread-50] p.ParallelServiceReplica$Receiver - Started recovery of partition 14
+[WARN ] 2022-03-08 14:26:05.792 [Thread-45] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 9 found
+[WARN ] 2022-03-08 14:26:05.792 [Thread-43] p.ParallelServiceReplica$Receiver - NO local metadata for partition 7 
+[WARN ] 2022-03-08 14:26:05.792 [Thread-49] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 13 found
+[INFO ] 2022-03-08 14:26:05.791 [Thread-47] p.ParallelServiceReplica$Receiver - Started recovery of partition 11
+[INFO ] 2022-03-08 14:26:05.591 [Thread-46] p.ParallelServiceReplica$Receiver - Started recovery of partition 10
+[INFO ] 2022-03-08 14:26:05.792 [Thread-42] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[WARN ] 2022-03-08 14:26:05.792 [Thread-45] p.ParallelServiceReplica$Receiver - NO local metadata for partition 9 
+[WARN ] 2022-03-08 14:26:05.792 [Thread-48] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 12 found
+[WARN ] 2022-03-08 14:26:05.792 [Thread-49] p.ParallelServiceReplica$Receiver - NO local metadata for partition 13 
+[WARN ] 2022-03-08 14:26:05.792 [Thread-50] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 14 found
+[WARN ] 2022-03-08 14:26:05.792 [Thread-47] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 11 found
+[INFO ] 2022-03-08 14:26:05.792 [Thread-44] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.792 [Thread-51] p.ParallelServiceReplica$Receiver - Started recovery of partition 15
+[WARN ] 2022-03-08 14:26:05.793 [Thread-46] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 10 found
+[WARN ] 2022-03-08 14:26:05.793 [Thread-48] p.ParallelServiceReplica$Receiver - NO local metadata for partition 12 
+[INFO ] 2022-03-08 14:26:05.793 [Thread-43] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.793 [Thread-49] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[WARN ] 2022-03-08 14:26:05.793 [Thread-50] p.ParallelServiceReplica$Receiver - NO local metadata for partition 14 
+[WARN ] 2022-03-08 14:26:05.793 [Thread-47] p.ParallelServiceReplica$Receiver - NO local metadata for partition 11 
+[INFO ] 2022-03-08 14:26:05.793 [Thread-45] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[WARN ] 2022-03-08 14:26:05.793 [Thread-46] p.ParallelServiceReplica$Receiver - NO local metadata for partition 10 
+[WARN ] 2022-03-08 14:26:05.793 [Thread-51] p.ParallelServiceReplica$Receiver - NO local checkpoint for partition 15 found
+[INFO ] 2022-03-08 14:26:05.793 [Thread-48] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.793 [Thread-47] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.793 [Thread-50] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[WARN ] 2022-03-08 14:26:05.793 [Thread-51] p.ParallelServiceReplica$Receiver - NO local metadata for partition 15 
+[INFO ] 2022-03-08 14:26:05.793 [Thread-46] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.794 [Thread-51] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.100
+[INFO ] 2022-03-08 14:26:05.794 [Thread-42] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6672
+[INFO ] 2022-03-08 14:26:05.794 [Thread-40] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6670
+[INFO ] 2022-03-08 14:26:05.794 [Thread-39] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6669
+[INFO ] 2022-03-08 14:26:05.794 [Thread-37] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6667
+[INFO ] 2022-03-08 14:26:05.794 [Thread-44] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6674
+[INFO ] 2022-03-08 14:26:05.794 [Thread-49] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6679
+[INFO ] 2022-03-08 14:26:05.794 [Thread-42] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6672
+[INFO ] 2022-03-08 14:26:05.795 [Thread-45] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6675
+[INFO ] 2022-03-08 14:26:05.794 [Thread-36] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6666
+[INFO ] 2022-03-08 14:26:05.794 [Thread-43] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6673
+[INFO ] 2022-03-08 14:26:05.794 [Thread-41] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6671
+[INFO ] 2022-03-08 14:26:05.794 [Thread-38] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6668
+[INFO ] 2022-03-08 14:26:05.795 [Thread-40] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6670
+[INFO ] 2022-03-08 14:26:05.795 [Thread-45] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6675
+[INFO ] 2022-03-08 14:26:05.795 [Thread-44] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6674
+[INFO ] 2022-03-08 14:26:05.795 [Thread-39] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6669
+[INFO ] 2022-03-08 14:26:05.795 [Thread-38] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6668
+[INFO ] 2022-03-08 14:26:05.795 [Thread-37] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6667
+[INFO ] 2022-03-08 14:26:05.795 [Thread-49] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6679
+[INFO ] 2022-03-08 14:26:05.795 [Thread-36] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6666
+[INFO ] 2022-03-08 14:26:05.795 [Thread-50] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6680
+[INFO ] 2022-03-08 14:26:05.795 [Thread-47] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6677
+[INFO ] 2022-03-08 14:26:05.795 [Thread-41] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6671
+[INFO ] 2022-03-08 14:26:05.795 [Thread-43] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6673
+[INFO ] 2022-03-08 14:26:05.795 [Thread-48] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6678
+[INFO ] 2022-03-08 14:26:05.795 [Thread-50] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6680
+[INFO ] 2022-03-08 14:26:05.795 [Thread-51] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6681
+[INFO ] 2022-03-08 14:26:05.795 [Thread-48] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6678
+[INFO ] 2022-03-08 14:26:05.795 [Thread-46] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.100:6676
+[INFO ] 2022-03-08 14:26:05.796 [Thread-51] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6681
+[INFO ] 2022-03-08 14:26:05.796 [Thread-47] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6677
+[INFO ] 2022-03-08 14:26:05.796 [Thread-46] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.100:6676
+[INFO ] 2022-03-08 14:26:05.796 [Thread-39] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.796 [Thread-41] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.796 [Thread-37] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.796 [Thread-38] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.796 [Thread-36] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.796 [Thread-41] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.796 [Thread-36] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.796 [Thread-37] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.796 [Thread-38] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.796 [Thread-39] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.869 [Thread-39] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6669
+[INFO ] 2022-03-08 14:26:05.869 [Thread-36] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6666
+[INFO ] 2022-03-08 14:26:05.869 [Thread-39] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6669
+[INFO ] 2022-03-08 14:26:05.869 [Thread-38] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6668
+[INFO ] 2022-03-08 14:26:05.869 [Thread-36] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6666
+[INFO ] 2022-03-08 14:26:05.869 [Thread-41] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6671
+[INFO ] 2022-03-08 14:26:05.870 [Thread-38] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6668
+[INFO ] 2022-03-08 14:26:05.870 [Thread-41] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6671
+[INFO ] 2022-03-08 14:26:05.871 [Thread-37] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6667
+[INFO ] 2022-03-08 14:26:05.872 [Thread-37] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6667
+[INFO ] 2022-03-08 14:26:05.878 [Thread-43] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.878 [Thread-42] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.878 [Thread-40] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.878 [Thread-49] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.878 [Thread-45] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.878 [Thread-44] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.878 [Thread-43] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.878 [Thread-42] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.879 [Thread-49] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.879 [Thread-40] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.879 [Thread-45] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.879 [Thread-44] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.879 [Thread-42] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6672
+[INFO ] 2022-03-08 14:26:05.879 [Thread-40] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6670
+[INFO ] 2022-03-08 14:26:05.879 [Thread-42] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6672
+[INFO ] 2022-03-08 14:26:05.879 [Thread-43] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6673
+[INFO ] 2022-03-08 14:26:05.879 [Thread-40] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6670
+[INFO ] 2022-03-08 14:26:05.880 [Thread-43] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6673
+[INFO ] 2022-03-08 14:26:05.880 [Thread-49] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6679
+[INFO ] 2022-03-08 14:26:05.880 [Thread-49] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6679
+[INFO ] 2022-03-08 14:26:05.880 [Thread-45] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6675
+[INFO ] 2022-03-08 14:26:05.880 [Thread-44] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6674
+[INFO ] 2022-03-08 14:26:05.880 [Thread-45] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6675
+[INFO ] 2022-03-08 14:26:05.880 [Thread-44] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6674
+[INFO ] 2022-03-08 14:26:05.882 [Thread-47] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.882 [Thread-48] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.882 [Thread-51] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.882 [Thread-50] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.882 [Thread-46] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.882 [Thread-47] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.882 [Thread-51] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.882 [Thread-48] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.883 [Thread-46] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.883 [Thread-50] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.101
+[INFO ] 2022-03-08 14:26:05.883 [Thread-50] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6680
+[INFO ] 2022-03-08 14:26:05.883 [Thread-50] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6680
+[INFO ] 2022-03-08 14:26:05.884 [Thread-48] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6678
+[INFO ] 2022-03-08 14:26:05.884 [Thread-47] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6677
+[INFO ] 2022-03-08 14:26:05.884 [Thread-48] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6678
+[INFO ] 2022-03-08 14:26:05.884 [Thread-51] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6681
+[INFO ] 2022-03-08 14:26:05.884 [Thread-46] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.101:6676
+[INFO ] 2022-03-08 14:26:05.884 [Thread-47] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6677
+[INFO ] 2022-03-08 14:26:05.884 [Thread-51] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6681
+[INFO ] 2022-03-08 14:26:05.884 [Thread-46] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.101:6676
+[INFO ] 2022-03-08 14:26:05.910 [Thread-39] p.ParallelServiceReplica$Receiver - Last CID is 0
+[WARN ] 2022-03-08 14:26:05.911 [Thread-39] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6669...
+[INFO ] 2022-03-08 14:26:05.914 [Thread-38] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.914 [Thread-37] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.914 [Thread-36] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.914 [Thread-41] p.ParallelServiceReplica$Receiver - Last CID is 0
+[WARN ] 2022-03-08 14:26:05.914 [Thread-38] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6668...
+[WARN ] 2022-03-08 14:26:05.914 [Thread-37] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6667...
+[WARN ] 2022-03-08 14:26:05.915 [Thread-36] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6666...
+[WARN ] 2022-03-08 14:26:05.915 [Thread-41] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6671...
+[INFO ] 2022-03-08 14:26:05.962 [Thread-40] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.962 [Thread-43] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.962 [Thread-49] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.962 [Thread-45] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.962 [Thread-42] p.ParallelServiceReplica$Receiver - Last CID is 0
+[WARN ] 2022-03-08 14:26:05.963 [Thread-43] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6673...
+[WARN ] 2022-03-08 14:26:05.963 [Thread-40] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6670...
+[WARN ] 2022-03-08 14:26:05.963 [Thread-42] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6672...
+[WARN ] 2022-03-08 14:26:05.963 [Thread-45] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6675...
+[WARN ] 2022-03-08 14:26:05.963 [Thread-49] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6679...
+[INFO ] 2022-03-08 14:26:05.966 [Thread-51] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.966 [Thread-50] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.966 [Thread-48] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.966 [Thread-47] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.966 [Thread-44] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:05.966 [Thread-46] p.ParallelServiceReplica$Receiver - Last CID is 0
+[WARN ] 2022-03-08 14:26:05.967 [Thread-51] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6681...
+[WARN ] 2022-03-08 14:26:05.967 [Thread-50] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6680...
+[WARN ] 2022-03-08 14:26:05.967 [Thread-48] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6678...
+[WARN ] 2022-03-08 14:26:05.967 [Thread-47] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6677...
+[WARN ] 2022-03-08 14:26:05.967 [Thread-46] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6676...
+[WARN ] 2022-03-08 14:26:05.967 [Thread-44] p.ParallelServiceReplica$Receiver - Retrying to connect to /10.1.1.102:6674...
+[INFO ] 2022-03-08 14:26:06.611 [Thread-24] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.611 [Thread-23] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.611 [Thread-20] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.615 [Thread-21] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.615 [Thread-22] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.651 [Thread-25] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.651 [Thread-32] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.651 [Thread-30] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.654 [Thread-52] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.654 [Thread-54] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.654 [Thread-53] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.655 [Thread-27] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.654 [Thread-31] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.655 [Thread-28] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.655 [Thread-26] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[WARN ] 2022-03-08 14:26:06.655 [Thread-54] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.655 [Thread-53] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:06.655 [Thread-33] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[WARN ] 2022-03-08 14:26:06.655 [Thread-52] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:06.655 [Thread-35] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.658 [Thread-56] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.658 [Thread-55] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:06.659 [Thread-56] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.659 [Thread-55] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:06.658 [Thread-34] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.658 [Thread-29] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.102
+[INFO ] 2022-03-08 14:26:06.694 [Thread-57] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.694 [Thread-59] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.694 [Thread-58] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:06.695 [Thread-57] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.695 [Thread-59] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.695 [Thread-58] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:06.698 [Thread-64] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.698 [Thread-60] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.698 [Thread-63] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.698 [Thread-61] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.698 [Thread-65] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.698 [Thread-62] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:06.699 [Thread-64] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.699 [Thread-60] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.699 [Thread-63] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.699 [Thread-65] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.699 [Thread-62] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.699 [Thread-61] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:06.702 [Thread-52] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.702 [Thread-54] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.702 [Thread-53] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.702 [Thread-55] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.702 [Thread-56] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.702 [Thread-66] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:06.702 [Thread-67] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:06.703 [Thread-67] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:06.703 [Thread-66] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:06.739 [Thread-57] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.739 [Thread-59] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.739 [Thread-58] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.742 [Thread-64] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.743 [Thread-62] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.743 [Thread-63] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.743 [Thread-61] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.743 [Thread-65] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.743 [Thread-60] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.746 [Thread-67] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:06.746 [Thread-66] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.102, closing socket
+[INFO ] 2022-03-08 14:26:17.840 [Thread-31] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:17.840 [Thread-32] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:17.840 [Thread-35] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:17.840 [Thread-34] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:17.844 [Thread-29] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:17.844 [Thread-30] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:17.844 [Thread-33] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:17.844 [Thread-28] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:17.882 [Thread-74] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:17.882 [Thread-72] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:17.882 [Thread-71] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:17.883 [Thread-74] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:17.883 [Thread-72] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:17.883 [Thread-71] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:17.886 [Thread-77] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:17.886 [Thread-75] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:17.886 [Thread-73] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:17.886 [Thread-76] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:17.886 [Thread-78] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:17.887 [Thread-77] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:17.887 [Thread-75] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:17.887 [Thread-76] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:17.887 [Thread-73] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:17.887 [Thread-78] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:17.911 [Thread-39] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.912 [Thread-39] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6669
+[INFO ] 2022-03-08 14:26:17.913 [Thread-39] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6669
+[INFO ] 2022-03-08 14:26:17.915 [Thread-38] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.915 [Thread-41] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.915 [Thread-37] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.915 [Thread-36] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.916 [Thread-38] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6668
+[INFO ] 2022-03-08 14:26:17.916 [Thread-38] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6668
+[INFO ] 2022-03-08 14:26:17.916 [Thread-37] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6667
+[INFO ] 2022-03-08 14:26:17.916 [Thread-37] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6667
+[INFO ] 2022-03-08 14:26:17.917 [Thread-41] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6671
+[INFO ] 2022-03-08 14:26:17.917 [Thread-41] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6671
+[INFO ] 2022-03-08 14:26:17.917 [Thread-36] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6666
+[INFO ] 2022-03-08 14:26:17.917 [Thread-36] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6666
+[INFO ] 2022-03-08 14:26:17.924 [Thread-74] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:17.924 [Thread-72] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:17.928 [Thread-77] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:17.928 [Thread-73] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:17.928 [Thread-75] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:17.928 [Thread-76] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:17.928 [Thread-71] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:17.928 [Thread-78] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:17.963 [Thread-43] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.963 [Thread-42] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.963 [Thread-49] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.963 [Thread-45] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.964 [Thread-40] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.967 [Thread-50] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.967 [Thread-51] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.967 [Thread-48] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.967 [Thread-46] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.967 [Thread-47] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.968 [Thread-44] p.ParallelServiceReplica$Receiver - Socket connected to /10.1.1.102
+[INFO ] 2022-03-08 14:26:17.987 [Thread-42] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6672
+[INFO ] 2022-03-08 14:26:17.987 [Thread-43] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6673
+[INFO ] 2022-03-08 14:26:17.987 [Thread-50] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6680
+[INFO ] 2022-03-08 14:26:17.987 [Thread-42] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6672
+[INFO ] 2022-03-08 14:26:17.987 [Thread-50] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6680
+[INFO ] 2022-03-08 14:26:17.987 [Thread-43] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6673
+[INFO ] 2022-03-08 14:26:17.987 [Thread-44] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6674
+[INFO ] 2022-03-08 14:26:17.987 [Thread-44] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6674
+[INFO ] 2022-03-08 14:26:17.988 [Thread-40] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6670
+[INFO ] 2022-03-08 14:26:17.988 [Thread-49] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6679
+[INFO ] 2022-03-08 14:26:17.988 [Thread-40] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6670
+[INFO ] 2022-03-08 14:26:17.988 [Thread-49] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6679
+[INFO ] 2022-03-08 14:26:17.988 [Thread-47] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6677
+[INFO ] 2022-03-08 14:26:17.988 [Thread-47] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6677
+[INFO ] 2022-03-08 14:26:17.988 [Thread-45] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6675
+[INFO ] 2022-03-08 14:26:17.989 [Thread-45] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6675
+[INFO ] 2022-03-08 14:26:17.989 [Thread-48] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6678
+[INFO ] 2022-03-08 14:26:17.989 [Thread-51] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6681
+[INFO ] 2022-03-08 14:26:17.989 [Thread-48] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6678
+[INFO ] 2022-03-08 14:26:17.989 [Thread-46] p.ParallelServiceReplica$Receiver - Requesting metadata to /10.1.1.102:6676
+[INFO ] 2022-03-08 14:26:17.989 [Thread-51] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6681
+[INFO ] 2022-03-08 14:26:17.989 [Thread-46] p.ParallelServiceReplica$Receiver - Reading metadata's request reply from /10.1.1.102:6676
+[INFO ] 2022-03-08 14:26:17.998 [Thread-39] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:17.998 [Thread-39] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:17.998 [Thread-39] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 3.
+[INFO ] 2022-03-08 14:26:18.000 [Thread-24] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:18.000 [Thread-21] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:18.000 [Thread-20] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:18.000 [Thread-23] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:18.000 [Thread-27] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:18.002 [Thread-37] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.002 [Thread-36] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.002 [Thread-38] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.002 [Thread-41] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.002 [Thread-37] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.002 [Thread-41] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.002 [Thread-38] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.002 [Thread-36] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.002 [Thread-37] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 1.
+[INFO ] 2022-03-08 14:26:18.002 [Thread-41] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 5.
+[INFO ] 2022-03-08 14:26:18.002 [Thread-36] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 0.
+[INFO ] 2022-03-08 14:26:18.002 [Thread-38] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 2.
+[INFO ] 2022-03-08 14:26:18.004 [Thread-26] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:18.004 [Thread-22] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:18.004 [Thread-25] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.100
+[INFO ] 2022-03-08 14:26:18.042 [Thread-80] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.042 [Thread-81] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.042 [Thread-79] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.042 [Thread-82] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.042 [Thread-83] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:18.043 [Thread-80] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.043 [Thread-81] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.043 [Thread-79] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.043 [Thread-83] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.043 [Thread-82] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.045 [Thread-25] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.045 [Thread-22] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.045 [Thread-21] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.045 [Thread-20] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.045 [Thread-24] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.046 [Thread-23] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.046 [Thread-85] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.046 [Thread-86] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.046 [Thread-84] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:18.047 [Thread-85] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.047 [Thread-86] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.047 [Thread-84] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.049 [Thread-31] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.049 [Thread-26] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.049 [Thread-29] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.049 [Thread-33] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.049 [Thread-34] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.049 [Thread-28] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.050 [Thread-27] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.073 [Thread-35] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.073 [Thread-32] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.073 [Thread-30] p.ParallelServiceReplica$RecoverHandlerThread - New connection from /10.1.1.101
+[INFO ] 2022-03-08 14:26:18.074 [Thread-49] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-51] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-40] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-46] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-45] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-40] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.074 [Thread-48] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-47] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-42] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-50] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-48] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.074 [Thread-40] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 4.
+[INFO ] 2022-03-08 14:26:18.074 [Thread-44] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-43] p.ParallelServiceReplica$Receiver - Last CID is 0
+[INFO ] 2022-03-08 14:26:18.074 [Thread-45] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.074 [Thread-51] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.074 [Thread-49] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.075 [Thread-51] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 15.
+[INFO ] 2022-03-08 14:26:18.075 [Thread-43] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.075 [Thread-42] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.074 [Thread-47] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.075 [Thread-42] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 6.
+[INFO ] 2022-03-08 14:26:18.075 [Thread-44] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.075 [Thread-43] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 7.
+[INFO ] 2022-03-08 14:26:18.075 [Thread-49] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 13.
+[INFO ] 2022-03-08 14:26:18.075 [Thread-44] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 8.
+[INFO ] 2022-03-08 14:26:18.075 [Thread-45] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 9.
+[INFO ] 2022-03-08 14:26:18.074 [Thread-48] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 12.
+[INFO ] 2022-03-08 14:26:18.075 [Thread-47] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 11.
+[INFO ] 2022-03-08 14:26:18.074 [Thread-50] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.075 [Thread-46] p.ParallelServiceReplica$Receiver - Request rc_id value is 103 and replica Id 103
+[INFO ] 2022-03-08 14:26:18.076 [Thread-50] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 14.
+[INFO ] 2022-03-08 14:26:18.076 [Thread-46] p.ParallelServiceReplica$Receiver - Scheduling recovery finished message for thread 10.
+[INFO ] 2022-03-08 14:26:18.076 [main] p.ParallelServiceReplica - Receiver threads initialized!
+[INFO ] 2022-03-08 14:26:18.077 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(0)
+[INFO ] 2022-03-08 14:26:18.080 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 904058452
+[INFO ] 2022-03-08 14:26:18.080 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(1)
+[INFO ] 2022-03-08 14:26:18.080 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 29183965
+[INFO ] 2022-03-08 14:26:18.080 [Thread-104] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 0 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.080 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(2)
+[INFO ] 2022-03-08 14:26:18.081 [Thread-106] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 1 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.081 [Thread-103] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 0! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.082 [Thread-105] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 1! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.082 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 1427651360
+[INFO ] 2022-03-08 14:26:18.082 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(3)
+[INFO ] 2022-03-08 14:26:18.082 [Thread-108] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 2 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.083 [Thread-107] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 2! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.083 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 1334042472
+[INFO ] 2022-03-08 14:26:18.083 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(4)
+[INFO ] 2022-03-08 14:26:18.083 [Thread-110] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 3 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.084 [Thread-83] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:18.084 [Thread-81] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:18.084 [Thread-80] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:18.084 [Thread-79] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:18.085 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 1827725498
+[INFO ] 2022-03-08 14:26:18.084 [Thread-109] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 3! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.085 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(5)
+[INFO ] 2022-03-08 14:26:18.085 [Thread-112] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 4 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.086 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 131635550
+[INFO ] 2022-03-08 14:26:18.086 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(6)
+[INFO ] 2022-03-08 14:26:18.086 [Thread-111] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 4! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.087 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 319644606
+[INFO ] 2022-03-08 14:26:18.087 [Thread-113] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 5! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.087 [Thread-114] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 5 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.087 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(7)
+[INFO ] 2022-03-08 14:26:18.087 [Thread-116] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 6 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.088 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 1118078504
+[INFO ] 2022-03-08 14:26:18.089 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(8)
+[INFO ] 2022-03-08 14:26:18.089 [Thread-82] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:18.088 [Thread-115] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 6! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.089 [Thread-85] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:18.089 [Thread-86] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:18.089 [Thread-84] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.100, closing socket
+[INFO ] 2022-03-08 14:26:18.089 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 691690486
+[INFO ] 2022-03-08 14:26:18.089 [Thread-118] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 7 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.089 [Thread-117] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 7! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.089 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(9)
+[INFO ] 2022-03-08 14:26:18.090 [Thread-120] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 8 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.090 [Thread-90] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.090 [Thread-119] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 8! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.090 [Thread-89] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.091 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 1793799654
+[INFO ] 2022-03-08 14:26:18.090 [Thread-87] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:18.092 [Thread-90] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.091 [Thread-122] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 9 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.092 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(10)
+[WARN ] 2022-03-08 14:26:18.092 [Thread-87] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.092 [Thread-89] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.093 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 310623126
+[INFO ] 2022-03-08 14:26:18.092 [Thread-121] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 9! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.093 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(11)
+[INFO ] 2022-03-08 14:26:18.093 [Thread-124] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 10 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.094 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 1961945640
+[INFO ] 2022-03-08 14:26:18.093 [Thread-123] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 10! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.094 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(12)
+[INFO ] 2022-03-08 14:26:18.094 [Thread-126] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 11 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.094 [Thread-96] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.094 [Thread-91] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.094 [Thread-125] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 11! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.095 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 258931371
+[INFO ] 2022-03-08 14:26:18.094 [Thread-93] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.094 [Thread-88] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.094 [Thread-98] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.095 [Thread-128] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 12 initialized, using partitions = false
+[WARN ] 2022-03-08 14:26:18.095 [Thread-96] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.095 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(13)
+[WARN ] 2022-03-08 14:26:18.095 [Thread-93] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.096 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 1008315045
+[WARN ] 2022-03-08 14:26:18.096 [Thread-88] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.094 [Thread-92] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.094 [Thread-97] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.096 [Thread-127] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 12! Log has 0 operations already stored.
+[WARN ] 2022-03-08 14:26:18.096 [Thread-98] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.096 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(14)
+[WARN ] 2022-03-08 14:26:18.097 [Thread-97] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.097 [Thread-92] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.097 [Thread-91] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.097 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 860481979
+[INFO ] 2022-03-08 14:26:18.096 [Thread-130] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 13 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.097 [Thread-129] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 13! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.097 [main] p.ParallelServiceReplica - Initializing Service Replica Worker(15)
+[INFO ] 2022-03-08 14:26:18.097 [Thread-132] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 14 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.098 [Thread-94] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.098 [Thread-95] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.098 [Thread-99] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.098 [Thread-131] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 14! Log has 0 operations already stored.
+[WARN ] 2022-03-08 14:26:18.098 [Thread-94] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.098 [main] p.ParallelServiceReplica$ServiceReplicaWorker - Service replica worker initialized, queue 1083962448
+[WARN ] 2022-03-08 14:26:18.099 [Thread-95] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.099 [Thread-99] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.099 [main] d.b.BFTMapServerMP - Server initialization complete!
+[INFO ] 2022-03-08 14:26:18.099 [Thread-134] p.ParallelServiceReplica$Checkpointer - Checkpoint thread 15 initialized, using partitions = false
+[INFO ] 2022-03-08 14:26:18.099 [Thread-133] p.ParallelServiceReplica$ServiceReplicaWorker - Recovery process finished for partition 15! Log has 0 operations already stored.
+[INFO ] 2022-03-08 14:26:18.114 [Thread-102] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:18.115 [Thread-102] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.122 [Thread-100] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[INFO ] 2022-03-08 14:26:18.122 [Thread-101] p.ParallelServiceReplica$RecoverHandlerThread - Recover received a request recover operation of type: METADATA
+[WARN ] 2022-03-08 14:26:18.122 [Thread-100] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[WARN ] 2022-03-08 14:26:18.123 [Thread-101] p.ParallelServiceReplica$RecoverHandlerThread - No metadata file to send
+[INFO ] 2022-03-08 14:26:18.133 [Thread-90] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.137 [Thread-96] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.137 [Thread-87] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.137 [Thread-89] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.141 [Thread-88] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.142 [Thread-98] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.142 [Thread-93] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.142 [Thread-97] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.142 [Thread-95] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.142 [Thread-99] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.142 [Thread-91] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.142 [Thread-92] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.144 [Thread-94] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.157 [Thread-102] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.169 [Thread-100] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
+[INFO ] 2022-03-08 14:26:18.169 [Thread-101] p.ParallelServiceReplica$RecoverHandlerThread - Nothing to read from /10.1.1.101, closing socket
