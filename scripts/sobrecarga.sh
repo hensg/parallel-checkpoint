@@ -75,29 +75,6 @@ function start_experiment() {
 
     echo "Client finished sending requests"
 
-    #echo "Removing state/simulating crash"
-    #recovery_mch=${ssh_list[0]}
-    #recovery_cmd="
-    #    rm -f /disk*/checkpoint*/states/*.ser;
-    #    rm -f /disk*/checkpoint*/metadata/*.txt;
-    #    rm -f /srv/config/currentView;
-    #    sudo truncate -s 0 /srv/logs/*.log;
-    #    sudo service bft-smart restart;
-    #"
-    #ssh -p 22 -o StrictHostKeyChecking=no ${user_id}@pc${recovery_mch}.emulab.net $recovery_cmd
-    #sleep 3
-
-    #echo "Starting client requests for recovery after server crash simulation"
-    #client_cmd="
-    #     sudo truncate -s 0 /srv/logs/*.log;
-    #     tail -f /srv/logs/client.log &;
-    #     cd /srv;
-    #     sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
-    #     kill %1;
-    #"
-    #ssh -p 22 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd &
-    #wait
-
     echo "Getting remote logs"
 
     local experiment_dir=experiments/name=sobrecarga/datetime=$datetime/checkpoint=$checkpoint_interval/server_threads=$server_threads/clients=$num_threads/partitioned=${partitioned}/run=$run/read=${client_p_read}/conflict=${client_p_conflict}

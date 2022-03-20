@@ -59,43 +59,42 @@ for path in Path(args.dir).rglob("**/**/*throughput_*.log"):
                     if not idle:
                         (
                             throughput_reqsec[parallel][threads][checkpoint].append(
-                                float(rs[0])
+                                (float(rs[0]))
                             )
                         )
 
 
-labels = ["400k", "600k", "800k"]
+labels = ["400k", "600k", "800k", "NO_CHECKPOINT"]
 width = 0.10
 x = np.arange(len(labels))
 fig, ax = plt.subplots()
 
-cut_out = 10
+cut_out = 3
 i = -3
 
 for parallel in throughput_reqsec:
     for threads in throughput_reqsec[parallel]:
         i = i + 1
+        print(throughput_reqsec[parallel][threads][checkpoint][:-cut_out])
         avgs = [
             np.average(
-                throughput_reqsec[parallel][threads][checkpoint][cut_out:-cut_out]
+                throughput_reqsec[parallel][threads][checkpoint][:-cut_out]
             )
             for checkpoint in throughput_reqsec[parallel][threads]
         ]
 
-        if parallel == "true":
-            label_parallel = "p"
-        else:
-            label_parallel = ""
+        label = f"{threads}p" if parallel == 'true' else f"{threads}"
         ax.bar(
             x + i * width,
             height=avgs,
             width=width,
-            label=f"{threads}{label_parallel}",
+            label=label,
         )
 
 
-ax.set_ylabel("Avg throughput")
-ax.set_title("Throughput vs Checkpoint intervals")
+ax.set_ylabel("Avg throughput (req/sec)")
+ax.set_xlabel("Checkpoint intervals (1.5M requests)")
+ax.set_title("Throughput vs Checkpoint intervals (1.5M requests)")
 ax.set_xticks(x, labels)
 ax.legend()
 

@@ -104,8 +104,8 @@ function start_experiment() {
 }
 
 
-for checkpoint_interval in 800000; do
-    for particoes in 4; do
+for checkpoint_interval in 400000 600000 800000; do
+    for particoes in 4 8 16; do
         for conflito in 0; do 
             start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
             start_experiment false $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
