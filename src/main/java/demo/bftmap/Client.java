@@ -36,10 +36,12 @@ class Client extends Thread {
     int maxIndex;
     int p_conflict;
     int p_read;
-    ScheduledExecutorService latencyExec = Executors.newSingleThreadScheduledExecutor();
+    int successOps;
+    boolean async;
+    Storage storage;
 
     public Client(int id, int numberOfOps, int interval, int maxIndex, boolean verbose, boolean parallel, boolean async,
-            int numThreads, int p_read, int p_conflict) {
+            int numThreads, int p_read, int p_conflict, Storage storage) {
         super("Client " + id);
         this.id = id;
         this.numClients = numThreads;
@@ -47,24 +49,18 @@ class Client extends Thread {
         this.p_conflict = p_conflict;
         this.p_read = p_read;
         this.interval = interval;
-
+        this.async = async;
         this.verbose = verbose;
         this.maxIndex = maxIndex;
+        this.storage = storage;
         this.store = new PBFTMapMP(id, parallel, async);
     }
 
     public void closeProxy() {
         store.closeProxy();
-        latencyExec.shutdownNow();
     }
 
-    public void run() {
-        Storage st = new Storage(numberOfOps);
-
-        ClientLatencyLogger latencyLogger = new ClientLatencyLogger();
-        latencyExec.scheduleAtFixedRate(latencyLogger, 0, 1, TimeUnit.SECONDS);
-
-        int success_ops = 0;
+    public void run() {        
         Random r_p = new Random(); // leitura
         Random c_p = new Random();// conflito
         Random q_c = new Random();// conflita com qtas
@@ -76,7 +72,7 @@ class Client extends Thread {
         try {
             for (int i = 0; i < numberOfOps && !BFTMapClientMP.stop; i++) {
 
-                long last_send_instant = System.nanoTime();
+                long lastSentInstant = System.nanoTime();
                 BFTMapClientMP.ops[id - BFTMapClientMP.initId]++;
 
                 int r = r_p.nextInt(100); // 0 a 100
@@ -84,11 +80,13 @@ class Client extends Thread {
 
                 try {
                     if (r < p_read && p_read != 0) {// leitura
+                    
                         Integer table1 = t1.nextInt(maxIndex);
                         Integer key1 = k1.nextInt(maxKeys);
                         byte[] res = getEntry(store, table1, key1);
-                        if (res == null)
+                        if (!async && res == null)
                             throw new NullReponseException("Error, got null entries");
+
                     } else { // escrita
                         if ((c < p_conflict && p_conflict != 0)) {// conflita
                             Integer table1 = t1.nextInt(maxIndex);
@@ -104,22 +102,21 @@ class Client extends Thread {
                                 table2 = aux;
                             }
                             byte[] res = putEntries(store, table1, key1, table2, key2);
-                            if (res == null) {
+                            if (!async && res == null) {
                                 throw new NullReponseException("Error putting entries, returned null response");
                             }
                         } else {// escrita em 1 particao
                             int table1 = t1.nextInt(maxIndex);
                             int key1 = k1.nextInt(maxKeys);
                             boolean res = insertValue(store, table1, key1);
-                            if (!res) {
+                            if (!async && !res) {
                                 throw new NullReponseException("Failed to insert value, returned a null response");
                             }
                         }
                     }
-                    success_ops += 1;
-                    long latency = System.nanoTime() - last_send_instant;
-                    st.store(latency);
-                    latencyLogger.insert(latency);
+                    this.successOps += 1;
+                    long latency = System.nanoTime() - lastSentInstant;
+                    storage.store(latency);
         
                     if (interval > 0) {
                         try {
@@ -128,19 +125,15 @@ class Client extends Thread {
                         }
                     }
                 } catch (NullReponseException e) {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ex) {
-                    }  
                 }
             }                      
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            if (numberOfOps - success_ops > 0)
-                BFTMapClientMP.logger.info("Client {} missed some ops, missed {}%", id, 
-                    100*(numberOfOps-success_ops)/numberOfOps);
         }
+    }
+
+    public int getSuccessOps() {
+        return this.successOps;
     }
 
     private boolean createTable(PBFTMapMP bftMap, Integer nameTable) {

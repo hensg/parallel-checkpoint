@@ -63,6 +63,7 @@ function start_experiment() {
          tail -f /srv/logs/client.log &;
          cd /srv;
          sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
+         sleep 5;
          kill %1;
     "
     ssh -p 22 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
@@ -73,6 +74,7 @@ function start_experiment() {
     mkdir -p $experiment_dir
 
     scp ${user_id}@pc${ssh_client}.emulab.net:/srv/logs/client.log $experiment_dir/client.log &
+    scp ${user_id}@pc${ssh_client}.emulab.net:/srv/logs/client_latency.log $experiment_dir/client_latency.log &
     for ssh_entry in "${ssh_list[@]}"; do
          scp ${user_id}@pc${ssh_entry}.emulab.net:/srv/logs/throughput.log $experiment_dir/throughput_$ssh_entry.log &
          scp ${user_id}@pc${ssh_entry}.emulab.net:/srv/logs/server.log $experiment_dir/server_$ssh_entry.log &
@@ -83,6 +85,9 @@ function start_experiment() {
     echo "Experiment has finished"
 }
 
-num_ops=10000
+num_ops=50000
 
-for i in 1 10 20 30 40 50 60 70 80 90 100; do start_experiment true $i $num_ops 1; done
+for i in `seq 10 10 210`; do
+     ops=$((num_ops))
+     start_experiment true $i $ops 1; 
+done

@@ -10,9 +10,9 @@ ssh_list=${2}
 IFS=',' read -ra ssh_list <<< "$ssh_list"
 
 #client threads
-num_threads=50
+num_threads=90
 #num operations per client thread
-num_ops=30000
+num_ops=20000
 
 NO_CHECKPOINT=999999999
 datetime=$(date +%F_%H-%M-%S)
@@ -28,9 +28,9 @@ function start_experiment() {
     local client_p_read=50
     local client_p_conflict=$6
     local client_verbose=false
-    local client_parallel=true
-    local client_async=false
+    local client_parallel=true        
     local checkpoint_interval=$7
+    local client_async=true
 
     echo "Ensure client is not running"
     client_cmd="
@@ -75,6 +75,8 @@ function start_experiment() {
 
     echo "Client finished sending requests"
 
+    echo "Waiting some seconds"
+    sleep 30
     echo "Getting remote logs"
 
     local experiment_dir=experiments/name=sobrecarga/datetime=$datetime/checkpoint=$checkpoint_interval/server_threads=$server_threads/clients=$num_threads/partitioned=${partitioned}/run=$run/read=${client_p_read}/conflict=${client_p_conflict}
@@ -92,10 +94,10 @@ function start_experiment() {
 }
 
 
-for checkpoint_interval in 400000 600000 800000 "${NO_CHECKPOINT}"; do
-    for particoes in 4 8 16; do
+for checkpoint_interval in 400000; do
+    for particoes in 4; do
         for conflito in 0; do 
-            start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
+            # start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
             start_experiment false $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
         done
     done

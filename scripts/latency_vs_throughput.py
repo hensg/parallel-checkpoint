@@ -35,19 +35,21 @@ for path in Path(args.dir).rglob('*.log'):
 
 nclients.sort()
 
-PERCENTILE=95
+PERCENTILE=90
 
 latency = []
 for client in nclients:
     print(client)
-    for path in Path(args.dir).rglob('clients=' + str(client) + '/**/client.log'):
+    for path in Path(args.dir).rglob('clients=' + str(client) + '/**/client_latency.log'):        
         with open(path) as file:
             lats = []
             for line in file:
-                rs = re.findall('95th percentile for [0-9]+ executions = ([0-9]+) us', line)
+                rs = re.findall('Latency: ([0-9]+) ns', line)
                 if rs:
-                    lats.append(int(rs[0])/1000)
-        latency.append(np.percentile(lats,PERCENTILE))
+                    l = int(rs[0])/1000  
+                    if l > 0:
+                        lats.append(l)
+        latency.append(np.average(lats))
 
 throughput_reqsec = []
 for client in nclients:
@@ -58,15 +60,16 @@ for client in nclients:
             for line in file:
                 rs = re.findall('([0-9]+\.[0-9]+) operations/sec', line)
                 if rs:
-                    throughput_by_client.append(float(rs[0]))
-    throughput_reqsec.append(np.percentile(throughput_by_client,PERCENTILE))
+                    t = float(rs[0])
+                    if t > 0:
+                        throughput_by_client.append(t)
+    throughput_reqsec.append(np.average(throughput_by_client))
 
 fig = plt.figure()
 fig.suptitle('parallel={}, read={}%, conflict={}%'.format(
     parallel, read, conflict))
 plt.title('Replica')
 plt.xlabel('requests/second')
-#plt.xticks(rotation=45)
 plt.ylabel('latency (milliseconds)')
 plt.plot(throughput_reqsec, latency, marker="D", label='requests')
 k=0
@@ -75,4 +78,5 @@ for i,j in zip(throughput_reqsec, latency):
     k+=1
 
 plt.savefig('images/name=latencyvsthroughput.png', dpi=355)
+plt.show()
 plt.close()

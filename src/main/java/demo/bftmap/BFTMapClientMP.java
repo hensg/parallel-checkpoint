@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bftsmart.util.Storage;
+
 /**
  * Example client that updates a BFT replicated service (a counter).
  *
@@ -68,26 +70,30 @@ public class BFTMapClientMP {
             ops[k] = 0;
         }
 
-        logger.info("Going to execute {} operations, conflict={}%, parallel={}", numberOfOps * numThreads, p_conflict, parallel);
+        Storage storage = new Storage(numberOfOps * numThreads);
+        ClientLatencyLogger latencyLogger = new ClientLatencyLogger(storage);
+        ScheduledExecutorService latencyExec = Executors.newSingleThreadScheduledExecutor();        
 
         for (int i = 0; i < numThreads; i++) {
             c[i] = new Client(initId + i, numberOfOps, interval, max, verbose, parallel, async, numThreads, p_read,
-                    p_conflict);
-        }    
+                    p_conflict, storage);
+        }
+
+        logger.info("Going to execute {} operations, conflict={}%, parallel={}", numberOfOps * numThreads, p_conflict, parallel);
+        latencyExec.scheduleAtFixedRate(latencyLogger, 0, 1, TimeUnit.SECONDS);
         for (int i = 0; i < numThreads; i++) {
             c[i].start();
         }
 
         for (int i = 0; i < numThreads; i++) {
             try {
-                c[i].join(1000 * 60 * 10);
+                c[i].join(1000*60L*5);
                 c[i].closeProxy();
             } catch (InterruptedException ex) {
                 logger.error("Waiting thread finish... interrupted", ex);
             }
         }
         logger.info("Finished all client threads execution...");
-        System.exit(0);
     }
 
     public static void stop() {

@@ -10,9 +10,9 @@ ssh_list=${2}
 IFS=',' read -ra ssh_list <<< "$ssh_list"
 
 #client threads
-num_threads=50
+num_threads=150
 #num operations per client thread
-num_ops=30000
+num_ops=40000
 
 datetime=$(date +%F_%H-%M-%S)
 
@@ -28,7 +28,7 @@ function start_experiment() {
     local client_p_conflict=$6
     local client_verbose=false
     local client_parallel=true
-    local client_async=false
+    local client_async=true
     local checkpoint_interval=$7
 
     echo "Ensure client is not running"
@@ -73,7 +73,8 @@ function start_experiment() {
     ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
 
     echo "Client finished sending requests"
-
+    echo "Sleeping a bit"
+    sleep 10
     echo "Removing state/simulating crash"
     recovery_mch=${ssh_list[0]}
     recovery_cmd="
@@ -104,11 +105,13 @@ function start_experiment() {
 }
 
 
-for checkpoint_interval in 400000 600000 800000; do
+for checkpoint_interval in 400000 800000 1600000; do
     for particoes in 4 8 16; do
-        for conflito in 0; do 
-            start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
-            start_experiment false $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
+        for conflito in 0; do
+            for run in 1 2 3; do
+                start_experiment true $num_threads $num_ops $run $particoes $conflito $checkpoint_interval;
+                start_experiment false $num_threads $num_ops $run $particoes $conflito $checkpoint_interval;
+            done
         done
     done
 done

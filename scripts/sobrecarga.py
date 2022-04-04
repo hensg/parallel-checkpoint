@@ -20,7 +20,7 @@ parser.add_argument("--dir", type=str, required=True)
 
 args = parser.parse_args()
 
-Y_MAX = 25000
+Y_MAX = 35000
 
 
 def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):

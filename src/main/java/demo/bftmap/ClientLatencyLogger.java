@@ -2,32 +2,27 @@ package demo.bftmap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bftsmart.util.Storage;
+
 class ClientLatencyLogger implements Runnable {
 
     private final Logger logger = LoggerFactory.getLogger(ClientLatencyLogger.class);
-    private long maxLatency = 0;
+    private Storage st;
 
-    public ClientLatencyLogger() {
+    public ClientLatencyLogger(Storage st) {
         logger.info("Creating latency logger");
+        this.st = st;
     }
 
-    public void insert(long latencyNano) {
-        if (latencyNano > maxLatency)
-            maxLatency = latencyNano;
-    }
-
-    private void reset() {
-        maxLatency = 0;
-    }
-
+    
     @Override
     public void run() {
-        logger.info("Latency: {} ns", maxLatency);
-        reset();
+        logger.info("Latency: {} ns", st.getAverage(false));  
     }
 }
