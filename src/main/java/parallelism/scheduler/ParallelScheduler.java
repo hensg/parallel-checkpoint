@@ -55,6 +55,19 @@ public class ParallelScheduler implements Scheduler {
                 System.exit(-1);
             }
         }
+
+
+        int[] ids = new int[numberWorkers];
+        for (int i = 0; i < ids.length; i++) {
+            ids[i] = i;
+        }
+        int lastCts = this.cts.length;
+        HibridClassToThreads[] newCts = new HibridClassToThreads[lastCts+2];
+        System.arraycopy(this.cts, 0, newCts, 0, lastCts);
+        newCts[lastCts++] = new HibridClassToThreads(ParallelMapping.CONC_ALL, ClassToThreads.CONC, ids);
+        newCts[lastCts++] = new HibridClassToThreads(ParallelMapping.SYNC_ALL, ClassToThreads.SYNC, ids);
+        this.cts = newCts;
+
         this.mapping = new ParallelMapping(numberWorkers, cts);
         this.cmds = 0;
         this.CPperiod = period;
@@ -171,15 +184,15 @@ public class ParallelScheduler implements Scheduler {
         if (ct == null) {
             // TRATAR COMO CONFLICT ALL
             // criar uma classe que sincroniza tudo
-            String msg = "Class to threads mapping not found";
-            logger.error(msg);
-            throw new RuntimeException(msg);
+            logger.error("Class to threads mapping not found");
         }
         if (ct.type == ClassToThreads.CONC) {// conc
+            logger.info("Added request to queue of thread {}", ct.threadIndex);
             ct.queues[ct.threadIndex].add(request);
             ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
         } else { // sync
             for (Queue q : ct.queues) {
+                logger.info("Added request to queue {}", q);
                 q.add(request);
             }
         }

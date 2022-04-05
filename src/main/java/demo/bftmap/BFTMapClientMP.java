@@ -44,7 +44,7 @@ public class BFTMapClientMP {
     public static boolean created = false;
 
     @SuppressWarnings("static-access")
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         if (args.length < 7) {
             logger.info(
                     "Usage: ... BFTMapClientMP <num. threads> <process id> <number of operations> <interval> <maxIndex> <p_read %> <p_conflict %> <verbose?> <parallel?> <async?>");
@@ -72,28 +72,35 @@ public class BFTMapClientMP {
 
         Storage storage = new Storage(numberOfOps * numThreads);
         ClientLatencyLogger latencyLogger = new ClientLatencyLogger(storage);
-        ScheduledExecutorService latencyExec = Executors.newSingleThreadScheduledExecutor();        
+        ScheduledExecutorService latencyExec = Executors.newSingleThreadScheduledExecutor();      
+        
+        ReplyCounterListener replyCounterListener = new ReplyCounterListener();
 
         for (int i = 0; i < numThreads; i++) {
+            Thread.sleep(100);
             c[i] = new Client(initId + i, numberOfOps, interval, max, verbose, parallel, async, numThreads, p_read,
-                    p_conflict, storage);
+                    p_conflict, storage, replyCounterListener);
         }
 
-        logger.info("Going to execute {} operations, conflict={}%, parallel={}", numberOfOps * numThreads, p_conflict, parallel);
+        long totalOps = numberOfOps * numThreads;
+
+        logger.info("Going to execute {} operations, conflict={}%, parallel={}", totalOps, p_conflict, parallel);
         latencyExec.scheduleAtFixedRate(latencyLogger, 0, 1, TimeUnit.SECONDS);
         for (int i = 0; i < numThreads; i++) {
+            Thread.sleep(100);
             c[i].start();
         }
 
         for (int i = 0; i < numThreads; i++) {
             try {
-                c[i].join(1000*60L*5);
+                c[i].join(1000*60L*30);
                 c[i].closeProxy();
             } catch (InterruptedException ex) {
                 logger.error("Waiting thread finish... interrupted", ex);
             }
         }
         logger.info("Finished all client threads execution...");
+        System.exit(0);
     }
 
     public static void stop() {

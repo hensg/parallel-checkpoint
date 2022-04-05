@@ -10,9 +10,9 @@ ssh_list=${2}
 IFS=',' read -ra ssh_list <<< "$ssh_list"
 
 #client threads
-num_threads=90
+num_threads=100
 #num operations per client thread
-num_ops=20000
+num_ops=30000
 
 NO_CHECKPOINT=999999999
 datetime=$(date +%F_%H-%M-%S)
@@ -57,12 +57,11 @@ function start_experiment() {
     done
     wait
     for ssh_entry in "${ssh_list[@]}"; do
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;" &
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;"
     done
-    wait 
 
     echo "Services reconfigured with paralell $partitioned and checkpoint interval $checkpoint_interval"
-
+    sleep 20
     echo "Starting client requests"
     client_cmd="
          sudo truncate -s 0 /srv/logs/*.log;
@@ -75,8 +74,10 @@ function start_experiment() {
 
     echo "Client finished sending requests"
 
-    echo "Waiting some seconds"
-    sleep 30
+    echo "Waiting a few seconds"
+    if [[ "$client_async" ]]; then
+        sleep 60
+    fi
     echo "Getting remote logs"
 
     local experiment_dir=experiments/name=sobrecarga/datetime=$datetime/checkpoint=$checkpoint_interval/server_threads=$server_threads/clients=$num_threads/partitioned=${partitioned}/run=$run/read=${client_p_read}/conflict=${client_p_conflict}
@@ -97,7 +98,7 @@ function start_experiment() {
 for checkpoint_interval in 400000; do
     for particoes in 4; do
         for conflito in 0; do 
-            # start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
+            start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
             start_experiment false $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
         done
     done

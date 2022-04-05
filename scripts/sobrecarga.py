@@ -38,11 +38,16 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         + "/"
     )
     print("Generating image for: " + prefix)
+    print("Datetime: " + datetime_exp)
+    try:
+        os.mkdir("images/name=sobrecarga/datetime=" + datetime_exp)
+    except OSError as error:
+        pass
 
     checkpoint_intervals = {}
     for path in Path(args.dir).rglob(prefix + "/server*.log"):
         node = re.findall("server_([0-9]{3}).log", str(path))[0]
-        with open(path) as file:
+        with open(str(path)) as file:
             for line in file:
                 if (
                     "Initializing checkpointing procedure" in line
@@ -60,7 +65,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     for path in Path(args.dir).rglob(prefix + "*throughput_*.log"):
         idle = True
         node = re.findall("throughput_([0-9]{3}).log", str(path))[0]
-        with open(path) as file:
+        with open(str(path)) as file:
             for line in file:
                 if "ThroughputStatistics - Replica" in line:
                     rs = re.findall("([0-9]+\.[0-9]+) operations/sec", line)
@@ -83,7 +88,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     normal_latency = False
     latency_by_time = {}
     for path in Path(args.dir).rglob(prefix + "/client_latency.log"):
-        with open(path) as file:
+        with open(str(path)) as file:
             for line in file:
                 dt = re.findall("([0-9]{2}:[0-9]{2}:[0-9]{2})", line)
                 rs = re.findall("([0-9]+) ns", line)
@@ -174,8 +179,8 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         plt.xticks(rotation=45)
         plt.ylabel("latency (millis)")
         plt.plot(
-            [*latency_percentil_by_time.keys()][3:-3],
-            [*latency_percentil_by_time.values()][3:-3],
+            [latency_percentil_by_time.keys()][3:-3],
+            [latency_percentil_by_time.values()][3:-3],
             "g",
             label="requests",
         )
@@ -232,10 +237,5 @@ for path in Path(args.dir).rglob("*client.log"):
     dt = re.findall("datetime=([0-9]+-[0-9]+-[0-9]+_[0-9]+-[0-9]+-[0-9]+)", str(path))[
         0
     ]
-
-    try:
-        os.mkdir("images/name=sobrecarga/datetime=" + dt)
-    except OSError as error:
-        pass
 
     _generate(parallel, read, conflict, run, threads, checkpoint, dt)

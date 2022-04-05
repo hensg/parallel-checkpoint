@@ -346,7 +346,6 @@ public class ParallelServiceReplica extends ServiceReplica {
                                     this.parallelServiceReplica.replier.manageReply(ctx.request, msg.m);
 
                                 }
-                                this.parallelServiceReplica.statistics.computeStatistics(thread_id, 1);
                             }
                             
                         } else if ((ct.type == ClassToThreads.SYNC && ct.tIds.length == 1)) {// SYNC mas só com 1
@@ -382,7 +381,6 @@ public class ParallelServiceReplica extends ServiceReplica {
                                                 this.parallelServiceReplica.SVController.getCurrentViewId());
                                         this.parallelServiceReplica.replier.manageReply(ctx.request, msg.m);
                                     }
-                                    this.parallelServiceReplica.statistics.computeStatistics(thread_id, 1);
                                 }
                             }
                         } else if (ct.type == ClassToThreads.SYNC) {
@@ -417,7 +415,6 @@ public class ParallelServiceReplica extends ServiceReplica {
                                         }
                                     }
                                 }
-                                this.parallelServiceReplica.statistics.computeStatistics(thread_id, 1);
                                 this.parallelServiceReplica.scheduler.getMapping().getBarrier(msg.classId).await();
                             } else {
                                 this.parallelServiceReplica.scheduler.getMapping().getBarrier(msg.classId).await();
@@ -440,7 +437,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                             this.parallelServiceReplica.scheduler.getMapping().getReconfBarrier().await();
 
                         }
-
+                        
+                        this.parallelServiceReplica.statistics.computeStatistics(thread_id, 1);
                     } while (execQueue.goToNext());
                     logger.debug("No more queued data");
                 } catch (Exception ex) {

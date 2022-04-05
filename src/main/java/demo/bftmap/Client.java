@@ -41,7 +41,7 @@ class Client extends Thread {
     Storage storage;
 
     public Client(int id, int numberOfOps, int interval, int maxIndex, boolean verbose, boolean parallel, boolean async,
-            int numThreads, int p_read, int p_conflict, Storage storage) {
+            int numThreads, int p_read, int p_conflict, Storage storage, ReplyCounterListener replyCounterListener) {
         super("Client " + id);
         this.id = id;
         this.numClients = numThreads;
@@ -53,7 +53,7 @@ class Client extends Thread {
         this.verbose = verbose;
         this.maxIndex = maxIndex;
         this.storage = storage;
-        this.store = new PBFTMapMP(id, parallel, async);
+        this.store = new PBFTMapMP(id, parallel, async, replyCounterListener);
     }
 
     public void closeProxy() {
