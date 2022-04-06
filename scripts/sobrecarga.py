@@ -3,7 +3,7 @@
 import argparse
 import re
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import matplotlib.cbook as cbook
@@ -44,6 +44,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     except OSError as error:
         pass
 
+    last_checkpoint_datetime = None
     checkpoint_intervals = {}
     for path in Path(args.dir).rglob(prefix + "/server*.log"):
         node = re.findall("server_([0-9]{3}).log", str(path))[0]
@@ -56,9 +57,10 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                     dt = re.findall("[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}", line)
                     if node not in checkpoint_intervals:
                         checkpoint_intervals[node] = []
-                    checkpoint_intervals[node].append(
-                        datetime.strptime(dt[0], "%H:%M:%S.%f")
-                    )
+                    
+                    cp_datetime = datetime.strptime(dt[0], "%H:%M:%S.%f")
+                    checkpoint_intervals[node].append(cp_datetime)
+                    last_checkpoint_datetime = cp_datetime
 
     throughput_datetime = {}
     throughput_reqsec = {}
@@ -78,8 +80,9 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                             idle = False
                         if not idle:
                             dt_through = datetime.strptime(dt[0], "%H:%M:%S.%f")
-                            throughput_datetime[node].append(dt_through)
-                            throughput_reqsec[node].append(float(rs[0]))
+                            if (not last_checkpoint_datetime or (dt_through - timedelta(seconds=15)) < last_checkpoint_datetime):
+                                throughput_datetime[node].append(dt_through)
+                                throughput_reqsec[node].append(float(rs[0]))
 
         if node in throughput_datetime:
             throughput_reqsec[node] = np.array(throughput_reqsec[node][3:-3])
@@ -101,7 +104,8 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                     if normal_latency:
                         if log_date not in latency_by_time:
                             latency_by_time[log_date] = []
-                        latency_by_time[log_date].append(latency_ms)
+                        if (not last_checkpoint_datetime or (log_date - timedelta(seconds=15)) < last_checkpoint_datetime):
+                            latency_by_time[log_date].append(latency_ms)
 
     latency_percentil_by_time = {}
     for date in latency_by_time:
@@ -114,7 +118,8 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
             parallel, read, conflict, checkpoint
         )
     )
-    i = 1
+
+    i = 1    
     for node in throughput_datetime:
         # plt.subplot(2, 2, i)
         plt.subplot(1, 1, i)

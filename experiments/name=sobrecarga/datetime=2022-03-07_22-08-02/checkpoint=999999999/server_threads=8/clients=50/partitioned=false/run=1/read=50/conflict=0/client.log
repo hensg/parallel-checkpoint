@@ -1,3 +1,0 @@
-[INFO ] 2022-03-07 18:56:16.714 [main] d.b.BFTMapClientMP - P_CONFLICT ====== 0
-[INFO ] 2022-03-07 18:56:16.717 [main] d.b.BFTMapClientMP - Going to execute 1500000 operations, conflict=0%, parallel=true
-[INFO ] 2022-03-07 18:57:57.972 [main] d.b.BFTMapClientMP - Finished all client threads execution...

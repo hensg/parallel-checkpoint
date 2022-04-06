@@ -75,7 +75,7 @@ function start_experiment() {
     echo "Client finished sending requests"
 
     echo "Waiting a few seconds"
-    if [[ "$client_async" ]]; then
+    if [[ "$client_async" -eq "true" ]]; then
         sleep 60
     fi
     echo "Getting remote logs"
