@@ -150,20 +150,20 @@ for path in Path(args.dir).rglob("**/**/*server*.log"):
 
     print(f"Requested log of partition at: {request_logs_datetime}")
     print(f"Received logs response at: {received_logs_datetime}")
-    rr_tt_logs = (received_logs_datetime - request_logs_datetime).total_seconds()
+    rr_tt_logs = (received_logs_datetime - received_checkpoint_datetime).total_seconds()
     print(f"Time taken to request/response logs: {rr_tt_logs}")
 
     print(f"Starting to install checkpoint at: {start_install_cp_datetime}")
     print(f"Finished installing the checkpoint at: {finish_install_cp_datetime}")
     install_tt_cp = (
-        finish_install_cp_datetime - start_install_cp_datetime
+        finish_install_cp_datetime - received_logs_datetime
     ).total_seconds()
     print(f"Time taken to install checkpoint: {install_tt_cp}")
 
     print(f"Starting to install logs at: {start_install_logs_datetime}")
     print(f"Finished installing the log at: {finish_install_logs_datetime}")
     tt_logs = (
-        finish_install_logs_datetime - start_install_logs_datetime
+        finish_install_logs_datetime - finish_install_cp_datetime
     ).total_seconds()
     print(f"Time taken to install logs: {tt_logs}")
 

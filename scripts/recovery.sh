@@ -12,7 +12,7 @@ IFS=',' read -ra ssh_list <<< "$ssh_list"
 #client threads
 num_threads=150
 #num operations per client thread
-num_ops=40000
+num_ops=50000
 
 datetime=$(date +%F_%H-%M-%S)
 
@@ -56,9 +56,10 @@ function start_experiment() {
     done
     wait
     for ssh_entry in "${ssh_list[@]}"; do
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;" &
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;"
+         sleep 5
     done
-    wait 
+    sleep 5
 
     echo "Services reconfigured with paralell $partitioned and checkpoint interval $checkpoint_interval"
 
@@ -108,7 +109,7 @@ function start_experiment() {
 for checkpoint_interval in 400000 800000 1600000; do
     for particoes in 4 8 16; do
         for conflito in 0; do
-            for run in 1 2 3; do
+            for run in 1; do
                 start_experiment true $num_threads $num_ops $run $particoes $conflito $checkpoint_interval;
                 start_experiment false $num_threads $num_ops $run $particoes $conflito $checkpoint_interval;
             done

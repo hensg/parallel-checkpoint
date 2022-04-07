@@ -51,10 +51,10 @@ function start_experiment() {
     done
     wait
     for ssh_entry in "${ssh_list[@]}"; do
-         ssh -p 22 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;" &
+         ssh -p 22 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;"
+         sleep 5
     done
-    wait 
-
+    sleep 10
     echo "Services reconfigured with paralell $partitioned and checkpoint interval $checkpoint_interval"
 
     echo "Starting client requests"
@@ -87,7 +87,8 @@ function start_experiment() {
 
 num_ops=50000
 
-for i in `seq 10 10 210`; do
+for i in `seq 10 5 170`; do
      ops=$((num_ops))
      start_experiment true $i $ops 1; 
 done
+
