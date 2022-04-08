@@ -9,10 +9,6 @@ ssh_client=${1}
 ssh_list=${2}
 IFS=',' read -ra ssh_list <<< "$ssh_list"
 
-#client threads
-num_threads=150
-#num operations per client thread
-num_ops=50000
 
 datetime=$(date +%F_%H-%M-%S)
 
@@ -28,7 +24,7 @@ function start_experiment() {
     local client_p_conflict=$6
     local client_verbose=false
     local client_parallel=true
-    local client_async=true
+    local client_async=fakse
     local checkpoint_interval=$7
 
     echo "Ensure client is not running"
@@ -105,13 +101,17 @@ function start_experiment() {
     echo "Experiment has finished"
 }
 
-
-for checkpoint_interval in 400000 800000 1600000; do
+#client threads
+num_threads=110
+for checkpoint_interval in 400000 600000 1600000; do
     for particoes in 4 8 16; do
         for conflito in 0; do
-            for run in 1; do
-                start_experiment true $num_threads $num_ops $run $particoes $conflito $checkpoint_interval;
-                start_experiment false $num_threads $num_ops $run $particoes $conflito $checkpoint_interval;
+            for partitioned in true false; do
+                #num operations per client thread
+                num_ops=$(($checkpoint_interval + 100000))
+                num_ops_by_client=$(($num_ops / $num_threads ))
+                echo "Executing $num_ops operações for particionado=$partitioned, particoes=$particoes, checkpoint=$checkpoint_interval"
+                start_experiment $partitioned $num_threads $num_ops_by_client 1 $particoes $conflito $checkpoint_interval;
             done
         done
     done

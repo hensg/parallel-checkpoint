@@ -41,9 +41,6 @@ for path in Path(args.dir).rglob("**/**/*server*.log"):
     threads = re.findall("server_threads=([0-9]+)", str(path))[0]
     checkpoint = re.findall("checkpoint=([0-9]+)", str(path))[0]
 
-    if run == "1":
-        continue
-
     idle = True
     node = re.findall("server_([0-9]{3}).log", str(path))[0]
     request_checkpoint_datetime = datetime(2099, 1, 1)

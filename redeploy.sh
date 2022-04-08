@@ -18,7 +18,5 @@ done
 
 for ssh_entry in "${ssh_list[@]}"
 do
-    ssh -p 22 ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart restart;" &
+    ssh -p 22 ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart restart;"
 done
-
-wait
