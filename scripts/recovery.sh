@@ -103,12 +103,12 @@ function start_experiment() {
 
 #client threads
 num_threads=110
-for checkpoint_interval in 400000 600000 1600000; do
+for checkpoint_interval in 400000 800000 1600000; do
     for particoes in 4 8 16; do
         for conflito in 0; do
             for partitioned in true false; do
                 #num operations per client thread
-                num_ops=$(($checkpoint_interval + 100000))
+                num_ops=$(($checkpoint_interval + 300000))
                 num_ops_by_client=$(($num_ops / $num_threads ))
                 echo "Executing $num_ops operações for particionado=$partitioned, particoes=$particoes, checkpoint=$checkpoint_interval"
                 start_experiment $partitioned $num_threads $num_ops_by_client 1 $particoes $conflito $checkpoint_interval;
