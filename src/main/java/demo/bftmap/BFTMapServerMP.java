@@ -95,15 +95,18 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             ByteArrayInputStream in = new ByteArrayInputStream(command);
             ByteArrayOutputStream out = null;
             byte[] reply = null;
-            int cmd = new DataInputStream(in).readInt();
+            DataInputStream di = new DataInputStream(in);
+            int cmd = di.readInt();
             switch (cmd) {
             case BFTMapRequestType.PUT:
-                Integer tableName = new DataInputStream(in).readInt();
-                Integer key = new DataInputStream(in).readInt();
-                String value = new DataInputStream(in).readUTF();
-                byte[] valueBytes = ByteBuffer.allocate(1024).array();
-                tableMap.addData(tableName, key, valueBytes);
-                reply = valueBytes;
+                Integer tableName = di.readInt();
+                Integer key = di.readInt();
+                String value = di.readUTF();
+                byte[] valueBytes = ByteBuffer.allocate(1024).array();                
+                reply = tableMap.addData(tableName, key, valueBytes);
+                if (reply != null) {
+                    logger.debug("Added 1024 bytes with key {} to table {} with value {}", key, tableName, value);
+                }
                 break;
             case BFTMapRequestType.REMOVE:
                 tableName = new DataInputStream(in).readInt();
@@ -135,7 +138,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                 reply = bos.toByteArray();
                 break;
             case BFTMapRequestType.TAB_REMOVE:
-                tableName = new DataInputStream(in).readInt();
+                tableName = di.readInt();
                 table = tableMap.removeTable(tableName);
                 bos = new ByteArrayOutputStream();
                 objOut = new ObjectOutputStream(bos);
@@ -151,13 +154,18 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                 reply = out.toByteArray();
                 break;
             case BFTMapRequestType.GET:
-                tableName = new DataInputStream(in).readInt();
-                key = new DataInputStream(in).readInt();
+                tableName = di.readInt();
+                key = di.readInt();
                 valueBytes = tableMap.getEntry(tableName, key);
-                value = new String(valueBytes);
-                out = new ByteArrayOutputStream();
-                new DataOutputStream(out).writeBytes(value);
-                reply = out.toByteArray();
+                if (valueBytes != null) {
+                    value = new String(valueBytes);
+                    out = new ByteArrayOutputStream();
+                    new DataOutputStream(out).writeBytes(value);
+                    reply = out.toByteArray();
+                    logger.info("Got {} bytes with key {} from table {}",  valueBytes.length, key, tableName);
+                } else {
+                    reply = new byte[0];
+                }
                 break;
             case BFTMapRequestType.SIZE:
                 Integer tableName2 = new DataInputStream(in).readInt();
@@ -207,9 +215,6 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             case BFTMapRequestType.RECOVERER:
                 installSnapshot(command);
                 break;
-            case BFTMapRequestType.LOG_RECOVERY:
-                installLogs(command);
-                break;
             case BFTMapRequestType.RECOVERY_FINISHED:
                 recoveryFinished(command);
                 break;
@@ -235,6 +240,8 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             dos.writeInt(particoes.length);
             for (int i = 0; i < particoes.length; i++) {
                 out.writeObject(tableMap.getTable(particoes[i]));
+                logger.info("Getting snapshot of partition {} with {} entries",
+                    particoes[i], tableMap.getTable(particoes[i]).size());
             }
             dos.flush();
             out.flush();
@@ -336,42 +343,18 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
 
             byte[] states = (byte[]) is.readObject();
             ByteArrayInputStream bos = new ByteArrayInputStream(states);
-            DataInputStream dos = new DataInputStream(bos);
+            DataInputStream dos = new DataInputStream(bos);            
             ObjectInputStream ios = new ObjectInputStream(bos);
-
             int particoes = dos.readInt();
 
-            // for (int i = 0; i < particoes; i++) {
             Map<Integer, byte[]> b = (Map<Integer, byte[]>) ios.readObject();
             this.tableMap.addTable(rcid, b);
-            // }
 
+            logger.info("Snapshot of partition {} installed with {} MB", rcid, states.length/1000000);
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("Error installing snapshot of partition {}", rcid, ex);
             throw new RuntimeException("Error installing snapshot", ex);
         }
-        logger.info("Snapshot of partition {} installed", rcid);
-    }
-
-
-    private void installLogs(byte[] bytes) {        
-        int rcid = -1;
-        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        try {
-            int _cmd = new DataInputStream(in).readInt(); // remove command from bytearray
-
-            ObjectInputStream is = new ObjectInputStream(in);
-            rcid = is.readInt();          
-            logger.info("Installing logs of partition {}", rcid);
-
-            Queue<Operation> log = (Queue<Operation>)is.readObject();
-            ((ParallelServiceReplica)this.replica).scheduleLog(log);
-
-        } catch (IOException | ClassNotFoundException ex) {
-            logger.error("Error installing logs of partition {}", rcid, ex);
-            throw new RuntimeException("Error installing logs", ex);
-        }
-        logger.info("Logs of partition {} installed", rcid);
     }
 
 

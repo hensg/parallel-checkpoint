@@ -88,7 +88,6 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
             throughput_reqsec[node] = np.array(throughput_reqsec[node][3:-3])
             throughput_datetime[node] = np.array(throughput_datetime[node][3:-3])
 
-    normal_latency = False
     latency_by_time = {}
     for path in Path(args.dir).rglob(prefix + "/client_latency.log"):
         with open(str(path)) as file:
@@ -97,20 +96,9 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                 rs = re.findall("([0-9]+) ns", line)
                 if rs:
                     log_date = datetime.strptime(dt[0], "%H:%M:%S")
-                    latency_ms = int(rs[0]) / 1e6
-
-                    if latency_ms < 1000 and latency_ms > 50:
-                        normal_latency = True
-                    if normal_latency:
-                        if log_date not in latency_by_time:
-                            latency_by_time[log_date] = []
-                        if (not last_checkpoint_datetime or (log_date - timedelta(seconds=15)) < last_checkpoint_datetime):
-                            latency_by_time[log_date].append(latency_ms)
-
-    latency_percentil_by_time = {}
-    for date in latency_by_time:
-        percentile = np.percentile(latency_by_time[date], 95)
-        latency_percentil_by_time[date] = percentile
+                    latency_ms = int(rs[0]) / 1e6                   
+                    if last_checkpoint_datetime and ((log_date - timedelta(seconds=15)) < last_checkpoint_datetime):
+                        latency_by_time[log_date] = latency_ms
 
     fig = plt.figure()
     fig.suptitle(
@@ -175,6 +163,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
             parallel, read, conflict, checkpoint
         )
     )
+
     i = 1
     for node in throughput_datetime:
         # plt.subplot(2, 2, i)
@@ -184,13 +173,13 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         plt.xticks(rotation=45)
         plt.ylabel("latency (millis)")
         plt.plot(
-            [latency_percentil_by_time.keys()][3:-3],
-            [latency_percentil_by_time.values()][3:-3],
+            latency_by_time.keys(),
+            latency_by_time.values(),
             "g",
             label="requests",
         )
         ax = plt.gca()
-        ax.set_ylim([0, 10000])
+        ax.set_ylim([0, 20])
         i += 1
         cs = []
         if node in checkpoint_intervals:

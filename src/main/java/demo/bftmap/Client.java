@@ -3,16 +3,9 @@ package demo.bftmap;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.TreeMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import bftsmart.util.Storage;
-import demo.bftmap.ClientLatencyLogger;
 
 class NullReponseException extends Exception {
     public NullReponseException(String msg) {
@@ -22,12 +15,13 @@ class NullReponseException extends Exception {
 
 class Client extends Thread {
 
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
     int id;
     int numberOfOps;
     int interval;
     int numClients;
     int countNumOp = 0;
-    int maxKeys = 1000;
+    int numUniqueKeys;
     int p_pa = 90;
     int p_pb = 5;
     int p_pc = 5;
@@ -38,21 +32,20 @@ class Client extends Thread {
     int p_read;
     int successOps;
     boolean async;
-    Storage storage;
 
-    public Client(int id, int numberOfOps, int interval, int maxIndex, boolean verbose, boolean parallel, boolean async,
-            int numThreads, int p_read, int p_conflict, Storage storage, ReplyCounterListener replyCounterListener) {
+    public Client(int id, int numberOfOps, int interval, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
+            int numThreads, int p_read, int p_conflict, ReplyCounterListener replyCounterListener) {
         super("Client " + id);
         this.id = id;
         this.numClients = numThreads;
         this.numberOfOps = numberOfOps;
+        this.numUniqueKeys = numUniqueKeys;
         this.p_conflict = p_conflict;
         this.p_read = p_read;
         this.interval = interval;
         this.async = async;
         this.verbose = verbose;
         this.maxIndex = maxIndex;
-        this.storage = storage;
         this.store = new PBFTMapMP(id, parallel, async, replyCounterListener);
     }
 
@@ -68,21 +61,27 @@ class Client extends Thread {
         Random t2 = new Random();
         Random k1 = new Random();
         Random k2 = new Random();
+        Random r_calcResponseTime = new Random();
 
+        boolean shouldCalcResponseTime = false;
         try {
             for (int i = 0; i < numberOfOps && !BFTMapClientMP.stop; i++) {
 
-                long lastSentInstant = System.nanoTime();
+                long lastSentInstant = 0;
+                shouldCalcResponseTime = this.id < 5 && (r_calcResponseTime.nextInt(100) <= 10);
+                if (shouldCalcResponseTime)
+                    lastSentInstant = System.nanoTime();
+                
                 BFTMapClientMP.ops[id - BFTMapClientMP.initId]++;
 
                 int r = r_p.nextInt(100); // 0 a 100
                 int c = c_p.nextInt(100);
 
                 try {
-                    if (r < p_read && p_read != 0) {// leitura
+                    if (r <= p_read && p_read != 0) {// leitura
                     
                         Integer table1 = t1.nextInt(maxIndex);
-                        Integer key1 = k1.nextInt(maxKeys);
+                        Integer key1 = k1.nextInt(numUniqueKeys);
                         byte[] res = getEntry(store, table1, key1);
                         if (!async && res == null)
                             throw new NullReponseException("Error, got null entries");
@@ -91,10 +90,10 @@ class Client extends Thread {
                         if ((c < p_conflict && p_conflict != 0)) {// conflita
                             Integer table1 = t1.nextInt(maxIndex);
                             Integer table2 = t2.nextInt(maxIndex);
-                            Integer key1 = k1.nextInt(maxKeys);
-                            Integer key2 = k2.nextInt(maxKeys);
+                            Integer key1 = k1.nextInt(numUniqueKeys);
+                            Integer key2 = k2.nextInt(numUniqueKeys);
                             while (table1.equals(table2)) {
-                                table2 = t2.nextInt(maxKeys);
+                                table2 = t2.nextInt(numUniqueKeys);
                             }
                             if (table1 > table2) {
                                 int aux = table1;
@@ -107,7 +106,7 @@ class Client extends Thread {
                             }
                         } else {// escrita em 1 particao
                             int table1 = t1.nextInt(maxIndex);
-                            int key1 = k1.nextInt(maxKeys);
+                            int key1 = k1.nextInt(numUniqueKeys);
                             boolean res = insertValue(store, table1, key1);
                             if (!async && !res) {
                                 throw new NullReponseException("Failed to insert value, returned a null response");
@@ -115,8 +114,8 @@ class Client extends Thread {
                         }
                     }
                     this.successOps += 1;
-                    long latency = System.nanoTime() - lastSentInstant;
-                    storage.store(latency);
+                    if (shouldCalcResponseTime)
+                        logger.info("Latency: {} ns", System.nanoTime() - lastSentInstant);
         
                     if (interval > 0) {
                         try {
@@ -150,8 +149,7 @@ class Client extends Thread {
     private boolean insertValue(PBFTMapMP bftMap, Integer nameTable, int index) throws Exception {
         Integer key = index;
         Random rand = new Random();
-        int obj = rand.nextInt();
-        byte[] valueBytes = ByteBuffer.allocate(1024).array();
+        byte[] valueBytes = ByteBuffer.allocate(1024).array();        
         // Random rand = new Random();
         // byte[] valueBytes = new byte[VALUE_SIZE];
         // rand.nextBytes(valueBytes);

@@ -25,13 +25,16 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -69,7 +72,7 @@ public class ParallelServiceReplica extends ServiceReplica {
     private boolean partition;
     private boolean recovering = true;
     private List<MessageContextPair> msgBuffer = new ArrayList<>();
-    protected Scheduler scheduler;
+    public Scheduler scheduler;
     private ThroughputStatistics statistics;
     private ServiceReplicaWorker[] workers;
     protected Map<String, MultiOperationCtx> ctxs = new Hashtable<>();
@@ -246,23 +249,6 @@ public class ParallelServiceReplica extends ServiceReplica {
         return this.tomLayer.getLastExec();
     }
 
-    public void scheduleLog(Queue<Operation> log) {
-        for (Operation o : log) {
-            HibridClassToThreads ct = this.scheduler.getMapping().getClass(o.classID);
-            TOMMessage message = new TOMMessage(this.id, 1, o.sequence, o.content, 1);
-            MessageContextPair request = new MessageContextPair(message, o.classID, 0, null, null); 
-            
-            if (ct.type == ClassToThreads.CONC) {// conc
-                ct.queues[ct.threadIndex].add(request);
-                ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
-            } else { // sync
-                for (Queue q : ct.queues) {
-                   q.add(request);
-                }
-            }
-        }
-    }
-
     class ServiceReplicaWorker extends Thread {
 
         /**
@@ -308,12 +294,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                         ByteArrayInputStream in = new ByteArrayInputStream(msg.request.getContent());
                         DataInputStream dis = new DataInputStream(in);
                         int cmd = dis.readInt();
-                        //if (cmd == BFTMapRequestType.CKP) {
-                        //    if (this.parallelServiceReplica.numCheckpointsExecuted.get() >= this.parallelServiceReplica.desiredCheckpoints)
-                        //        continue;
-                        //    else
-                        //        this.parallelServiceReplica.numCheckpointsExecuted.incrementAndGet();
-                        //}
+
+                        logger.info("Processing message with cmd {}", BFTMapRequestType.getOp(cmd));
 
                         if (cmd == BFTMapRequestType.RECOVERER) {
                             msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
@@ -321,8 +303,10 @@ public class ParallelServiceReplica extends ServiceReplica {
 
                         } else if (cmd == BFTMapRequestType.RECOVERY_FINISHED) {
                             int partitionId = dis.readInt();
-                            logger.info("Recovery process finished for partition {}! Log has {} operations already stored.",
-                                partitionId, this.log.size());
+                            double logSizeMB = (this.log.isEmpty()) ? 0 : this.log.size()/1000000;
+
+                            logger.info("Recovery process finished for partition {}! Log has {} operations already stored ({} MB).",
+                                partitionId, this.log.size(), logSizeMB);
                             threadRecoveryFinished = true;
 
                         } else if (ct.type == ClassToThreads.CONC) {
@@ -359,7 +343,9 @@ public class ParallelServiceReplica extends ServiceReplica {
                                     checkpointer.addRequest(msg);
                                     this.checkpointer.notify();
                                     this.checkpointer.wait();
+                                    logger.info("Cleaning log with {} operations", this.log.size());
                                     this.log.clear();
+                                    logger.info("Log cleaned, now log has {} operations", this.log.size());
                                 }
                             } else {
                                 msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
@@ -540,7 +526,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                     } else if (op == BFTMapRequestType.LOG) {
                         Queue<Operation> log = new LinkedList<Operation>(
                                 this.parallelServiceReplica.workers[rc_id].log);
-                        logger.info("Sending log with {} operations", log.size());
+                        logger.info("Sending log for partition {} with {} operations ", this.rc_id, log.size());
                         os.writeObject(log);
                     }
                     os.flush();
@@ -740,9 +726,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                         logger.info("Received an empty checkpoint for partition {}, ignoring recovery process",
                                 this.rc_id);
                     } else {
-                        logger.info("Received the checkpoint of partition {} with size {} from {}", this.rc_id, state.length, requests.get(this.rc_id));
-
-                        logger.info("Scheduling checkpoint installation of partition {}", this.rc_id);
+                        logger.info("Received the checkpoint of partition {} with size {} MB from {}", this.rc_id, state.length/1000000, requests.get(this.rc_id));
+                        
                         bos = new ByteArrayOutputStream();
                         dos = new DataOutputStream(bos);
                         dos.writeInt(BFTMapRequestType.RECOVERER);
@@ -759,49 +744,42 @@ public class ParallelServiceReplica extends ServiceReplica {
                             this.parallelServiceReplica.scheduled, rc_id, rc_id, state, cid, cid, cid,
                             rc_id, cid, cid, null, req, this.parallelServiceReplica.partition));
                         this.parallelServiceReplica.scheduler.schedule(msg);
-                        
+                        logger.info("Scheduled checkpoint installation of partition {}", this.rc_id);
+
                         logger.info("Requesting log of partition {}", this.rc_id);
                         os2.writeInt(BFTMapRequestType.LOG);
                         os2.flush();
 
                         Queue<Operation> log = (Queue<Operation>) is2.readObject();
-                        logger.info("Received log of partition {} with {} operations", this.rc_id, log.size());
-
-                        logger.info("Scheduling log installation of partition {}", this.rc_id);
+                        logger.info("Received log of partition {} with {} operations ({} MB)", this.rc_id, log.size(), log.size()/1000000);
+                        Map<Integer, Integer> classIdLogCount = new HashMap<>();
+                        for (Operation o : log) {           
+                            HibridClassToThreads ct = this.parallelServiceReplica.scheduler.getMapping().getClass(o.classID);
+                            TOMMessage message = new TOMMessage(this.parallelServiceReplica.id, 1, o.sequence, o.content, 1);
+                            msg = new MessageContextPair(message, o.classID, 0, null, null); 
+                
+                            int threadId = this.parallelServiceReplica.scheduler.getMapping().getExecutorThread(msg.classId);                                             
+                            ((FIFOQueue) this.parallelServiceReplica.scheduler.getMapping().getAllQueues()[threadId]).add(msg);
+                            logger.debug("Adding to queue of partition {}", threadId);
+                            classIdLogCount.put(threadId, classIdLogCount.getOrDefault(threadId, 0) + 1);
+                        }
+                        logger.info("Added messages to the respective queues:");
+                        for (Entry<Integer, Integer> kv: classIdLogCount.entrySet()) {
+                            logger.info("Added {} logs to thread {}", kv.getValue(), kv.getKey());
+                        }
+                        logger.info("Schedule log installation of partition {}", this.rc_id);
                         bos = new ByteArrayOutputStream();
                         dos = new DataOutputStream(bos);
-                        dos.writeInt(BFTMapRequestType.LOG_RECOVERY);
+                        dos.writeInt(BFTMapRequestType.RECOVERY_FINISHED);
+                        dos.writeInt(this.rc_id);
                         dos.flush();
-                        oos = new ObjectOutputStream(bos);
-                        oos.writeInt(this.rc_id);
-                        oos.writeObject(log);
-                        oos.flush();
                         bos.flush();
-
-                        req = new TOMMessage(this.parallelServiceReplica.id, 1, 1, bos.toByteArray(), 1);
-                        req.groupId = (Integer.toString(this.rc_id) + "#S").hashCode();
-                        msg = new MessageContextPair(req, req.groupId, 0, null, new MessageContext(cid, cid, TOMMessageType.REPLY, cid,
-                            this.parallelServiceReplica.scheduled, rc_id, rc_id, state, cid, cid, cid,
-                            rc_id, cid, cid, null, req, this.parallelServiceReplica.partition));
-                        this.parallelServiceReplica.scheduler.schedule(msg);
-
-                        // for (Operation o : log) {
-                        //     HibridClassToThreads ct = this.parallelServiceReplica.scheduler.getMapping().getClass(o.classID);
-                        //     TOMMessage message = new TOMMessage(this.parallelServiceReplica.id, 1, o.sequence, o.content, 1);
-                        //     MessageContextPair request = new MessageContextPair(message, o.classID, 0, null, null); 
-                            
-                        //     if (ct.type == ClassToThreads.CONC) {// conc
-                        //         ct.queues[ct.threadIndex].add(request);
-                        //         ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
-                        //     } else { // sync
-                        //         for (Queue q : ct.queues) {
-                        //            q.add(request);
-                        //         }
-                        //         // insere apenas na primeira, para não duplicar
-                        //     }
-                        // }
-                        // this.parallelServiceReplica.statistics.computeStatistics(this.rc_id, 1);
-                        // logger.info("Log of partition {} installed", this.rc_id);
+            
+                        req = new TOMMessage(this.parallelServiceReplica.getId(), 1, 1, bos.toByteArray(), 1);
+                        req.groupId = (Integer.toString(this.rc_id) + "#").hashCode();
+                                    
+                        ((ParallelServiceReplica)this.parallelServiceReplica).scheduler.schedule(new MessageContextPair(req, req.groupId, 0, null, null));
+                        logger.info("Scheduled recovery finished message for partition {}.", this.rc_id);                        
                     }
                 } catch (Exception ex) {
                     logger.warn("Failed requesting state to another replica.", ex);
@@ -816,25 +794,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                     }
                 }
             }
-
-            try {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                DataOutputStream dos = new DataOutputStream(bos);
-                dos.writeInt(BFTMapRequestType.RECOVERY_FINISHED);
-                dos.writeInt(this.rc_id);
-                dos.flush();
-                bos.flush();
-
-                TOMMessage req = new TOMMessage(this.parallelServiceReplica.id, 1, 1, bos.toByteArray(), 1);
-                req.groupId = (Integer.toString(this.rc_id) + "#S").hashCode();
-
-                logger.info("Scheduling recovery finished message for thread {}.", this.rc_id);
-                this.parallelServiceReplica.scheduler.schedule(new MessageContextPair(req, req.groupId, 0, null,
-                        null));
-
-            } catch (Exception e) {
-                logger.error("Failure sending recovery finished request", e);
-            }
+            
             for (Socket socket: sockets) {
                 try {
                     if (null != socket)

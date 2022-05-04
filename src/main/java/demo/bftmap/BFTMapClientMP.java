@@ -47,7 +47,7 @@ public class BFTMapClientMP {
     public static void main(String[] args) throws Exception {
         if (args.length < 7) {
             logger.info(
-                    "Usage: ... BFTMapClientMP <num. threads> <process id> <number of operations> <interval> <maxIndex> <p_read %> <p_conflict %> <verbose?> <parallel?> <async?>");
+                    "Usage: ... BFTMapClientMP <num. threads> <process id> <number of operations> <interval> <maxIndex> <numUniqueKeys> <p_read %> <p_conflict %> <verbose?> <parallel?> <async?>");
             System.exit(-1);
         }
 
@@ -58,34 +58,30 @@ public class BFTMapClientMP {
         // int requestSize = Integer.parseInt(args[3]);
         int interval = Integer.parseInt(args[3]);
         int max = Integer.parseInt(args[4]);
-        int p_conflict = Integer.parseInt(args[6]);
-        int p_read = Integer.parseInt(args[5]);
-        boolean verbose = Boolean.parseBoolean(args[7]);
-        boolean parallel = Boolean.parseBoolean(args[8]);
-        boolean async = Boolean.parseBoolean(args[9]);
+        int numUniqueKeys = Integer.parseInt(args[5]);
+        int p_conflict = Integer.parseInt(args[7]);
+        int p_read = Integer.parseInt(args[6]);
+        boolean verbose = Boolean.parseBoolean(args[8]);
+        boolean parallel = Boolean.parseBoolean(args[9]);
+        boolean async = Boolean.parseBoolean(args[10]);        
         logger.info("P_CONFLICT ====== {}", p_conflict);
         Client[] c = new Client[numThreads];
         ops = new int[numThreads];
         for (int k = 0; k < ops.length; k++) {
             ops[k] = 0;
         }
-
-        Storage storage = new Storage(numberOfOps * numThreads);
-        ClientLatencyLogger latencyLogger = new ClientLatencyLogger(storage);
-        ScheduledExecutorService latencyExec = Executors.newSingleThreadScheduledExecutor();      
-        
+          
         ReplyCounterListener replyCounterListener = new ReplyCounterListener();
 
         for (int i = 0; i < numThreads; i++) {
             Thread.sleep(100);
-            c[i] = new Client(initId + i, numberOfOps, interval, max, verbose, parallel, async, numThreads, p_read,
-                    p_conflict, storage, replyCounterListener);
+            c[i] = new Client(initId + i, numberOfOps, interval, max, numUniqueKeys, verbose, parallel, async, numThreads, p_read,
+                    p_conflict, replyCounterListener);
         }
 
         long totalOps = numberOfOps * numThreads;
 
-        logger.info("Going to execute {} operations, conflict={}%, parallel={}", totalOps, p_conflict, parallel);
-        latencyExec.scheduleAtFixedRate(latencyLogger, 0, 1, TimeUnit.SECONDS);
+        logger.info("Going to execute {} operations, numOps={}, numThreads={}, conflict={}%, parallel={}", totalOps, numberOfOps, numThreads, p_conflict, parallel);
         for (int i = 0; i < numThreads; i++) {
             Thread.sleep(100);
             c[i].start();

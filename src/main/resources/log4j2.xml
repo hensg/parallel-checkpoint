@@ -41,6 +41,9 @@
         <logger name="demo.bftmap.BFTMapClientMP" additivity="false">
             <appender-ref ref="fileLoggerClient" />
         </logger>
+        <logger name="demo.bftmap.Client" additivity="false">
+            <appender-ref ref="fileLoggerClient" />
+        </logger>
         <logger name="demo.bftmap.ClientLatencyLogger" additivity="false">
             <appender-ref ref="fileLoggerClientLatency" />
         </logger>

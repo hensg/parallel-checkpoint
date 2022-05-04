@@ -50,9 +50,7 @@ public class ParallelAsynchServiceProxy extends AsynchServiceProxy {
     /**
      * 
      * @param request
-     * @param targets
-     * @param replyListener
-     * @param reqType       Request type
+     * @param targetsc   Request type
      * @return
      */
     public int invokeParallelAsynchRequest(byte[] request, int[] targets, ReplyListener replyListener,

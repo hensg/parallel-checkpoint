@@ -9,10 +9,6 @@ ssh_client=${1}
 ssh_list=${2}
 IFS=',' read -ra ssh_list <<< "$ssh_list"
 
-#client threads
-num_threads=100
-#num operations per client thread
-num_ops=30000
 
 NO_CHECKPOINT=999999999
 datetime=$(date +%F_%H-%M-%S)
@@ -24,13 +20,15 @@ function start_experiment() {
     local run=$4
     local server_threads=$5
     local client_interval=0
-    local client_max_index=3
+    local client_max_index=$(($server_threads - 1))
     local client_p_read=50
     local client_p_conflict=$6
     local client_verbose=false
     local client_parallel=true        
     local checkpoint_interval=$7
-    local client_async=true
+    local client_async=false
+    local num_unique_keys=$8
+    local initial_entries=5120
 
     echo "Ensure client is not running"
     client_cmd="
@@ -45,6 +43,7 @@ function start_experiment() {
         sudo sed -i s/'=PARALLEL=.*'/=PARALLEL=${partitioned}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=THREADS=.*'/=THREADS=${server_threads}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service;
+        sudo sed -i s/'=INITIAL_ENTRIES=.*'/=INITIAL_ENTRIES=${initial_entries}/g /etc/systemd/system/bft-smart.service;
         sudo rm -f /srv/config/currentView
         sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/*;
         sudo rm -rf /srv/logs/*.log ;
@@ -67,7 +66,7 @@ function start_experiment() {
          sudo truncate -s 0 /srv/logs/*.log;
          tail -f /srv/logs/client.log &;
          cd /srv;
-         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
+         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
          kill %1;
     "
     ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
@@ -75,9 +74,6 @@ function start_experiment() {
     echo "Client finished sending requests"
 
     echo "Waiting a few seconds"
-    if [[ "$client_async" -eq "true" ]]; then
-        sleep 60
-    fi
     echo "Getting remote logs"
 
     local experiment_dir=experiments/name=sobrecarga/datetime=$datetime/checkpoint=$checkpoint_interval/server_threads=$server_threads/clients=$num_threads/partitioned=${partitioned}/run=$run/read=${client_p_read}/conflict=${client_p_conflict}
@@ -95,11 +91,18 @@ function start_experiment() {
 }
 
 
-for checkpoint_interval in 400000; do
-    for particoes in 4; do
-        for conflito in 0; do 
-            start_experiment true $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
-            start_experiment false $num_threads $num_ops 1 $particoes $conflito $checkpoint_interval;
+client_num_threads=110
+conflito=0
+num_unique_keys=1000
+
+for checkpoint_interval in 400000 800000 1600000; do
+    for server_threads in 4 8 16; do
+        for partitioned in true false; do            
+            num_ops=$(($checkpoint_interval + 200000))
+            num_ops_by_client=$(($num_ops / $client_num_threads ))                
+            echo "Executing $num_ops operações for particionado=$partitioned, server_threads=$server_threads, checkpoint=$checkpoint_interval"
+
+            start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys;
         done
     done
 done

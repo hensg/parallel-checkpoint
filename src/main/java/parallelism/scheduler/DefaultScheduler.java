@@ -107,11 +107,11 @@ public class DefaultScheduler implements Scheduler {
         }
         if (ct.type == ClassToThreads.CONC) {// conc
             ct.queues[ct.threadIndex].add(request);
-            logger.info("Added request to queue of thread {}", ct.threadIndex);
+            logger.debug("Added request to queue of thread {}", ct.threadIndex);
             ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
         } else { // sync
             for (Queue q : ct.queues) {
-                logger.info("Added request to queue {}", q);
+                logger.debug("Added request to queue {}", q);
                 q.add(request);
             }
         }

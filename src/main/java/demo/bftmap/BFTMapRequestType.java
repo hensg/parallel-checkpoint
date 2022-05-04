@@ -42,4 +42,31 @@ public class BFTMapRequestType {
         public static final int LOG_RECOVERY = 21;
         public static final int RECOVERY_FINISHED = 22;
 
+        public static String getOp(int id) {
+                switch (id) {
+                        case 1: return "TABLE_CREATE";
+                        case 2: return "TAB_REMOVE";
+                        case 3: return "SIZE_TABLE";
+                        case 4: return "PUT";
+                        case 5: return "GET";
+                        case 6: return "SIZE";
+                        case 7: return "REMOVE";
+                        case 8: return "CHECK";
+                        case 9: return "GET_TABLE";
+                        case 10: return "TAB_CREATE_CHECK";
+                        case 11: return "EXIT";
+                        case 12: return "PUT12";
+                        case 13: return "GET12";
+                        case 14: return "CKP";
+                        case 15: return "CKPPART";
+                        case 16: return "RECOVERER";
+                        case 17: return "SENDER";
+                        case 18: return "METADATA";
+                        case 19: return "STATE";
+                        case 20: return "LOG";
+                        case 21: return "LOG_RECOVERY";
+                        case 22: return "RECOVERY_FINISHED";
+                        default: return "NOT MAPPED";
+                }
+        }
 }

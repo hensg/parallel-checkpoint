@@ -26,6 +26,7 @@ function start_experiment() {
     local client_verbose=false
     local client_parallel=true
     local client_async=false
+    local num_unique_keys=1000
 
     echo "Ensure client is not running"
     client_cmd="
@@ -62,7 +63,7 @@ function start_experiment() {
          sudo truncate -s 0 /srv/logs/*.log;
          tail -f /srv/logs/client.log &;
          cd /srv;
-         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
+         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
          sleep 5;
          kill %1;
     "
