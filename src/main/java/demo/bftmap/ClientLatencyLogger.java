@@ -36,4 +36,8 @@ class ClientLatencyLogger implements Runnable {
         logger.info("Latency: {} ns", avgLatency);
         latencyIndex.set(0);
     }
+    
+    public void logLatency(long latency) {
+        logger.info("Latency: {} ns", latency);
+    }
 }

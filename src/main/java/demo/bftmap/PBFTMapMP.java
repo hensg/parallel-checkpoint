@@ -299,6 +299,7 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             sb.append('#');
             sb.append('S');
             dos.writeUTF(new String(value));
+            dos.flush();
             byte[] rep = null;
 
             if (parallel) {

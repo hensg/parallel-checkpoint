@@ -114,15 +114,15 @@ percent_of_read_ops=0 # percent of read operations, 0 means write-only operation
 num_unique_keys=50
 initial_entries=3 # MB
 
-for checkpoint_interval in 400000 ; do # 400000 800000 1600000; do    
+for checkpoint_interval in 400000; do # 800000 1600000; do    
     # each log = 1 byte
     # 400k ops = 0,4 MB
     # 800k ops = 0,8 MB
     # 1600k ops = 1,6 MB
-    num_logs=$(($checkpoint_interval - 1))
+    num_logs=$(($checkpoint_interval - 100))
     
-    partitioned=true
-    server_threads=2
+    partitioned=false
+    server_threads=4
     
     num_ops=$(($checkpoint_interval + $num_logs)) # total de OPERAÇÕES
     num_ops_by_client=$(($num_ops / $client_num_threads))

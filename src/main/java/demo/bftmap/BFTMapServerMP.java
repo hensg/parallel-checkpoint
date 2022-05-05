@@ -222,7 +222,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                 sendState();
                 break;
             default:
-                throw new RuntimeException(String.format("Unmapped operation of type " + cmd));
+                throw new RuntimeException("Unmapped operation of type " + cmd);
             }
             return reply;
         } catch (IOException ex) {
@@ -233,7 +233,6 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
 
     public byte[] getSnapshot(int[] particoes) {
         long start = System.nanoTime();
-        logger.info("Getting snapshot of {} partitions", particoes.length);
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(bos);
                 ObjectOutputStream out = new ObjectOutputStream(bos)) {
@@ -350,7 +349,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             Map<Integer, byte[]> b = (Map<Integer, byte[]>) ios.readObject();
             this.tableMap.addTable(rcid, b);
 
-            logger.info("Snapshot of partition {} installed with {} MB", rcid, states.length/1000000);
+            logger.info("Snapshot of partition {} installed with {} MB", rcid, states.length/1000000f);
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("Error installing snapshot of partition {}", rcid, ex);
             throw new RuntimeException("Error installing snapshot", ex);

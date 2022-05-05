@@ -210,7 +210,7 @@ public class ParallelScheduler implements Scheduler {
             conf[ct.tIds[k]][executor] = 1;
         }
 
-        //FIXME: Adiantar o checkpoint para bater com o do scheduler serial.
+        // FIXME: Adiantar o checkpoint para bater com o do scheduler serial.
         // Cuidar com o adiantamento causado por conflito que pode acabar
         // gerando mais CP
         if (cmds % (CPperiod/workers) == 0) { // create cp request

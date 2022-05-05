@@ -261,11 +261,15 @@ public class ParallelServiceReplica extends ServiceReplica {
         private Checkpointer checkpointer;
         private FIFOQueue<Integer> interacoes = new FIFOQueue<>();
         public Queue<Operation> log;
+        public List<Operation> logV2;
+        public List<byte[]> logV3;
 
         public ServiceReplicaWorker(ParallelServiceReplica parallelServiceReplica,
                 FIFOQueue<MessageContextPair> requests, int id) {
             this.parallelServiceReplica = parallelServiceReplica;
             this.log = new LinkedList<Operation>();
+            this.logV2 = new ArrayList<>();
+            this.logV3 = new ArrayList<>();
             this.thread_id = id;
             this.requests = requests;
             this.checkpointer = new Checkpointer(this.parallelServiceReplica, this.thread_id);
@@ -295,7 +299,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                         DataInputStream dis = new DataInputStream(in);
                         int cmd = dis.readInt();
 
-                        logger.info("Processing message with cmd {}", BFTMapRequestType.getOp(cmd));
+                        logger.debug("Processing message with cmd {}", BFTMapRequestType.getOp(cmd));
 
                         if (cmd == BFTMapRequestType.RECOVERER) {
                             msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
@@ -303,7 +307,7 @@ public class ParallelServiceReplica extends ServiceReplica {
 
                         } else if (cmd == BFTMapRequestType.RECOVERY_FINISHED) {
                             int partitionId = dis.readInt();
-                            double logSizeMB = (this.log.isEmpty()) ? 0 : this.log.size()/1000000;
+                            double logSizeMB = (this.log.isEmpty()) ? 0 : this.log.size()/1000000f;
 
                             logger.info("Recovery process finished for partition {}! Log has {} operations already stored ({} MB).",
                                 partitionId, this.log.size(), logSizeMB);
@@ -315,9 +319,15 @@ public class ParallelServiceReplica extends ServiceReplica {
                                     .executeOrdered(msg.request.getContent(), msg.m);
 
                             MultiOperationCtx ctx = this.parallelServiceReplica.ctxs.get(msg.request.toString());
-
-                            this.log.add(new Operation(cmd, msg.classId, msg.request.getContent(),
-                                    msg.request.getSequence()));
+                            Operation op = new Operation(cmd, msg.classId, msg.request.getContent(),
+                                msg.request.getSequence());
+                            this.log.add(op);
+                            this.logV2.add(op);
+                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                            ObjectOutputStream oos = new ObjectOutputStream(bos);
+                            oos.writeObject(op);
+                            oos.flush();
+                            this.logV3.add(bos.toByteArray());
                             // logger.info("log peek = "+log.peek().classID);
                             if (ctx != null) { // recovery log messages have no context
                                 ctx.add(msg.index, msg.resp);
@@ -345,14 +355,23 @@ public class ParallelServiceReplica extends ServiceReplica {
                                     this.checkpointer.wait();
                                     logger.info("Cleaning log with {} operations", this.log.size());
                                     this.log.clear();
+                                    this.logV2.clear();
+                                    this.logV3.clear();
                                     logger.info("Log cleaned, now log has {} operations", this.log.size());
                                 }
                             } else {
                                 msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
                                         .executeOrdered(msg.request.getContent(), msg.m);
+                                Operation op = new Operation(cmd, msg.classId, msg.request.getContent(),
+                                    msg.request.getSequence());
+                                this.log.add(op);
+                                this.logV2.add(op);
+                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                ObjectOutputStream oos = new ObjectOutputStream(bos);
+                                oos.writeObject(op);
+                                oos.flush();
+                                this.logV3.add(bos.toByteArray());
 
-                                this.log.add(new Operation(cmd, msg.classId, msg.request.getContent(),
-                                        msg.request.getSequence()));
                                 //logger.info("log peek = "+log.peek());
                                 MultiOperationCtx ctx = this.parallelServiceReplica.ctxs
                                         .get(msg.request.toString());
@@ -380,12 +399,22 @@ public class ParallelServiceReplica extends ServiceReplica {
                                         this.checkpointer.notify();
                                         this.checkpointer.wait();
                                         this.log.clear();
+                                        this.logV2.clear();
+                                        this.logV3.clear();
                                     }
                                 } else {
                                     msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
                                             .executeOrdered(msg.request.getContent(), msg.m);
-                                    this.log.add(new Operation(cmd, msg.classId, msg.request.getContent(),
-                                            msg.request.getSequence()));
+                                    Operation op = new Operation(cmd, msg.classId, msg.request.getContent(),
+                                        msg.request.getSequence());
+                                    this.log.add(op);
+                                    this.logV2.add(op);
+                                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                    ObjectOutputStream oos = new ObjectOutputStream(bos);
+                                    oos.writeObject(op);
+                                    oos.flush();
+                                    this.logV3.add(bos.toByteArray());
+
                                     MultiOperationCtx ctx = this.parallelServiceReplica.ctxs
                                             .get(msg.request.toString());
 
@@ -413,6 +442,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                                         this.checkpointer.notify();
                                         this.checkpointer.wait();
                                         this.log.clear();
+                                        this.logV2.clear();
+                                        this.logV3.clear();
                                     }
                                 }
                                 this.parallelServiceReplica.scheduler.getMapping().getBarrier(msg.classId).await();
@@ -457,11 +488,11 @@ public class ParallelServiceReplica extends ServiceReplica {
 
         @Override
         public void run() {
-            try {
-                ObjectInputStream is = new ObjectInputStream(client.getInputStream());
-                ObjectOutputStream os = new ObjectOutputStream(client.getOutputStream());
+            try {                
                 int op;
-                while (true) {
+                while (true) {                    
+                    ObjectInputStream is = new ObjectInputStream(client.getInputStream());
+                    ObjectOutputStream os = new ObjectOutputStream(client.getOutputStream());
                     try {
                         op = is.readInt();
                     } catch (EOFException e) {
@@ -469,6 +500,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                         client.close();
                         return;
                     }
+                    logger.info("Recover thread {} received a request with op {}", this.rc_id, BFTMapRequestType.getOp(op));
                     if (op == BFTMapRequestType.METADATA) {
                         logger.info("Recover received a request recover operation of type: METADATA");
                         String data = "";
@@ -524,12 +556,16 @@ public class ParallelServiceReplica extends ServiceReplica {
                             logger.error("Failed reading local states files", ex);
                         }
                     } else if (op == BFTMapRequestType.LOG) {
-                        Queue<Operation> log = new LinkedList<Operation>(
-                                this.parallelServiceReplica.workers[rc_id].log);
-                        logger.info("Sending log for partition {} with {} operations ", this.rc_id, log.size());
+                        // Queue<Operation> log = this.parallelServiceReplica.workers[rc_id].log;
+                        // List<Operation> log = this.parallelServiceReplica.workers[rc_id].logV2;
+                        // List<byte[]> log = this.parallelServiceReplica.workers[rc_id].logV3;
+                        Queue<Operation> log = new LinkedList<>();
+                        log.add(this.parallelServiceReplica.workers[rc_id].log.peek());
+                        logger.info("Sending log for partition {}", this.rc_id);
                         os.writeObject(log);
                     }
                     os.flush();
+                    os.close();
                 }
             } catch (IOException | ClassNotFoundException ex) {
                 logger.error("Failure handling recover operation", ex);
@@ -721,12 +757,12 @@ public class ParallelServiceReplica extends ServiceReplica {
                     ByteArrayOutputStream bos;
                     DataOutputStream dos;
 
-                    byte[] state = (byte[]) is2.readObject();
+                    byte[] state = (byte[]) is2.readObject();                    
                     if (state.length == 0) {
                         logger.info("Received an empty checkpoint for partition {}, ignoring recovery process",
                                 this.rc_id);
                     } else {
-                        logger.info("Received the checkpoint of partition {} with size {} MB from {}", this.rc_id, state.length/1000000, requests.get(this.rc_id));
+                        logger.info("Received the checkpoint of partition {} with size {} MB from {}", this.rc_id, state.length/1000000f, requests.get(this.rc_id));
                         
                         bos = new ByteArrayOutputStream();
                         dos = new DataOutputStream(bos);
@@ -746,15 +782,21 @@ public class ParallelServiceReplica extends ServiceReplica {
                         this.parallelServiceReplica.scheduler.schedule(msg);
                         logger.info("Scheduled checkpoint installation of partition {}", this.rc_id);
 
+                        os2.reset();
                         logger.info("Requesting log of partition {}", this.rc_id);
                         os2.writeInt(BFTMapRequestType.LOG);
                         os2.flush();
 
                         Queue<Operation> log = (Queue<Operation>) is2.readObject();
-                        logger.info("Received log of partition {} with {} operations ({} MB)", this.rc_id, log.size(), log.size()/1000000);
+                        // List<Operation> log = (List<Operation>) is2.readObject();
+                        // List<byte[]> log = (List<byte[]>) is2.readObject();
+                        logger.info("Received log of partition {} with {} operations ({} MB)", this.rc_id, log.size(), log.size()/1000000f);                        
                         Map<Integer, Integer> classIdLogCount = new HashMap<>();
-                        for (Operation o : log) {           
-                            HibridClassToThreads ct = this.parallelServiceReplica.scheduler.getMapping().getClass(o.classID);
+                        for (Operation o: log) {                                   
+                            // ByteArrayInputStream bais = new ByteArrayInputStream(b);
+                            // ObjectInputStream ois = new ObjectInputStream(bais);
+                            // Operation o = (Operation) ois.readObject();
+
                             TOMMessage message = new TOMMessage(this.parallelServiceReplica.id, 1, o.sequence, o.content, 1);
                             msg = new MessageContextPair(message, o.classID, 0, null, null); 
                 

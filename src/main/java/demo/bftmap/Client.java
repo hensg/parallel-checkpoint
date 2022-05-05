@@ -32,6 +32,7 @@ class Client extends Thread {
     int p_read;
     int successOps;
     boolean async;
+    ClientLatencyLogger clientLatencyLogger = new ClientLatencyLogger();
 
     public Client(int id, int numberOfOps, int interval, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
             int numThreads, int p_read, int p_conflict, ReplyCounterListener replyCounterListener) {
@@ -115,7 +116,7 @@ class Client extends Thread {
                     }
                     this.successOps += 1;
                     if (shouldCalcResponseTime)
-                        logger.info("Latency: {} ns", System.nanoTime() - lastSentInstant);
+                        clientLatencyLogger.logLatency(System.nanoTime() - lastSentInstant);
         
                     if (interval > 0) {
                         try {
