@@ -162,7 +162,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                     out = new ByteArrayOutputStream();
                     new DataOutputStream(out).writeBytes(value);
                     reply = out.toByteArray();
-                    logger.info("Got {} bytes with key {} from table {}",  valueBytes.length, key, tableName);
+                    logger.debug("Got {} bytes with key {} from table {}",  valueBytes.length, key, tableName);
                 } else {
                     reply = new byte[0];
                 }

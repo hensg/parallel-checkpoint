@@ -17,6 +17,9 @@ public class Operation implements Serializable {
     public byte[] content;
     public int sequence;
 
+    public Operation() {
+    }
+
     public Operation(int op, int classID, byte[] content, int sequence) {
         this.operation = op;
         this.classID = classID;
@@ -39,4 +42,22 @@ public class Operation implements Serializable {
     public int getSequence() {
         return this.sequence;
     }
+
+    public void setOperation(int operation) {
+        this.operation = operation;
+    }
+
+    public void setClassID(int classID) {
+        this.classID = classID;
+    }
+
+    public void setContent(byte[] content) {
+        this.content = content;
+    }
+
+    public void setSequence(int sequence) {
+        this.sequence = sequence;
+    }
+
+
 }

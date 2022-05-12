@@ -108,18 +108,16 @@ function start_experiment() {
 }
 
 
-client_num_threads=100
+client_num_threads=110
 conflito=0
-percent_of_read_ops=0 # percent of read operations, 0 means write-only operations
+percent_of_read_ops=50 # percent of read operations, 0 means write-only operations
 num_unique_keys=50
-initial_entries=3 # MB
+initial_entries=2000 #MB # 200000 ops
 
-for checkpoint_interval in 400000; do # 800000 1600000; do    
+for checkpoint_interval in 400000 800000 1600000; do    
     # each log = 1 byte
-    # 400k ops = 0,4 MB
-    # 800k ops = 0,8 MB
-    # 1600k ops = 1,6 MB
-    num_logs=$(($checkpoint_interval - 100))
+    #num_logs=50000
+    num_logs=$(($checkpoint_interval / 2))
     
     partitioned=false
     server_threads=4
@@ -130,10 +128,10 @@ for checkpoint_interval in 400000; do # 800000 1600000; do
     echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
     start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs; 
 
-    # partitioned=true    
-    # for server_threads in 4 8 16; do        
-    #     echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
+    partitioned=true    
+    for server_threads in 4 8 16; do        
+        echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
 
-    #     start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs;
-    # done
+        start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs;
+    done
 done
