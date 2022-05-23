@@ -13,9 +13,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -88,17 +91,10 @@ public class ParallelServiceReplica extends ServiceReplica {
     private int numDisks;
     protected AtomicInteger numCheckpointsExecuted = new AtomicInteger();
     ScheduledExecutorService statisticsThreadExecutor =  Executors.newSingleThreadScheduledExecutor();
-    Kryo kryo;
 
     public ParallelServiceReplica(int id, Executable executor, Recoverable recoverer, int initialWorkers, int period,
             boolean part, int numDisks) throws IOException, ClassNotFoundException {
         super(id, executor, null);
-            
-        kryo = new Kryo();        
-        kryo.register(ArrayList.class);
-        kryo.register(Operation.class);
-        kryo.register(Queue.class);
-        kryo.register(byte[].class);
 
         this.numDisks = numDisks;
         this.partition = part;
@@ -488,9 +484,16 @@ public class ParallelServiceReplica extends ServiceReplica {
         private Integer metadata;
         private final Socket client;
         private final ParallelServiceReplica parallelServiceReplica;
+        Kryo kryo;       
 
         public RecoverHandlerThread(ParallelServiceReplica parallelServiceReplica, int rc_id, byte[] state,
                 int metadata, Socket client) {
+            kryo = new Kryo();        
+            kryo.register(ArrayList.class);
+            kryo.register(Operation.class);
+            kryo.register(Queue.class);
+            kryo.register(LinkedList.class);
+            kryo.register(byte[].class);
             this.parallelServiceReplica = parallelServiceReplica;
             this.rc_id = rc_id;
             this.state = state;
@@ -503,14 +506,16 @@ public class ParallelServiceReplica extends ServiceReplica {
         public void run() {                        
             int op;
             ObjectInputStream is = null;
-            ObjectOutputStream os = null;
+            OutputStream os = null;
+            ObjectOutputStream oos = null;
             Output output = null;                       
             try {
                 is = new ObjectInputStream(client.getInputStream());
-                os = new ObjectOutputStream(client.getOutputStream());
-                output = new Output(os);   
+                os = client.getOutputStream();
+                        
                 while (true) {          
-                    op = is.readInt();                    
+                    op = is.readInt(); 
+                    output = new Output(os, 1500000);
                     logger.info("Recover thread {} received a request with op {}", this.rc_id, BFTMapRequestType.getOp(op));
                     if (op == BFTMapRequestType.METADATA) {
                         logger.info("Recover received a request recover operation of type: METADATA");
@@ -529,13 +534,15 @@ public class ParallelServiceReplica extends ServiceReplica {
                             data = data.replace("#", "");
                             int x = Integer.parseInt(data);
                             this.metadata = x;
-                            logger.info("Sending metadata({}) of partition {} from metadata file {}", this.metadata, this.rc_id, metadataFile);
-                            os.writeInt(this.metadata); 
-                            os.flush();                           
+                            logger.info("Sending metadata({}) of partition {} from metadata file {}", this.metadata, this.rc_id, metadataFile);                                                        
+                            kryo.writeClassAndObject(output, this.metadata);
+                            // os.writeInt(this.metadata);                            
+                            logger.info("Metadata written to the output of partition {}", this.rc_id);
                         } catch (NoSuchFileException nofile) {
                             logger.warn("No metadata file to send");
-                            this.metadata = 0;
-                            os.writeInt(this.metadata);
+                            this.metadata = Integer.MAX_VALUE;
+                            // os.writeInt(this.metadata);
+                            kryo.writeClassAndObject(output, this.metadata);
                         }
 
                     } else if (op == BFTMapRequestType.STATE) {
@@ -556,44 +563,31 @@ public class ParallelServiceReplica extends ServiceReplica {
                         try (ObjectInputStream ins = new ObjectInputStream(new FileInputStream(cpdir))) {
                             checkpointState = ins.readObject();
                             this.state = (byte[]) checkpointState;
-                            os.writeObject(this.state);
-
+                            // os.writeObject(this.state);                            
                             logger.info("Sending checkpoint of partition {} with {} bytes", this.rc_id,
                                     this.state.length);
+                            kryo.writeClassAndObject(output, checkpointState);
                         } catch (FileNotFoundException ex) {
                             logger.warn("There is no checkpoint file to send, sending empty object");
                             checkpointState = new byte[0];
-                            os.writeObject(checkpointState);
+                            // os.writeObject(checkpointState);                            
+                            kryo.writeClassAndObject(output, checkpointState);
                         } catch (IOException ex) {
                             logger.error("Failed reading local states files", ex);
                         } catch (ClassNotFoundException e) {
                             logger.error("ClassNotFoundException", e);
-                        }
-                        
-                        os.flush();
+                        }                        
                     } else if (op == BFTMapRequestType.LOG) {
-                        // Queue<Operation> log = this.parallelServiceReplica.workers[rc_id].log;
-                        // List<Operation> log = this.parallelServiceReplica.workers[rc_id].logV2;
-                        // List<byte[]> log = this.parallelServiceReplica.workers[rc_id].logV3;
-                        // os.writeObject(log);
-                        // ArrayList<Operation> log = new ArrayList<>(this.parallelServiceReplica.workers[rc_id].log);
-                        
-                        Queue<Operation> log = this.parallelServiceReplica.workers[rc_id].log;                        
-                        // for (int i = 0; i < 50 && !log.isEmpty(); i++) {
-                        List<Operation> logChunk = new ArrayList<>(30000);
-                        for (int j = 0; j < 30000; j++) {
-                            logChunk.add(log.poll());                                
-                        }
-                        logger.info("Sending chunked log for partition {} with {} operations", this.rc_id, logChunk.size());                        
-                        kryo.writeClassAndObject(output, logChunk);
-                        logger.info("Ending chunk log for partition {}", this.rc_id);
-                        // output.endChunk();
-                        // output.flush();
-                        // }                     
-                        // output.close();                    
+                        Queue<Operation> log = this.parallelServiceReplica.workers[rc_id].log;
+                        logger.info("Sending log for partition {} with {} operations", this.rc_id, log.size());   
+                        kryo.writeClassAndObject(output, log);
+                        // oos = new ObjectOutputStream(os);
+                        // oos.writeObject(log);
+                        // oos.flush();
                     }
                     logger.info("Flushing output for partition {}", this.rc_id);
-                    output.flush();                
+                    // output.endChunk();
+                    output.flush();                     
                     // os.close();
                 }
             } catch (EOFException e) {
@@ -658,6 +652,7 @@ public class ParallelServiceReplica extends ServiceReplica {
         private int rc_id;
         private int processId;
         private ReplicaContext replicaContext;
+        Kryo kryo;
 
         public Receiver(ParallelServiceReplica parallelServiceReplica, int id, int processId,
                 ReplicaContext replicaContext) {
@@ -665,6 +660,12 @@ public class ParallelServiceReplica extends ServiceReplica {
             this.rc_id = id;
             this.processId = processId;
             this.replicaContext = replicaContext;
+            kryo = new Kryo();        
+            kryo.register(ArrayList.class);
+            kryo.register(Operation.class);
+            kryo.register(Queue.class);
+            kryo.register(LinkedList.class);
+            kryo.register(byte[].class);
         }
 
         @Override
@@ -729,7 +730,7 @@ public class ParallelServiceReplica extends ServiceReplica {
             int numOfProcesses = currentView.getProcesses().length;
             Socket[] sockets = new Socket[numOfProcesses];
             Map<Integer, ObjectOutputStream> oss = new HashMap<Integer, ObjectOutputStream>();
-            Map<Integer, ObjectInputStream> iss = new HashMap<Integer, ObjectInputStream>();
+            Map<Integer, InputStream> iss = new HashMap<Integer, InputStream>();
             int port;
             InetAddress add;
             for (int i = 0; i < numOfProcesses; i++) {
@@ -762,14 +763,16 @@ public class ParallelServiceReplica extends ServiceReplica {
                     // requisitando metadados
                     try {
                         oss.put(currentView.getProcesses()[i], new ObjectOutputStream(sockets[i].getOutputStream()));
-                        iss.put(currentView.getProcesses()[i], new ObjectInputStream(sockets[i].getInputStream()));
+                        iss.put(currentView.getProcesses()[i], sockets[i].getInputStream());
 
                         logger.info("Requesting metadata to {}", sockets[i].getRemoteSocketAddress());
                         oss.get(currentView.getProcesses()[i]).writeInt(BFTMapRequestType.METADATA);
                         oss.get(currentView.getProcesses()[i]).flush();
 
                         logger.info("Reading metadata's request reply from {}", sockets[i].getRemoteSocketAddress());
-                        int lastcid = iss.get(currentView.getProcesses()[i]).readInt();
+                        int lastcid = (int)kryo.readClassAndObject(new Input(iss.get(currentView.getProcesses()[i]), 1500000));
+                        if (lastcid == Integer.MAX_VALUE)
+                            lastcid = 0;
                         logger.info("Last CID is {}", lastcid);
                         if (lastcid > cid) {
                             requests.put(this.rc_id, currentView.getProcesses()[i]);
@@ -779,7 +782,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                     } catch (IOException ex) {
                         logger.error("Receiver thread failed while requesting metadata to {}",
                                 sockets[i].getRemoteSocketAddress(), ex);
-                        return;
+                        throw new RuntimeException(ex);
                     }
                 }
             }
@@ -787,8 +790,8 @@ public class ParallelServiceReplica extends ServiceReplica {
             // requisitando estado
             logger.info("Request rc_id value is {} and replica Id {}", requests.get(this.rc_id), this.parallelServiceReplica.id);
             if (requests.get(this.rc_id) != this.parallelServiceReplica.id) {
+                Map<Integer, Integer> classIdLogCount = new HashMap<>();
                 ObjectOutputStream os2 = oss.get(requests.get(this.rc_id));
-                ObjectInputStream is2 = iss.get(requests.get(this.rc_id));
 
                 try {
                     logger.info("Requesting checkpoint state to {} of partition {}", requests.get(this.rc_id), this.rc_id);
@@ -797,8 +800,9 @@ public class ParallelServiceReplica extends ServiceReplica {
 
                     ByteArrayOutputStream bos;
                     DataOutputStream dos;
-
-                    byte[] state = (byte[]) is2.readObject();                    
+                   
+                    Object stateObj = kryo.readClassAndObject(new Input(iss.get(requests.get(this.rc_id)), 1500000));
+                    byte[] state = (byte[])stateObj;
                     if (state.length == 0) {
                         logger.info("Received an empty checkpoint for partition {}, ignoring recovery process",
                                 this.rc_id);
@@ -828,33 +832,15 @@ public class ParallelServiceReplica extends ServiceReplica {
                         os2.writeInt(BFTMapRequestType.LOG);
                         os2.flush();
 
-                        if (is2.markSupported()) {
-                            is2.mark(100);
-                            is2.read();
-                            is2.reset();
-                        } else {
-                            Thread.sleep(200);
-                        }
-                        Input input = new Input(is2);
-                        ArrayList<Operation> log = (ArrayList<Operation>)kryo.readClassAndObject(input);
-                        // List<Operation> log = new ArrayList<>();
-                        // for (int i = 0; i < 50; i++) {
-                        //     List<Operation> logChunk = (List<Operation>)kryo.readClassAndObject(input);
-                        //     if (logChunk.isEmpty())
-                        //         break;
-                        //     log.addAll(logChunk);
-                        //     input.nextChunk();
-                        // }
-                        // Queue<Operation> log = (Queue<Operation>) is2.readObject();
-                        // List<Operation> log = (List<Operation>) is2.readObject();
-                        // List<byte[]> log = (List<byte[]>) is2.readObject();
-                        logger.info("Received log of partition {} with {} operations ({} MB)", this.rc_id, log.size(), log.size()/1000000f);                        
-                        Map<Integer, Integer> classIdLogCount = new HashMap<>();
-                        for (Operation o: log) {                                   
-                            // ByteArrayInputStream bais = new ByteArrayInputStream(b);
-                            // ObjectInputStream ois = new ObjectInputStream(bais);
-                            // Operation o = (Operation) ois.readObject();
+                        logger.info("Receiving log for partition {}", this.rc_id);
+                        Queue<Operation> log = (Queue<Operation>)kryo.readClassAndObject(new Input(iss.get(requests.get(this.rc_id)), 1500000));
 
+                        // ObjectInputStream ois = new ObjectInputStream(iss.get(requests.get(this.rc_id)));                        
+                        // Queue<Operation> log = (Queue<Operation>)ois.readObject();
+
+                        logger.info("Received log of partition {} with {} operations ({} MB)", this.rc_id, log.size(), log.size()/1000000f);                        
+                       
+                        for (Operation o: log) {                              
                             TOMMessage message = new TOMMessage(this.parallelServiceReplica.id, 1, o.sequence, o.content, 1);
                             msg = new MessageContextPair(message, o.classID, 0, null, null); 
                 
@@ -883,12 +869,13 @@ public class ParallelServiceReplica extends ServiceReplica {
                     }
                 } catch (Exception ex) {
                     logger.warn("Failed requesting state to another replica for partition {}.", this.rc_id, ex);
+                    throw new RuntimeException(ex);
                 } finally {
                     try {
                         for (Map.Entry<Integer, ObjectOutputStream> entry: oss.entrySet())
                             entry.getValue().close();
-                        for (Map.Entry<Integer, ObjectInputStream> entry: iss.entrySet())
-                            entry.getValue().close();
+                        // for (Map.Entry<Integer, ObjectInputStream> entry: iss.entrySet())
+                            // entry.getValue().close();
                     } catch (Exception ex) {
                         logger.error("Error closing sockets");
                     }

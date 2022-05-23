@@ -189,7 +189,7 @@ public class ParallelScheduler implements Scheduler {
         if (ct == null) {
             // TRATAR COMO CONFLICT ALL
             // criar uma classe que sincroniza tudo
-            logger.error("Class to threads mapping not found");
+            logger.error("Class to threads mapping not found, classId: {}", request.classId);
         }
         if (ct.type == ClassToThreads.CONC) {// conc
             logger.debug("Added request to queue of thread {}", ct.threadIndex);

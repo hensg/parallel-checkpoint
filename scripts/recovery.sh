@@ -9,8 +9,7 @@ ssh_client=${1}
 ssh_list=${2}
 IFS=',' read -ra ssh_list <<< "$ssh_list"
 
-
-datetime=$(date +%F_%H-%M-%S)
+datetime=""
 
 function start_experiment() { 
     local partitioned=$1
@@ -32,6 +31,7 @@ function start_experiment() {
     echo "Client reads $client_p_read%"
     echo "Unique keys $num_unique_keys"
     echo "Initial entries $initial_entries MB"
+    echo "Conflict $client_p_conflict"
 
     echo "Ensure client is not running"
     client_cmd="
@@ -108,30 +108,31 @@ function start_experiment() {
 }
 
 
-client_num_threads=110
-conflito=0
-percent_of_read_ops=50 # percent of read operations, 0 means write-only operations
-num_unique_keys=50
-initial_entries=2000 #MB # 200000 ops
+for conflito in 0 100; do
+    datetime=$(date +%F_%H-%M-%S)
+    client_num_threads=110
+    percent_of_read_ops=50 # percent of read operations, 0 means write-only operations
+    num_unique_keys=50
+    initial_entries=20000 #MB
 
-for checkpoint_interval in 400000 800000 1600000; do    
-    # each log = 1 byte
-    #num_logs=50000
-    num_logs=$(($checkpoint_interval / 2))
-    
-    partitioned=false
-    server_threads=4
-    
-    num_ops=$(($checkpoint_interval + $num_logs)) # total de OPERAÇÕES
-    num_ops_by_client=$(($num_ops / $client_num_threads))
-    
-    echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
-    start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs; 
+    for checkpoint_interval in 400000 800000 1600000; do    
+        # each log = 1 byte
+        num_logs=$(($checkpoint_interval / 2))
+        
+        partitioned=false
+        server_threads=4
+        
+        num_ops=$(($checkpoint_interval + $num_logs)) # total de OPERAÇÕES
+        num_ops_by_client=$(($num_ops / $client_num_threads))
+        
+        echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval, conflict=$conflito"
+        start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs; 
 
-    partitioned=true    
-    for server_threads in 4 8 16; do        
-        echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
+        partitioned=true    
+        for server_threads in 4 8 16; do        
+            echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
 
-        start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs;
+            start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs;
+        done
     done
 done

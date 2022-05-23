@@ -25,6 +25,7 @@ conflict = None
 run = None
 checkpoint = None
 threads = None
+initial_entries = None
 
 TIMEFORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
@@ -42,6 +43,7 @@ for path in Path(args.dir).rglob("**/**/*server*.log"):
     conflict = re.findall("conflict=([0-9]+)", str(path))[0]
     threads = re.findall("server_threads=([0-9]+)", str(path))[0]
     checkpoint = re.findall("checkpoint=([0-9]+)", str(path))[0]
+    initial_entries = re.findall("initial_entries=([0-9]+)", str(path))[0]
 
     idle = True
     node = re.findall("server_([0-9]{3}).log", str(path))[0]
@@ -287,5 +289,10 @@ p.legend.orientation = "horizontal"
 p.yaxis.axis_label = "Seconds"
 p.xaxis.axis_label = "Checkpoint interval, partition config"
 
-output_file(filename=f"images/name=recovery/{exp_datetime}.html", title="Static HTML file")
+from pathlib import Path
+
+path_str = f"images/name=recovery/datetime={exp_datetime}"
+
+Path(path_str).mkdir(parents=True, exist_ok=True)
+output_file(filename=f"{path_str}/conflict_{conflict}_read_{read}_initial_entries_{initial_entries}.html", title="Static HTML file")
 show(p)

@@ -94,7 +94,7 @@ class Client extends Thread {
                             Integer key1 = k1.nextInt(numUniqueKeys);
                             Integer key2 = k2.nextInt(numUniqueKeys);
                             while (table1.equals(table2)) {
-                                table2 = t2.nextInt(numUniqueKeys);
+                                table2 = t2.nextInt(maxIndex);
                             }
                             if (table1 > table2) {
                                 int aux = table1;
