@@ -967,6 +967,7 @@ public class ParallelServiceReplica extends ServiceReplica {
 
                                 ObjectOutputStream out1 = new ObjectOutputStream(fileOut);
                                 out1.writeObject(b);
+                                out1.flush();
                                 out1.close();
                                 fileOut.close();
                                 BufferedWriter writer =
