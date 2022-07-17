@@ -21,12 +21,13 @@ function start_experiment() {
     local run=$4
     local client_interval=0
     local client_max_index=3
-    local client_p_read=50
-    local client_p_conflict=0
+    local client_p_read=0
+    local client_p_conflict=50
     local client_verbose=false
     local client_parallel=true
     local client_async=false
-    local num_unique_keys=1000
+    local num_unique_keys=3
+    local server_threads=4
 
     echo "Ensure client is not running"
     client_cmd="
@@ -39,6 +40,7 @@ function start_experiment() {
         sudo service bft-smart stop;
         sudo sed -i s/'=PARTITIONED=.*'/=PARTITIONED=${partitioned}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=PARALLEL=.*'/=PARALLEL=${partitioned}/g /etc/systemd/system/bft-smart.service;
+        sudo sed -i s/'=THREADS=.*'/=THREADS=${server_threads}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service;
         sudo rm -f /srv/config/currentView
         sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/*;
@@ -63,7 +65,7 @@ function start_experiment() {
          sudo truncate -s 0 /srv/logs/*.log;
          tail -f /srv/logs/client.log &;
          cd /srv;
-         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
+         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_num_operations $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async 0;
          sleep 5;
          kill %1;
     "
@@ -86,9 +88,9 @@ function start_experiment() {
     echo "Experiment has finished"
 }
 
-num_ops=50000
+num_ops=30000
 
-for i in `seq 10 5 170`; do
+for i in 4 8 16 32 64 128 256; do
      ops=$((num_ops))
      start_experiment true $i $ops 1; 
 done

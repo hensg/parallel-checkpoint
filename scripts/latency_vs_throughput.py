@@ -46,10 +46,11 @@ for client in nclients:
             for line in file:
                 rs = re.findall('Latency: ([0-9]+) ns', line)
                 if rs:
-                    l = int(rs[0])/1000  
+                    l = int(rs[0])/1000000  
                     if l > 0:
                         lats.append(l)
-        latency.append(np.average(lats))
+        lats.sort()
+        latency.append(np.average(lats[:-100]))
 
 throughput_reqsec = []
 for client in nclients:

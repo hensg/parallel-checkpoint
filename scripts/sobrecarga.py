@@ -20,7 +20,7 @@ parser.add_argument("--dir", type=str, required=True)
 
 args = parser.parse_args()
 
-Y_MAX = 35000
+Y_MAX = 32000
 
 
 def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
@@ -68,25 +68,26 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         idle = True
         node = re.findall("throughput_([0-9]{3}).log", str(path))[0]
         with open(str(path)) as file:
-            for line in file:
+            for line in file:                
                 if "ThroughputStatistics - Replica" in line:
-                    rs = re.findall("([0-9]+\.[0-9]+) operations/sec", line)
+                    rs = re.findall("(\d+) operations/sec", line)
                     if rs:
                         dt = re.findall("([0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3})", line)
                         if node not in throughput_datetime:
                             throughput_datetime[node] = []
                             throughput_reqsec[node] = []
-                        if float(rs[0]) > 1000:
+
+                        if float(rs[0]) > 100:
                             idle = False
                         if not idle:
                             dt_through = datetime.strptime(dt[0], "%H:%M:%S.%f")
-                            if (not last_checkpoint_datetime or (dt_through - timedelta(seconds=15)) < last_checkpoint_datetime):
-                                throughput_datetime[node].append(dt_through)
-                                throughput_reqsec[node].append(float(rs[0]))
+                            # if (not last_checkpoint_datetime or (dt_through - timedelta(seconds=15)) < last_checkpoint_datetime):
+                            throughput_datetime[node].append(dt_through)
+                            throughput_reqsec[node].append(float(rs[0]))
 
         if node in throughput_datetime:
-            throughput_reqsec[node] = np.array(throughput_reqsec[node][3:-3])
-            throughput_datetime[node] = np.array(throughput_datetime[node][3:-3])
+            throughput_reqsec[node] = np.array(throughput_reqsec[node])
+            throughput_datetime[node] = np.array(throughput_datetime[node])
 
     latency_by_time = {}
     for path in Path(args.dir).rglob(prefix + "/client_latency.log"):
@@ -97,27 +98,29 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                 if rs:
                     log_date = datetime.strptime(dt[0], "%H:%M:%S")
                     latency_ms = int(rs[0]) / 1e6                   
-                    if last_checkpoint_datetime and ((log_date - timedelta(seconds=15)) < last_checkpoint_datetime):
-                        latency_by_time[log_date] = latency_ms
+                    # if last_checkpoint_datetime and ((log_date - timedelta(seconds=15)) < last_checkpoint_datetime):
+                    latency_by_time[log_date] = latency_ms
 
-    fig = plt.figure()
-    fig.suptitle(
-        "parallel={}, read={}%, conflict={}%, checkpoint={}".format(
-            parallel, read, conflict, checkpoint
-        )
-    )
 
-    i = 1    
+    
+    i = 1 
     for node in throughput_datetime:
         # plt.subplot(2, 2, i)
-        plt.subplot(1, 1, i)
+        fig = plt.figure()
+        fig.suptitle(
+            "parallel={}, read={}%, conflict={}%, checkpoint={}".format(
+                parallel, read, conflict, checkpoint
+            )
+        )
+        # plt.subplot(1, 1, i)
+        plt.subplot(1, 1, 1)
         plt.title("Replica " + str(i))
         plt.xlabel("datetime")
         plt.xticks(rotation=45)
         plt.ylabel("req/sec")
         plt.plot(
-            throughput_datetime[node],
-            throughput_reqsec[node],
+            throughput_datetime[node][6:-14],
+            throughput_reqsec[node][6:-14],            
             label="requests",
         )
         # seclocator = matdates.SecondLocator(interval=4)
@@ -135,27 +138,28 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                     cs = []
 
         ax.legend(labels=["requests", "checkpointing"], loc="upper right")
-        break
 
-    fig.tight_layout()
-    plt.savefig(
-        "images/name=sobrecarga"
-        + "/datetime="
-        + datetime_exp
-        + "/read_"
-        + read
-        + "_conflict_"
-        + conflict
-        + "_threads_"
-        + threads
-        + "_checkpoint_"
-        + checkpoint
-        + "_parallel_"
-        + parallel
-        + ".png",
-        dpi=355,
-    )
-    plt.close()
+        fig.tight_layout()
+        plt.savefig(
+            "images/name=sobrecarga"            
+            + "/datetime="
+            + datetime_exp
+            + "/read_"
+            + read
+            + "_node_"
+            + node
+            + "_conflict_"
+            + conflict
+            + "_threads_"
+            + threads
+            + "_checkpoint_"
+            + checkpoint
+            + "_parallel_"
+            + parallel
+            + ".png",
+            dpi=355,
+        )
+        plt.close()
 
     fig = plt.figure()
     fig.suptitle(

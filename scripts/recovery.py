@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 import argparse
-import re
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from bokeh.io import export_png
 from bokeh.models import ColumnDataSource, FactorRange
 from bokeh.plotting import figure, output_file, save, show
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dir", type=str, required=True)
@@ -34,10 +32,12 @@ install_snapshot_tt = {}
 req_res_logs = {}
 install_logs_tt = {}
 
-exp_datetime=None
+exp_datetime = None
 
 for path in Path(args.dir).rglob("**/**/*server*.log"):
-    exp_datetime = re.findall("datetime=([0-9]+-[0-9]+-[0-9]+_[0-9]+-[0-9]+-[0-9]+)/", str(path))[0]
+    exp_datetime = re.findall(
+        "datetime=([0-9]+-[0-9]+-[0-9]+_[0-9]+-[0-9]+-[0-9]+)/", str(path)
+    )[0]
     parallel = re.findall("partitioned=(true|false)", str(path))[0]
     read = re.findall("read=([0-9]+)", str(path))[0]
     conflict = re.findall("conflict=([0-9]+)", str(path))[0]
@@ -80,7 +80,10 @@ for path in Path(args.dir).rglob("**/**/*server*.log"):
                 "(\d+-\d+-\d+ [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}).*Requesting checkpoint state to .* of partition ([0-9]+)",
                 line,
             )
-            if g and datetime.strptime(g[0][0], TIMEFORMAT) < request_checkpoint_datetime:
+            if (
+                g
+                and datetime.strptime(g[0][0], TIMEFORMAT) < request_checkpoint_datetime
+            ):
                 request_checkpoint_datetime = datetime.strptime(g[0][0], TIMEFORMAT)
 
             g = re.findall(
@@ -88,18 +91,18 @@ for path in Path(args.dir).rglob("**/**/*server*.log"):
                 line,
             )
             if g and (
-                    datetime.strptime(g[0][0], TIMEFORMAT)
-                    > received_checkpoint_datetime
-                ):
-                    received_checkpoint_datetime = datetime.strptime(
-                        g[0][0], TIMEFORMAT
-                    )
+                datetime.strptime(g[0][0], TIMEFORMAT) > received_checkpoint_datetime
+            ):
+                received_checkpoint_datetime = datetime.strptime(g[0][0], TIMEFORMAT)
 
             g = re.findall(
                 "(\d+-\d+-\d+ [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}).*Scheduled checkpoint installation of partition ([0-9]+)",
                 line,
             )
-            if g and datetime.strptime(g[0][0], TIMEFORMAT) > finish_install_cp_datetime:
+            if (
+                g
+                and datetime.strptime(g[0][0], TIMEFORMAT) > finish_install_cp_datetime
+            ):
                 finish_install_cp_datetime = datetime.strptime(g[0][0], TIMEFORMAT)
 
             # g = re.findall(
@@ -116,14 +119,12 @@ for path in Path(args.dir).rglob("**/**/*server*.log"):
             if g and datetime.strptime(g[0][0], TIMEFORMAT) > received_logs_datetime:
                 received_logs_datetime = datetime.strptime(g[0][0], TIMEFORMAT)
 
-
             # g = re.findall(
             #     "(\d+-\d+-\d+ [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}).*Installing snapshot of partition ([0-9]+)",
             #     line,
             # )
             # if g and datetime.strptime(g[0][0], TIMEFORMAT) < start_install_cp_datetime:
             #     start_install_cp_datetime = datetime.strptime(g[0][0], TIMEFORMAT)
-
 
             # g = re.findall(
             #     "(\d+-\d+-\d+ [0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}).*Scheduling log installation of partition ([0-9]+)",
@@ -137,12 +138,9 @@ for path in Path(args.dir).rglob("**/**/*server*.log"):
                 line,
             )
             if g and (
-                    datetime.strptime(g[0][0], TIMEFORMAT)
-                    > finish_install_logs_datetime
-                ):
-                    finish_install_logs_datetime = datetime.strptime(
-                        g[0][0], TIMEFORMAT
-                    )
+                datetime.strptime(g[0][0], TIMEFORMAT) > finish_install_logs_datetime
+            ):
+                finish_install_logs_datetime = datetime.strptime(g[0][0], TIMEFORMAT)
 
     print(f"Requested checkpoint at: {request_checkpoint_datetime}")
     print(f"Received the checkpoint response at: {received_checkpoint_datetime}")
@@ -150,27 +148,22 @@ for path in Path(args.dir).rglob("**/**/*server*.log"):
         received_checkpoint_datetime - request_checkpoint_datetime
     ).total_seconds()
     print(f"Time taken to request/response checkpoint: {rr_tt_cp}")
-    
+
     # print(f"Starting to install checkpoint at: {start_install_cp_datetime}")
     print(f"Finished installing the checkpoint at: {finish_install_cp_datetime}")
-    install_tt_cp = (        
+    install_tt_cp = (
         finish_install_cp_datetime - received_checkpoint_datetime
     ).total_seconds()
     print(f"Time taken to install checkpoint: {install_tt_cp}")
 
     # print(f"Requested log of partition at: {request_logs_datetime}")
     print(f"Received logs response at: {received_logs_datetime}")
-    rr_tt_logs = (
-        received_logs_datetime - finish_install_cp_datetime
-    ).total_seconds()
+    rr_tt_logs = (received_logs_datetime - finish_install_cp_datetime).total_seconds()
     print(f"Time taken to request/response logs: {rr_tt_logs}")
-    
 
     # print(f"Starting to install logs at: {start_install_logs_datetime}")
     print(f"Finished installing the log at: {finish_install_logs_datetime}")
-    tt_logs = (
-        finish_install_logs_datetime - received_logs_datetime
-    ).total_seconds()
+    tt_logs = (finish_install_logs_datetime - received_logs_datetime).total_seconds()
     print(f"Time taken to install logs: {tt_logs}")
 
     request_response_tt_cp[parallel][threads][checkpoint].append(rr_tt_cp)
@@ -184,77 +177,76 @@ from bokeh.models import ColumnDataSource, FactorRange
 from bokeh.plotting import figure
 
 factors = [
-    ("400k", "non-p"), ("400k", "4"), ("400k", "8"), ("400k", "16"),
-    ("800k", "non-p"), ("800k", "4"), ("800k", "8"), ("800k", "16"),
-    ("1600k", "non-p"), ("1600k", "4"), ("1600k", "8"), ("1600k", "16"),
+    ("400k", "non-p"),
+    ("400k", "4"),
+    ("400k", "8"),
+    ("400k", "16"),
+    ("800k", "non-p"),
+    ("800k", "4"),
+    ("800k", "8"),
+    ("800k", "16"),
+    ("1600k", "non-p"),
+    ("1600k", "4"),
+    ("1600k", "8"),
+    ("1600k", "16"),
 ]
 
-regions = ['requestingCP', 'installingCP', "requestingLogs", "installingLogs"]
+regions = ["requestingCP", "installingCP", "requestingLogs", "installingLogs"]
 
-requesting_cp=[
+requesting_cp = [
     request_response_tt_cp["false"]["4"]["400000"][0],
     request_response_tt_cp["true"]["4"]["400000"][0],
     request_response_tt_cp["true"]["8"]["400000"][0],
     request_response_tt_cp["true"]["16"]["400000"][0],
-
     request_response_tt_cp["false"]["4"]["800000"][0],
     request_response_tt_cp["true"]["4"]["800000"][0],
     request_response_tt_cp["true"]["8"]["800000"][0],
     request_response_tt_cp["true"]["16"]["800000"][0],
-
     request_response_tt_cp["false"]["4"]["1600000"][0],
     request_response_tt_cp["true"]["4"]["1600000"][0],
     request_response_tt_cp["true"]["8"]["1600000"][0],
     request_response_tt_cp["true"]["16"]["1600000"][0],
 ]
 
-installing_cp=[
+installing_cp = [
     install_snapshot_tt["false"]["4"]["400000"][0],
     install_snapshot_tt["true"]["4"]["400000"][0],
     install_snapshot_tt["true"]["8"]["400000"][0],
     install_snapshot_tt["true"]["16"]["400000"][0],
-
     install_snapshot_tt["false"]["4"]["800000"][0],
     install_snapshot_tt["true"]["4"]["800000"][0],
     install_snapshot_tt["true"]["8"]["800000"][0],
     install_snapshot_tt["true"]["16"]["800000"][0],
-
     install_snapshot_tt["false"]["4"]["1600000"][0],
     install_snapshot_tt["true"]["4"]["1600000"][0],
     install_snapshot_tt["true"]["8"]["1600000"][0],
     install_snapshot_tt["true"]["16"]["1600000"][0],
 ]
 
-requesting_logs=[
+requesting_logs = [
     req_res_logs["false"]["4"]["400000"][0],
     req_res_logs["true"]["4"]["400000"][0],
     req_res_logs["true"]["8"]["400000"][0],
     req_res_logs["true"]["16"]["400000"][0],
-
     req_res_logs["false"]["4"]["800000"][0],
     req_res_logs["true"]["4"]["800000"][0],
     req_res_logs["true"]["8"]["800000"][0],
     req_res_logs["true"]["16"]["800000"][0],
-
-
     req_res_logs["false"]["4"]["1600000"][0],
     req_res_logs["true"]["4"]["1600000"][0],
     req_res_logs["true"]["8"]["1600000"][0],
     req_res_logs["true"]["16"]["1600000"][0],
 ]
 
-installing_logs=[
+installing_logs = [
     install_logs_tt["false"]["4"]["400000"][0],
     install_logs_tt["true"]["4"]["400000"][0],
     install_logs_tt["true"]["8"]["400000"][0],
     install_logs_tt["true"]["16"]["400000"][0],
-
     install_logs_tt["false"]["4"]["800000"][0],
     install_logs_tt["true"]["4"]["800000"][0],
     install_logs_tt["true"]["8"]["800000"][0],
     install_logs_tt["true"]["16"]["800000"][0],
-
-
     install_logs_tt["false"]["4"]["1600000"][0],
     install_logs_tt["true"]["4"]["1600000"][0],
     install_logs_tt["true"]["8"]["1600000"][0],
@@ -262,31 +254,54 @@ installing_logs=[
 ]
 
 
-source = ColumnDataSource(data=dict(
-    x=factors,
-    requestingCP=requesting_cp,
-    installingCP=installing_cp,
-    requestingLogs=requesting_logs,
-    installingLogs=installing_logs,
-))
+source = ColumnDataSource(
+    data=dict(
+        x=factors,
+        requestingCP=requesting_cp,
+        installingCP=installing_cp,
+        requestingLogs=requesting_logs,
+        installingLogs=installing_logs,
+    )
+)
 
-p = figure(title="Recovery", x_range=FactorRange(*factors), height=800, width=1200,
-           toolbar_location=None, tools="")
+p = figure(
+    title="Recovery",
+    x_range=FactorRange(*factors),
+    height=800,
+    width=1200,
+    toolbar_location=None,
+    tools="",
+)
 
-p.vbar_stack(regions, x='x', width=0.9, alpha=0.5, color=["blue", "red", "green", "orange"], source=source,
-             legend_label=regions)
+p.vbar_stack(
+    regions,
+    x="x",
+    width=0.9,
+    alpha=0.5,
+    color=["blue", "red", "green", "orange"],
+    source=source,
+    legend_label=regions,
+)
+
+p.xaxis.group_text_font_size = "18pt"
+p.xaxis.axis_label_text_font_size = "18pt"
+p.xaxis.subgroup_text_font_size = "18pt"
+p.xaxis.major_label_text_font_size = "18pt"
+p.legend.label_text_font_size = "18pt"
+p.yaxis.axis_label_text_font_size = "18pt"
+p.yaxis.major_label_text_font_size = "18pt"
 
 p.title.align = "center"
 p.title.text_font_style = "bold"
 p.title.text_font_size = "26px"
 p.y_range.start = 0
-#p.y_range.end = 12
 p.x_range.range_padding = 0.1
 p.xaxis.major_label_orientation = 1
 p.xgrid.grid_line_color = None
 p.legend.location = "top_center"
 p.legend.orientation = "horizontal"
 p.yaxis.axis_label = "Seconds"
+
 p.xaxis.axis_label = "Checkpoint interval, partition config"
 
 from pathlib import Path
@@ -294,5 +309,8 @@ from pathlib import Path
 path_str = f"images/name=recovery/datetime={exp_datetime}"
 
 Path(path_str).mkdir(parents=True, exist_ok=True)
-output_file(filename=f"{path_str}/conflict_{conflict}_read_{read}_initial_entries_{initial_entries}.html", title="Static HTML file")
+output_file(
+    filename=f"{path_str}/conflict_{conflict}_read_{read}_initial_entries_{initial_entries}.html",
+    title="Static HTML file",
+)
 show(p)
