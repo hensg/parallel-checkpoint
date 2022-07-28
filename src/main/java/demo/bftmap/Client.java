@@ -1,169 +1,98 @@
 package demo.bftmap;
 
+import bftsmart.demo.bftmap.BFTMap;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.TreeMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class NullReponseException extends Exception {
-    public NullReponseException(String msg) {
-        super(msg);
-    }
-}
-
-class Client extends Thread {
+class Client implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     int id;
     int numberOfOps;
     int interval;
     int numClients;
-    int countNumOp = 0;
+    private int countNumOp;
     int numUniqueKeys;
     int p_pa = 90;
     int p_pb = 5;
     int p_pc = 5;
     boolean verbose;
-    PBFTMapMP store;
+    final PBFTMapMP store;
     int maxIndex;
     int p_conflict;
     int p_read;
     int successOps;
     boolean async;
     ClientLatencyLogger clientLatencyLogger = new ClientLatencyLogger();
+    final Random random = new Random();
+    private int roundKey;
+    private int roundTable;
 
-    public Client(int id, int numberOfOps, int interval, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
-            int numThreads, int p_read, int p_conflict, ReplyCounterListener replyCounterListener) {
-        super("Client " + id);
+    public Client(int id, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
+                  int numThreads, int p_read, int p_conflict) {
         this.id = id;
         this.numClients = numThreads;
-        this.numberOfOps = numberOfOps;
         this.numUniqueKeys = numUniqueKeys;
         this.p_conflict = p_conflict;
         this.p_read = p_read;
-        this.interval = interval;
         this.async = async;
         this.verbose = verbose;
         this.maxIndex = maxIndex;
-        this.store = new PBFTMapMP(id, parallel, async, replyCounterListener);
+        this.roundKey = 0;
+        this.roundTable = 0;
+        this.countNumOp = 0;
+        this.store = new PBFTMapMP(id, parallel, async, null);
+        logger.info("Started new client {}", id);
     }
 
-    public void closeProxy() {
-        store.closeProxy();
-    }
+    public void closeProxy() { store.closeProxy(); }
 
-    public void run() {        
-        Random r_p = new Random(); // leitura
-        Random c_p = new Random();// conflito
-        Random q_c = new Random();// conflita com qtas
-        Random t1 = new Random();
-        Random t2 = new Random();
-        Random k1 = new Random();
-        Random k2 = new Random();
-        Random r_calcResponseTime = new Random();
+    private final static float CALC_LATENCY_THRESHOLD = 0.0005f;
+    private final static int ONE_MILLION = 1_000_000;
 
-        boolean shouldCalcResponseTime = false;
-        try {
-            for (int i = 0; i < numberOfOps && !BFTMapClientMP.stop; i++) {
+    public void run() {
+        final float randomValue = random.nextFloat();
+        final boolean calcLantency = randomValue < CALC_LATENCY_THRESHOLD;
 
-                long lastSentInstant = 0;
-                shouldCalcResponseTime = this.id < 5 && (r_calcResponseTime.nextInt(100) <= 10);
-                if (shouldCalcResponseTime)
-                    lastSentInstant = System.nanoTime();
-                
-                BFTMapClientMP.ops[id - BFTMapClientMP.initId]++;
-
-                int r = r_p.nextInt(100); // 0 a 100
-                int c = c_p.nextInt(100);
-
-                try {
-                    if (r <= p_read && p_read != 0) {// leitura
-                    
-                        Integer table1 = t1.nextInt(maxIndex);
-                        Integer key1 = k1.nextInt(numUniqueKeys);
-                        byte[] res = getEntry(store, table1, key1);
-                        if (!async && res == null)
-                            throw new NullReponseException("Error, got null entries");
-
-                    } else { // escrita
-                        if ((c < p_conflict && p_conflict != 0)) {// conflita
-                            Integer table1 = t1.nextInt(maxIndex);
-                            Integer table2 = t2.nextInt(maxIndex);
-                            Integer key1 = k1.nextInt(numUniqueKeys);
-                            Integer key2 = k2.nextInt(numUniqueKeys);
-                            while (table1.equals(table2)) {
-                                table2 = t2.nextInt(maxIndex);
-                            }
-                            if (table1 > table2) {
-                                int aux = table1;
-                                table1 = table2;
-                                table2 = aux;
-                            }
-                            byte[] res = putEntries(store, table1, key1, table2, key2);
-                            if (!async && res == null) {
-                                throw new NullReponseException("Error putting entries, returned null response");
-                            }
-                        } else {// escrita em 1 particao
-                            int table1 = t1.nextInt(maxIndex);
-                            int key1 = k1.nextInt(numUniqueKeys);
-                            boolean res = insertValue(store, table1, key1);
-                            if (!async && !res) {
-                                throw new NullReponseException("Failed to insert value, returned a null response");
-                            }
-                        }
-                    }
-                    this.successOps += 1;
-                    if (shouldCalcResponseTime)
-                        clientLatencyLogger.logLatency(System.nanoTime() - lastSentInstant);
-        
-                    if (interval > 0) {
-                        try {
-                            Thread.sleep(interval);
-                        } catch (InterruptedException ex) {
-                        }
-                    }
-                } catch (NullReponseException e) {
-                }
-            }                      
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        long lastSentInstant = 0;
+        if (calcLantency) {
+            lastSentInstant = System.nanoTime();
         }
+
+        try {
+            insertValue(store, roundTable, roundKey);
+        } catch (Exception e) {
+            logger.error("Failed to insert value", e);
+            System.exit(0);
+        }
+
+        if (calcLantency) {
+            long latency = System.nanoTime() - lastSentInstant;
+            clientLatencyLogger.logLatency(latency);
+            logger.info("Count {}, Latency {}", this.countNumOp, latency / ONE_MILLION);
+        }
+
+        this.roundTable = (roundTable + 1) % this.maxIndex;
+        this.roundKey = (roundKey + 1) % this.numUniqueKeys;
+        this.countNumOp += 1;
     }
 
-    public int getSuccessOps() {
-        return this.successOps;
-    }
-
-    private boolean createTable(PBFTMapMP bftMap, Integer nameTable) {
-        boolean tableExists;
-
-        tableExists = bftMap.containsKey(nameTable);
-        BFTMapClientMP.logger.info("tableExists: {}", tableExists);
-        if (tableExists == false)
-            bftMap.put(nameTable, new TreeMap<Integer, byte[]>());
-        BFTMapClientMP.logger.info("Created the table. Maybe");
-        return tableExists;
-    }
+    public int getSuccessOps() { return this.successOps; }
 
     private boolean insertValue(PBFTMapMP bftMap, Integer nameTable, int index) throws Exception {
         Integer key = index;
-        Random rand = new Random();
-        byte[] valueBytes = ByteBuffer.allocate(1024).array();        
-        // Random rand = new Random();
-        // byte[] valueBytes = new byte[VALUE_SIZE];
-        // rand.nextBytes(valueBytes);
+        byte[] valueBytes = ByteBuffer.allocate(1024).array();
         byte[] resultBytes = bftMap.putEntry(nameTable, key, valueBytes);
-        // logger.info("resultBytes" + resultBytes);
         if (resultBytes == null)
             return false;
         return true;
-
     }
 
     private byte[] putEntries(PBFTMapMP bftMap, Integer nameTable1, Integer key1, Integer nameTable2, Integer key2)
-            throws Exception {
+        throws Exception {
         Integer k1 = key1;
         Integer table1 = nameTable1;
         Integer table2 = nameTable2;
@@ -180,7 +109,6 @@ class Client extends Thread {
         if (resultBytes == null)
             return null;
         return resultBytes;
-
     }
 
     private int getSizeTable(PBFTMapMP bftMap, Integer tableName) throws Exception {

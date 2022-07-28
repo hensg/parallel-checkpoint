@@ -1,5 +1,9 @@
 package demo.bftmap;
 
+import bftsmart.tom.MessageContext;
+import bftsmart.tom.ServiceReplica;
+import bftsmart.tom.core.messages.TOMMessage;
+import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -13,14 +17,8 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import bftsmart.tom.MessageContext;
-import bftsmart.tom.ServiceReplica;
-import bftsmart.tom.core.messages.TOMMessage;
-import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
 import parallelism.ClassToThreads;
 import parallelism.HibridClassToThreads;
 import parallelism.MessageContextPair;
@@ -45,8 +43,8 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
     private boolean closed = false;
 
     public BFTMapServerMP(int id, int interval, int maxThreads, int minThreads, int initThreads, int entries,
-            int CPperiod, boolean context, boolean cbase, boolean partition, int numDisks)
-            throws IOException, ClassNotFoundException {
+                          int CPperiod, boolean context, boolean cbase, boolean partition, int numDisks)
+        throws IOException, ClassNotFoundException {
         logger.info("Initializing BFTMapServerMP");
         if (initThreads <= 0) {
             logger.info("Replica in sequential execution model.");
@@ -59,7 +57,6 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
         } else {
             logger.info("Replica in parallel execution model.");
             tableMap = new MapOfMapsMP();
-
         }
         this.partition = partition;
         this.interval = interval;
@@ -75,7 +72,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             logger.info("Table {} has size of {} entries", j, tableMap.getSize(j));
         }
         replica = new ParallelServiceReplica(id, this, this, initThreads, CPperiod, partition, numDisks);
-        
+
         logger.info("Server initialization complete!");
     }
 
@@ -84,9 +81,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
         return execute(command, msgCtx);
     }
 
-    public byte[] executeUnordered(byte[] command, MessageContext msgCtx) {
-        return execute(command, msgCtx);
-    }
+    public byte[] executeUnordered(byte[] command, MessageContext msgCtx) { return execute(command, msgCtx); }
 
     long lastChange = 0;
 
@@ -102,11 +97,11 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                 Integer tableName = di.readInt();
                 Integer key = di.readInt();
                 String value = di.readUTF();
-                byte[] valueBytes = ByteBuffer.allocate(1024).array();                
-                reply = tableMap.addData(tableName, key, valueBytes);
-                if (reply != null) {
-                    logger.debug("Added 1024 bytes with key {} to table {} with value {}", key, tableName, value);
+                byte[] valueBytes = ByteBuffer.allocate(1024).array();
+                if (tableMap.getTable(tableName) == null) {
+                    logger.error("TABLE DOES NOT EXISTS, Table {}", tableName);
                 }
+                reply = tableMap.addData(tableName, key, valueBytes);
                 break;
             case BFTMapRequestType.REMOVE:
                 tableName = new DataInputStream(in).readInt();
@@ -124,7 +119,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                 Map<Integer, byte[]> table = null;
                 try {
                     // logger.info("TABLE CREATED!!!!!");
-                    table = (Map<Integer, byte[]>) objIn.readObject();
+                    table = (Map<Integer, byte[]>)objIn.readObject();
                 } catch (ClassNotFoundException ex) {
                     logger.error("Error on create table operation", ex.getCause());
                     throw new RuntimeException(ex);
@@ -162,7 +157,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                     out = new ByteArrayOutputStream();
                     new DataOutputStream(out).writeBytes(value);
                     reply = out.toByteArray();
-                    logger.debug("Got {} bytes with key {} from table {}",  valueBytes.length, key, tableName);
+                    logger.debug("Got {} bytes with key {} from table {}", valueBytes.length, key, tableName);
                 } else {
                     reply = new byte[0];
                 }
@@ -233,14 +228,13 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
 
     public byte[] getSnapshot(int[] particoes) {
         long start = System.nanoTime();
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                DataOutputStream dos = new DataOutputStream(bos);
-                ObjectOutputStream out = new ObjectOutputStream(bos)) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(); DataOutputStream dos = new DataOutputStream(bos);
+             ObjectOutputStream out = new ObjectOutputStream(bos)) {
             dos.writeInt(particoes.length);
             for (int i = 0; i < particoes.length; i++) {
                 out.writeObject(tableMap.getTable(particoes[i]));
-                logger.info("Getting snapshot of partition {} with {} entries",
-                    particoes[i], tableMap.getTable(particoes[i]).size());
+                logger.info("Getting snapshot of partition {} with {} entries", particoes[i],
+                            tableMap.getTable(particoes[i]).size());
             }
             dos.flush();
             out.flush();
@@ -259,25 +253,25 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
         if (iterations % interval == 0) {
             if (context) {
                 logger.info("--- (Context)  iterations: {}, // regency: {} // consensus: {} ---", iterations,
-                        msgCtx.getRegency(), msgCtx.getConsensusId());
+                            msgCtx.getRegency(), msgCtx.getConsensusId());
             }
 
             logger.info("--- Measurements after {} ops ({} samples) ---", iterations, interval);
 
-            tp = (float) (interval * 1000 / (float) (System.currentTimeMillis() - throughputMeasurementStartTime));
+            tp = (float)(interval * 1000 / (float)(System.currentTimeMillis() - throughputMeasurementStartTime));
 
             if (tp > maxTp) {
                 maxTp = tp;
             }
 
-            int now = (int) ((System.currentTimeMillis() - start) / 1000);
+            int now = (int)((System.currentTimeMillis() - start) / 1000);
 
             if (now < 3000) {
 
                 // logger.info("****************THROUGHPUT: "+now+" "+tp);
                 if (replica instanceof ParallelServiceReplica) {
 
-                    pw.println(now + " " + tp + " " + ((ParallelServiceReplica) replica).getNumActiveThreads());
+                    pw.println(now + " " + tp + " " + ((ParallelServiceReplica)replica).getNumActiveThreads());
                     // logger.info("*******************THREADS: "+now+"
                     // "+((ParallelServiceReplica)replica).getNumActiveThreads());
                 } else {
@@ -295,18 +289,17 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             }
 
             if (replica instanceof ParallelServiceReplica) {
-                logger.info("Active Threads = {}", ((ParallelServiceReplica) replica).getNumActiveThreads());
+                logger.info("Active Threads = {}", ((ParallelServiceReplica)replica).getNumActiveThreads());
             }
 
             throughputMeasurementStartTime = System.currentTimeMillis();
         }
-
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         if (args.length < 6) {
             logger.error(
-                    "Usage: ... BFTMapServerMP <processId> <measurement interval> <Num threads> <initial entries> <checkpoint period> <particionado?> <num_disks>");
+                "Usage: ... BFTMapServerMP <processId> <measurement interval> <Num threads> <initial entries> <checkpoint period> <particionado?> <num_disks>");
             System.exit(-1);
         }
 
@@ -322,40 +315,37 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
         int CPperiod = Integer.parseInt(args[4]);
         int numDisks = Integer.parseInt(args[6]);
         new BFTMapServerMP(processId, interval, maxNT, minNT, initialNT, entries, CPperiod, context, cbase, partition,
-                numDisks);
+                           numDisks);
     }
 
-    private void sendState() {
-
-    }
+    private void sendState() {}
 
     @Override
-    public void installSnapshot(byte[] bytes) {        
+    public void installSnapshot(byte[] bytes) {
         int rcid = -1;
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         try {
             int _cmd = new DataInputStream(in).readInt(); // remove command from bytearray
 
             ObjectInputStream is = new ObjectInputStream(in);
-            rcid = is.readInt();            
+            rcid = is.readInt();
             logger.info("Installing snapshot of partition {}", rcid);
 
-            byte[] states = (byte[]) is.readObject();
+            byte[] states = (byte[])is.readObject();
             ByteArrayInputStream bos = new ByteArrayInputStream(states);
-            DataInputStream dos = new DataInputStream(bos);            
+            DataInputStream dos = new DataInputStream(bos);
             ObjectInputStream ios = new ObjectInputStream(bos);
             int particoes = dos.readInt();
 
-            Map<Integer, byte[]> b = (Map<Integer, byte[]>) ios.readObject();
+            Map<Integer, byte[]> b = (Map<Integer, byte[]>)ios.readObject();
             this.tableMap.addTable(rcid, b);
 
-            logger.info("Snapshot of partition {} installed with {} MB", rcid, states.length/1000000f);
+            logger.info("Snapshot of partition {} installed with {} MB", rcid, states.length / 1000000f);
         } catch (IOException | ClassNotFoundException ex) {
             logger.error("Error installing snapshot of partition {}", rcid, ex);
             throw new RuntimeException("Error installing snapshot", ex);
         }
     }
-
 
     private void recoveryFinished(byte[] bytes) {
         int rcid = -1;
@@ -364,11 +354,11 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
             int _cmd = new DataInputStream(in).readInt(); // remove command from bytearray
 
             ObjectInputStream is = new ObjectInputStream(in);
-            rcid = is.readInt();          
+            rcid = is.readInt();
             logger.info("Recovery finished for partition {}", rcid);
-        } catch (Exception ex) {            
+        } catch (Exception ex) {
             throw new RuntimeException("Error on recovery finished", ex);
-        }        
+        }
     }
 
     @Override
@@ -390,20 +380,19 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
     }
 
     public byte[] appExecuteOrdered(byte[] bytes, MessageContext mc) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     @Override
     public byte[] appExecuteUnordered(byte[] bytes, MessageContext mc) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     @Override
     public void noOp(int i, byte[][] bytes, MessageContext[] mcs) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
-
 }

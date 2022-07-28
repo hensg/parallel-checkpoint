@@ -40,8 +40,16 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     print("Generating image for: " + prefix)
     print("Datetime: " + datetime_exp)
     try:
+        os.mkdir("images")
+    except OSError:
+        pass
+    try:
+        os.mkdir("images/name=sobrecarga")
+    except OSError:
+        pass
+    try:
         os.mkdir("images/name=sobrecarga/datetime=" + datetime_exp)
-    except OSError as error:
+    except OSError:
         pass
 
     last_checkpoint_datetime = None
@@ -57,7 +65,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                     dt = re.findall("[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}", line)
                     if node not in checkpoint_intervals:
                         checkpoint_intervals[node] = []
-                    
+
                     cp_datetime = datetime.strptime(dt[0], "%H:%M:%S.%f")
                     checkpoint_intervals[node].append(cp_datetime)
                     last_checkpoint_datetime = cp_datetime
@@ -68,22 +76,18 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         idle = True
         node = re.findall("throughput_([0-9]{3}).log", str(path))[0]
         with open(str(path)) as file:
-            for line in file:                
+            for line in file:
                 if "ThroughputStatistics - Replica" in line:
-                    rs = re.findall("(\d+) operations/sec", line)
+                    rs = re.findall(r"(\d+\.?\d*) operations/sec", line)
                     if rs:
                         dt = re.findall("([0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3})", line)
                         if node not in throughput_datetime:
                             throughput_datetime[node] = []
                             throughput_reqsec[node] = []
 
-                        if float(rs[0]) > 100:
-                            idle = False
-                        if not idle:
-                            dt_through = datetime.strptime(dt[0], "%H:%M:%S.%f")
-                            # if (not last_checkpoint_datetime or (dt_through - timedelta(seconds=15)) < last_checkpoint_datetime):
-                            throughput_datetime[node].append(dt_through)
-                            throughput_reqsec[node].append(float(rs[0]))
+                        dt_through = datetime.strptime(dt[0], "%H:%M:%S.%f")
+                        throughput_datetime[node].append(dt_through)
+                        throughput_reqsec[node].append(float(rs[0]))
 
         if node in throughput_datetime:
             throughput_reqsec[node] = np.array(throughput_reqsec[node])
@@ -97,14 +101,13 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                 rs = re.findall("([0-9]+) ns", line)
                 if rs:
                     log_date = datetime.strptime(dt[0], "%H:%M:%S")
-                    latency_ms = int(rs[0]) / 1e6                   
+                    latency_ms = int(rs[0]) / 1e6
                     # if last_checkpoint_datetime and ((log_date - timedelta(seconds=15)) < last_checkpoint_datetime):
                     latency_by_time[log_date] = latency_ms
 
-
-    
-    i = 1 
+    i = 1
     for node in throughput_datetime:
+        print(throughput_reqsec)
         # plt.subplot(2, 2, i)
         fig = plt.figure()
         fig.suptitle(
@@ -120,7 +123,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         plt.ylabel("req/sec")
         plt.plot(
             throughput_datetime[node][6:-14],
-            throughput_reqsec[node][6:-14],            
+            throughput_reqsec[node][6:-14],
             label="requests",
         )
         # seclocator = matdates.SecondLocator(interval=4)
@@ -140,8 +143,8 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         ax.legend(labels=["requests", "checkpointing"], loc="upper right")
 
         fig.tight_layout()
-        plt.savefig(
-            "images/name=sobrecarga"            
+        path = (
+            "images/name=sobrecarga"
             + "/datetime="
             + datetime_exp
             + "/read_"
@@ -156,10 +159,16 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
             + checkpoint
             + "_parallel_"
             + parallel
-            + ".png",
+            + ".png"
+        )
+        plt.savefig(
+            path,
             dpi=355,
         )
+        plt.show()
+        print(path)
         plt.close()
+        break
 
     fig = plt.figure()
     fig.suptitle(

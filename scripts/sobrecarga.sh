@@ -14,22 +14,20 @@ datetime=$(date +%F_%H-%M-%S)
 
 function start_experiment() { 
     local partitioned=$1
-    local client_client_num_threads=$2
-    local client_num_operations=$3
+    local client_num_threads=$2
+    local client_termination_time=$3
     local run=$4
     local server_threads=$5
-    local client_interval=0
+    local client_interval=$6
     local client_max_index=$server_threads    
-    local client_p_conflict=$6
+    local client_p_conflict=$7
     local client_verbose=false
     local client_parallel=true
     local client_async=false
-    local checkpoint_interval=$7
-    local num_unique_keys=$8
-    local initial_entries=$9
-    local client_p_read=${10}
-    local num_logs=${11}
-    local p_hotstop=${12}
+    local checkpoint_interval=$8
+    local num_unique_keys=$9
+    local initial_entries=${10}
+    local client_p_read=${11}
     echo "Client reads $client_p_read%"
     echo "Unique keys $num_unique_keys"
     echo "Initial entries $initial_entries MB"
@@ -61,19 +59,39 @@ function start_experiment() {
     wait
     for ssh_entry in "${ssh_list[@]}"; do
          ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;"
-         sleep 5
     done
-    sleep 5
+    sleep 20
+
+    
+    warmup_client_termination_time=10
 
     echo "Services reconfigured with paralell $partitioned and checkpoint interval $checkpoint_interval"
-    echo "Starting client requests"
     client_cmd="
          sudo truncate -s 0 /srv/logs/*.log;
          tail -f /srv/logs/client.log &;
          cd /srv;
-         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_client_num_threads 1 $client_num_operations $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async $p_hotstop;
+         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $warmup_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
          kill %1;
     "
+    echo "Warming up"
+    ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
+
+    clean_warmup_logs="
+        sudo truncate -s 0 /srv/logs/*.log
+    "
+    for ssh_entry in "${ssh_list[@]}"; do
+         echo "Cleaning logs after warmup $ssh_entry"
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$clean_warmup_logs" &
+    done
+
+    client_cmd="
+         sudo truncate -s 0 /srv/logs/*.log;
+         tail -f /srv/logs/client.log &;
+         cd /srv;
+         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
+         kill %1;
+    "
+    echo "Starting client requests"
     ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
 
     echo "Client finished sending requests"
@@ -81,7 +99,7 @@ function start_experiment() {
     sleep 5
     echo "Getting remote logs"
 
-    local experiment_dir=experiments/name=sobrecarga/datetime=$datetime/checkpoint=$checkpoint_interval/server_threads=$server_threads/clients=$num_threads/partitioned=${partitioned}/run=$run/read=${client_p_read}/conflict=${client_p_conflict}
+    local experiment_dir=experiments/name=sobrecarga/datetime=$datetime/checkpoint=$checkpoint_interval/server_threads=$server_threads/clients=$client_num_threads/partitioned=${partitioned}/run=$run/read=${client_p_read}/conflict=${client_p_conflict}
     mkdir -p $experiment_dir
 
     scp ${user_id}@pc${ssh_client}.emulab.net:/srv/logs/client.log $experiment_dir/client.log &
@@ -96,33 +114,22 @@ function start_experiment() {
 }
 
 
-client_num_threads=1
 conflito=0
 percent_of_read_ops=0 
 num_unique_keys=1000
-#initial_entries=2000 #MB
-initial_entries=5
-p_hotstop=50
-# p_hotstop=0
+initial_entries=10000
+client_termination_time=120 # seconds
+client_interval=5 #millis
 
-#for checkpoint_interval in 400000 800000 1600000; do    
-for checkpoint_interval in 400000; do  
-    server_threads=4
-    # each log = 1 byte
-    num_logs=$(($checkpoint_interval / $server_threads - 1000))
-    partitioned=false    
-    
-    num_ops=$(($checkpoint_interval + $num_logs)) # total de OPERAÇÕES
-    num_ops_by_client=$(($num_ops / $client_num_threads))
-    
-    # echo "Executing $num_ops operações for clientes=$client_num_threads, particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
-    # start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs $p_hotstop; 
+for client_num_threads in 32 64 128; do
+    datetime=$(date +%F_%H-%M-%S)
 
-    partitioned=true    
-    #for server_threads in 4 8 16; do
-    for server_threads in 4; do
-        echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
-
-        start_experiment $partitioned $client_num_threads $num_ops_by_client 1 $server_threads $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $num_logs $p_hotstop;
+    for checkpoint_interval in 800000; do  
+        for server_threads in 4; do
+            for partitioned in true false; do
+                echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
+                start_experiment $partitioned $client_num_threads $client_termination_time 1 $server_threads $client_interval $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops;
+            done
+        done
     done
 done

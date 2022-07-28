@@ -16,16 +16,15 @@
  */
 package demo.bftmap;
 
-//import bftsmart.tom.parallelism.ParallelMapping;
+// import bftsmart.tom.parallelism.ParallelMapping;
+import bftsmart.util.Storage;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import bftsmart.util.Storage;
 
 /**
  * Example client that updates a BFT replicated service (a counter).
@@ -47,14 +46,14 @@ public class BFTMapClientMP {
     public static void main(String[] args) throws Exception {
         if (args.length < 7) {
             logger.info(
-                    "Usage: ... BFTMapClientMP <num. threads> <process id> <number of operations> <interval> <maxIndex> <numUniqueKeys> <p_read %> <p_conflict %> <verbose?> <parallel?> <async?>");
+                "Usage: ... BFTMapClientMP <num. threads> <process id> <number of operations> <interval> <maxIndex> <numUniqueKeys> <p_read %> <p_conflict %> <verbose?> <parallel?> <async?>");
             System.exit(-1);
         }
 
         int numThreads = Integer.parseInt(args[0]);
         initId = Integer.parseInt(args[1]);
 
-        int numberOfOps = Integer.parseInt(args[2]);
+        int terminationTime = Integer.parseInt(args[2]);
         // int requestSize = Integer.parseInt(args[3]);
         int interval = Integer.parseInt(args[3]);
         int max = Integer.parseInt(args[4]);
@@ -63,45 +62,23 @@ public class BFTMapClientMP {
         int p_read = Integer.parseInt(args[6]);
         boolean verbose = Boolean.parseBoolean(args[8]);
         boolean parallel = Boolean.parseBoolean(args[9]);
-        boolean async = Boolean.parseBoolean(args[10]);        
+        boolean async = Boolean.parseBoolean(args[10]);
         logger.info("P_CONFLICT ====== {}", p_conflict);
-        Client[] c = new Client[numThreads];
-        ops = new int[numThreads];
-        for (int k = 0; k < ops.length; k++) {
-            ops[k] = 0;
-        }
-          
-        ReplyCounterListener replyCounterListener = new ReplyCounterListener();
 
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(numThreads);
+
+        Client[] clients = new Client[numThreads];
         for (int i = 0; i < numThreads; i++) {
-            Thread.sleep(100);
-            c[i] = new Client(initId + i, numberOfOps, interval, max, numUniqueKeys, verbose, parallel, async, numThreads, p_read,
-                    p_conflict, replyCounterListener);
+            clients[i] = new Client(i, max, numUniqueKeys, verbose, parallel, async, numThreads, p_read, p_conflict);
+            executorService.scheduleAtFixedRate(clients[i], 100 + i * 20, interval, TimeUnit.MILLISECONDS);
         }
-
-        long totalOps = numberOfOps * numThreads;
-
-        logger.info("Going to execute {} operations, numOps={}, numThreads={}, conflict={}%, parallel={}", totalOps, numberOfOps, numThreads, p_conflict, parallel);
-        for (int i = 0; i < numThreads; i++) {
-            Thread.sleep(100);
-            c[i].start();
-        }
-
-        for (int i = 0; i < numThreads; i++) {
-            try {
-                c[i].join(1000*60L*30);
-                c[i].closeProxy();
-            } catch (InterruptedException ex) {
-                logger.error("Waiting thread finish... interrupted", ex);
-            }
-        }
+        executorService.awaitTermination(terminationTime, TimeUnit.SECONDS);
+        Thread.sleep(10000);
         logger.info("Finished all client threads execution...");
         System.exit(0);
     }
 
-    public static void stop() {
-        stop = true;
-    }
+    public static void stop() { stop = true; }
 
     public static void change() {
         if (op == BFTMapRequestType.CHECK) {

@@ -5,6 +5,10 @@
  */
 package demo.bftmap;
 
+import bftsmart.tom.ParallelAsynchServiceProxy;
+import bftsmart.tom.ParallelServiceProxy;
+import bftsmart.tom.core.messages.TOMMessageType;
+import bftsmart.tom.util.Storage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -17,14 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import bftsmart.tom.ParallelAsynchServiceProxy;
-import bftsmart.tom.ParallelServiceProxy;
-import bftsmart.tom.core.messages.TOMMessageType;
-import bftsmart.tom.util.Storage;
 import parallelism.ParallelMapping;
 
 /**
@@ -55,7 +53,7 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
         }
     }
 
-    //@author Henrique
+    // @author Henrique
     public void closeProxy() {
         if (this.proxy != null)
             this.proxy.close();
@@ -74,7 +72,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
                     return null;
                 } else {
@@ -86,7 +85,7 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             // byte[] rep = KVProxy.invokeUnordered(out.toByteArray());
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
-            Map<Integer, byte[]> table = (Map<Integer, byte[]>) in.readObject();
+            Map<Integer, byte[]> table = (Map<Integer, byte[]>)in.readObject();
             in.close();
             return table;
         } catch (ClassNotFoundException | IOException ex) {
@@ -109,9 +108,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep = null;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.SYNC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.SYNC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -120,7 +119,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                     rep = proxy.invokeParallel(out.toByteArray(), sb.toString().hashCode());
                     long now = System.nanoTime();
                     values.add(now - last);
-
                 }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
@@ -130,7 +128,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             logger.error("Error getting entry", ex.getCause());
             throw new RuntimeException(ex);
         }
-
     }
 
     public byte[] getEntries(Integer tableName1, Integer key1, Integer tableName2, Integer key2) {
@@ -149,14 +146,15 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.SYNC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.SYNC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
                 } else {
-                    // rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.SYNC_ALL);
+                    // rep = proxy.invokeParallel(out.toByteArray(),
+                    // ParallelMapping.SYNC_ALL);
                     if (tableName1 == 0) {
                         if (tableName2 == 1) {
                             String i = "01";
@@ -228,7 +226,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                             values.add(now - last);
                         }
                     }
-
                 }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
@@ -238,7 +235,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             logger.error("Error on get entries", ex.getCause());
             throw new RuntimeException(ex);
         }
-
     }
 
     @SuppressWarnings("unchecked")
@@ -255,16 +251,16 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
                 } else {
-                    // rep = proxy.invokeParallel(out.toByteArray(), ParallelMapping.CONC_ALL);
+                    // rep = proxy.invokeParallel(out.toByteArray(),
+                    // ParallelMapping.CONC_ALL);
                     rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.GW);
-
                 }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
@@ -273,7 +269,7 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             ObjectInputStream in = new ObjectInputStream(bis);
             Map<Integer, byte[]> table = null;
             try {
-                table = (Map<Integer, byte[]>) in.readObject();
+                table = (Map<Integer, byte[]>)in.readObject();
             } catch (ClassNotFoundException ex) {
                 logger.error("Class cast error", ex.getCause());
                 System.exit(-1);
@@ -304,19 +300,18 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
 
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.SYNC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.SYNC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
                 } else {
 
-                    long last = System.nanoTime();
+                    // long last = System.nanoTime();
                     rep = proxy.invokeParallel(out.toByteArray(), sb.toString().hashCode());
-                    long now = System.nanoTime();
-                    values.add(now - last);
-
+                    // long now = System.nanoTime();
+                    // values.add(now - last);
                 }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
@@ -326,7 +321,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             logger.error("IO error", ex.getCause());
             throw new RuntimeException(ex);
         }
-
     }
 
     public byte[] putEntries(Integer tableName1, Integer key1, Integer tableName2, Integer key2, byte[] value) {
@@ -348,9 +342,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.SYNC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.SYNC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -368,7 +362,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             logger.error("IO error", ex.getCause());
             throw new RuntimeException(ex);
         }
-
     }
 
     @SuppressWarnings("unchecked")
@@ -377,13 +370,13 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(BFTMapRequestType.TAB_REMOVE);
-            dos.writeUTF((String) key);
+            dos.writeUTF((String)key);
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -395,14 +388,13 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             }
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
-            Map<Integer, byte[]> table = (Map<Integer, byte[]>) in.readObject();
+            Map<Integer, byte[]> table = (Map<Integer, byte[]>)in.readObject();
             in.close();
             return table;
         } catch (ClassNotFoundException | IOException ex) {
             logger.error("Error removing object", ex.getCause());
             throw new RuntimeException(ex);
         }
-
     }
 
     public byte[] removeEntry(Integer tableName, Integer key) {
@@ -415,9 +407,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -433,7 +425,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             logger.error("Error removing entry", ex.getCause());
             throw new RuntimeException(ex);
         }
-
     }
 
     public long getPercentile(int percent) {
@@ -449,9 +440,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return id;
@@ -480,9 +471,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return id;
@@ -504,7 +495,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
                         rep = proxy.invokeParallel(out.toByteArray(), MultipartitionMapping.W4);
                         values.add(System.nanoTime() - last);
                     }
-
                 }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
@@ -528,9 +518,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return false;
@@ -556,7 +546,6 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             logger.error("Error verifying contains key", ex.getCause());
             throw new RuntimeException(ex);
         }
-
     }
 
     public boolean containsKey1(Integer tableName, Integer key) {
@@ -569,9 +558,9 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             byte[] rep;
             if (parallel) {
                 if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), 
-                            replyCounterListener,
-                            TOMMessageType.ORDERED_REQUEST, ParallelMapping.CONC_ALL);
+                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
+                                                                    TOMMessageType.ORDERED_REQUEST,
+                                                                    ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return false;
@@ -607,53 +596,53 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
     }
 
     public boolean isEmpty() {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public boolean containsValue(Object value) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public Map<Integer, byte[]> get(Object key) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public void putAll(Map<? extends Integer, ? extends Map<Integer, byte[]>> m) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public void clear() {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public Set<Integer> keySet() {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public Collection<Map<Integer, byte[]>> values() {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public Set<Entry<Integer, Map<Integer, byte[]>>> entrySet() {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public boolean containsKey(Object key) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     void insertValue(PBFTMapMP store, String tableName, int ops) {
-        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-                                                                       // Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods,
+                                                                       // choose Tools | Templates.
     }
 
     public void printValues() {
@@ -662,5 +651,4 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             logger.info("value[{}]={}", i, values.get(i));
         }
     }
-
 }
