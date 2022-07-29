@@ -69,9 +69,17 @@ public class BFTMapClientMP {
 
         Client[] clients = new Client[numThreads];
         for (int i = 0; i < numThreads; i++) {
-            clients[i] = new Client(i, max, numUniqueKeys, verbose, parallel, async, numThreads, p_read, p_conflict);
-            executorService.scheduleAtFixedRate(clients[i], 100 + i * 20, interval, TimeUnit.MILLISECONDS);
+            clients[i] =
+                new Client(i, max, numUniqueKeys, verbose, parallel, async, numThreads, p_read, p_conflict, interval);
+
+            executorService.scheduleAtFixedRate(clients[i], 100 + i * 10, interval, TimeUnit.MILLISECONDS);
         }
+
+        // 1. Latency calcular aqui com cliente que não espera a latencia
+        // 2. Usar 10milis ou uma margem mais segura para esperar termina
+        // 3. Round-robin
+        // 4. Voltar ao gráfico do Joelho
+        // 5. Alargar o checkpoint/fazer maior um pouquinho
         executorService.awaitTermination(terminationTime, TimeUnit.SECONDS);
         Thread.sleep(10000);
         logger.info("Finished all client threads execution...");

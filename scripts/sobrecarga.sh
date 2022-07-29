@@ -63,7 +63,7 @@ function start_experiment() {
     sleep 20
 
     
-    warmup_client_termination_time=10
+    warmup_client_termination_time=30
 
     echo "Services reconfigured with paralell $partitioned and checkpoint interval $checkpoint_interval"
     client_cmd="
@@ -117,15 +117,15 @@ function start_experiment() {
 conflito=0
 percent_of_read_ops=0 
 num_unique_keys=1000
-initial_entries=10000
+initial_entries=11000
 client_termination_time=120 # seconds
-client_interval=5 #millis
+client_interval=10 #millis
 
-for client_num_threads in 32 64 128; do
+for client_num_threads in 128; do
     datetime=$(date +%F_%H-%M-%S)
 
-    for checkpoint_interval in 800000; do  
-        for server_threads in 4; do
+    for checkpoint_interval in 1000000; do  
+        for server_threads in 8; do
             for partitioned in true false; do
                 echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
                 start_experiment $partitioned $client_num_threads $client_termination_time 1 $server_threads $client_interval $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops;

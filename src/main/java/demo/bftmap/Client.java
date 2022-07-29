@@ -4,6 +4,11 @@ import bftsmart.demo.bftmap.BFTMap;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +32,12 @@ class Client implements Runnable {
     int successOps;
     boolean async;
     ClientLatencyLogger clientLatencyLogger = new ClientLatencyLogger();
-    final Random random = new Random();
+    private static final Random random = new Random();
     private int roundKey;
     private int roundTable;
 
     public Client(int id, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
-                  int numThreads, int p_read, int p_conflict) {
+                  int numThreads, int p_read, int p_conflict, int interval) {
         this.id = id;
         this.numClients = numThreads;
         this.numUniqueKeys = numUniqueKeys;
@@ -44,6 +49,7 @@ class Client implements Runnable {
         this.roundKey = 0;
         this.roundTable = 0;
         this.countNumOp = 0;
+        this.interval = interval;
         this.store = new PBFTMapMP(id, parallel, async, null);
         logger.info("Started new client {}", id);
     }
@@ -52,6 +58,7 @@ class Client implements Runnable {
 
     private final static float CALC_LATENCY_THRESHOLD = 0.0005f;
     private final static int ONE_MILLION = 1_000_000;
+    ExecutorService pool = Executors.newScheduledThreadPool(1);
 
     public void run() {
         final float randomValue = random.nextFloat();
@@ -62,11 +69,19 @@ class Client implements Runnable {
             lastSentInstant = System.nanoTime();
         }
 
+        final Future<?> fut = pool.submit(new Runnable() {
+            public void run() {
+                try {
+                    insertValue(store, roundTable, roundKey);
+                } catch (Exception e) {
+                    logger.error("Failed to insert value", e);
+                    System.exit(0);
+                }
+            }
+        });
         try {
-            insertValue(store, roundTable, roundKey);
+            fut.get(interval, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            logger.error("Failed to insert value", e);
-            System.exit(0);
         }
 
         if (calcLantency) {
@@ -75,6 +90,8 @@ class Client implements Runnable {
             logger.info("Count {}, Latency {}", this.countNumOp, latency / ONE_MILLION);
         }
 
+        // roundTable = random.nextInt(this.maxIndex);
+        // roundKey = random.nextInt(this.numUniqueKeys);
         this.roundTable = (roundTable + 1) % this.maxIndex;
         this.roundKey = (roundKey + 1) % this.numUniqueKeys;
         this.countNumOp += 1;
