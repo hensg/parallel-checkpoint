@@ -30,6 +30,7 @@ function start_experiment() {
     local num_unique_keys=$9
     local initial_entries=${10}
     local client_p_read=${11}
+    local client_timeout=${12}
 
     echo "Ensure client is not running"
     client_cmd="
@@ -67,7 +68,7 @@ function start_experiment() {
          sudo truncate -s 0 /srv/logs/*.log;
          tail -f /srv/logs/client.log &;
          cd /srv;
-         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
+         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async $client_timeout;
          sleep 5;
          kill %1;
     "
@@ -95,12 +96,13 @@ conflito=0
 percent_of_read_ops=0 
 num_unique_keys=1000
 initial_entries=5
-client_termination_time=120 #seconds
+client_termination_time=40 #seconds
 client_interval=5 #millis
+client_timeout=500 #millis
 checkpoint_interval=999999999
-for client_num_threads in 8 16 32 64 128 256; do
+for client_num_threads in 16 32 48 64 72 88 128; do
     server_threads=4
     partitioned=true    
     echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
-    start_experiment $partitioned $client_num_threads $client_termination_time 1 $server_threads $client_interval $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops;
+    start_experiment $partitioned $client_num_threads $client_termination_time 1 $server_threads $client_interval $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $client_timeout;
 done

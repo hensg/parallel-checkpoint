@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import argparse
 import re
 from datetime import datetime
@@ -46,13 +47,14 @@ for client in nclients:
         with open(path) as file:
             lats = []
             for line in file:
-                rs = re.findall("Latency: ([0-9]+) ns", line)
+                rs = re.findall("Latency ([0-9]+)millis", line)
                 if rs:
-                    l = int(rs[0]) / 1000000
+                    l = int(rs[0])
+                    print(l)
                     if l > 0:
                         lats.append(l)
         lats.sort()
-        latency.append(np.average(lats[:-100]))
+        latency.append(np.average(lats[10:-10]))
 
 throughput_reqsec = []
 for client in nclients:
@@ -72,7 +74,7 @@ fig = plt.figure()
 fig.suptitle("parallel={}, read={}%, conflict={}%".format(parallel, read, conflict))
 plt.title("Replica")
 plt.xlabel("requests/second")
-plt.ylabel("latency (milliseconds)")
+plt.ylabel("latency (millis)")
 plt.plot(throughput_reqsec, latency, marker="D", label="requests")
 k = 0
 for i, j in zip(throughput_reqsec, latency):
@@ -85,6 +87,8 @@ for i, j in zip(throughput_reqsec, latency):
     )
     k += 1
 
-plt.savefig("images/name=latencyvsthroughput.png", dpi=355)
+path = "images/"
+os.makedirs(path, exist_ok=True)
+plt.savefig(f"{path}name=latencyvsthroughput.png", dpi=355)
 plt.show()
 plt.close()

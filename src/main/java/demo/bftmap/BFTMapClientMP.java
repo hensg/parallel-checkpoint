@@ -63,6 +63,7 @@ public class BFTMapClientMP {
         boolean verbose = Boolean.parseBoolean(args[8]);
         boolean parallel = Boolean.parseBoolean(args[9]);
         boolean async = Boolean.parseBoolean(args[10]);
+        int timeout = Integer.parseInt(args[11]);
         logger.info("P_CONFLICT ====== {}", p_conflict);
 
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(numThreads);
@@ -70,16 +71,23 @@ public class BFTMapClientMP {
         Client[] clients = new Client[numThreads];
         for (int i = 0; i < numThreads; i++) {
             clients[i] =
-                new Client(i, max, numUniqueKeys, verbose, parallel, async, numThreads, p_read, p_conflict, interval);
+                new Client(i, max, numUniqueKeys, verbose, parallel, async, numThreads, p_read, p_conflict, interval, timeout);
 
             executorService.scheduleAtFixedRate(clients[i], 100 + i * 10, interval, TimeUnit.MILLISECONDS);
         }
+
+        ScheduledExecutorService latencyScheduler = Executors.newScheduledThreadPool(20); // a few threads to make sure we will have a log for every second
+        ClientLatency clientLatency = 
+                new ClientLatency(999999, max, numUniqueKeys, verbose, parallel, async, numThreads, p_read, p_conflict, interval, timeout);
+        latencyScheduler.scheduleAtFixedRate(clientLatency, 5, 1, TimeUnit.SECONDS);
+
 
         // 1. Latency calcular aqui com cliente que não espera a latencia
         // 2. Usar 10milis ou uma margem mais segura para esperar termina
         // 3. Round-robin
         // 4. Voltar ao gráfico do Joelho
         // 5. Alargar o checkpoint/fazer maior um pouquinho
+        latencyScheduler.awaitTermination(terminationTime, TimeUnit.SECONDS);
         executorService.awaitTermination(terminationTime, TimeUnit.SECONDS);
         Thread.sleep(10000);
         logger.info("Finished all client threads execution...");

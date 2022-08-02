@@ -28,6 +28,7 @@ function start_experiment() {
     local num_unique_keys=$9
     local initial_entries=${10}
     local client_p_read=${11}
+    local client_timeout=${12}
     echo "Client reads $client_p_read%"
     echo "Unique keys $num_unique_keys"
     echo "Initial entries $initial_entries MB"
@@ -70,7 +71,7 @@ function start_experiment() {
          sudo truncate -s 0 /srv/logs/*.log;
          tail -f /srv/logs/client.log &;
          cd /srv;
-         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $warmup_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
+         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $warmup_client_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async $client_timeout;
          kill %1;
     "
     echo "Warming up"
@@ -88,7 +89,7 @@ function start_experiment() {
          sudo truncate -s 0 /srv/logs/*.log;
          tail -f /srv/logs/client.log &;
          cd /srv;
-         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async;
+         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $client_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async $client_timeout;
          kill %1;
     "
     echo "Starting client requests"
@@ -119,17 +120,16 @@ percent_of_read_ops=0
 num_unique_keys=1000
 initial_entries=11000
 client_termination_time=120 # seconds
-client_interval=10 #millis
+client_interval=5 #millis
+client_timeout=500 #Millis
+client_num_threads=50
+datetime=$(date +%F_%H-%M-%S)
 
-for client_num_threads in 128; do
-    datetime=$(date +%F_%H-%M-%S)
-
-    for checkpoint_interval in 1000000; do  
-        for server_threads in 8; do
-            for partitioned in true false; do
-                echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
-                start_experiment $partitioned $client_num_threads $client_termination_time 1 $server_threads $client_interval $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops;
-            done
+for checkpoint_interval in 400000 800000; do  
+    for server_threads in 4 8 16; do
+        for partitioned in true false; do
+            echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
+            start_experiment $partitioned $client_num_threads $client_termination_time 1 $server_threads $client_interval $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $client_timeout;
         done
     done
 done

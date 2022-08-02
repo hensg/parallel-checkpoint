@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory;
 
 class Client implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+    protected static final Logger logger = LoggerFactory.getLogger(Client.class);
     int id;
     int numberOfOps;
     int interval;
     int numClients;
-    private int countNumOp;
+    int countNumOp;
     int numUniqueKeys;
     int p_pa = 90;
     int p_pb = 5;
@@ -31,13 +31,13 @@ class Client implements Runnable {
     int p_read;
     int successOps;
     boolean async;
-    ClientLatencyLogger clientLatencyLogger = new ClientLatencyLogger();
-    private static final Random random = new Random();
-    private int roundKey;
-    private int roundTable;
+    final Random random = new Random();
+    int roundKey;
+    int roundTable;
+    int timeout;
 
     public Client(int id, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
-                  int numThreads, int p_read, int p_conflict, int interval) {
+                  int numThreads, int p_read, int p_conflict, int interval, int timeout) {
         this.id = id;
         this.numClients = numThreads;
         this.numUniqueKeys = numUniqueKeys;
@@ -50,6 +50,7 @@ class Client implements Runnable {
         this.roundTable = 0;
         this.countNumOp = 0;
         this.interval = interval;
+        this.timeout = timeout;
         this.store = new PBFTMapMP(id, parallel, async, null);
         logger.info("Started new client {}", id);
     }
@@ -62,12 +63,6 @@ class Client implements Runnable {
 
     public void run() {
         final float randomValue = random.nextFloat();
-        final boolean calcLantency = randomValue < CALC_LATENCY_THRESHOLD;
-
-        long lastSentInstant = 0;
-        if (calcLantency) {
-            lastSentInstant = System.nanoTime();
-        }
 
         final Future<?> fut = pool.submit(new Runnable() {
             public void run() {
@@ -79,27 +74,22 @@ class Client implements Runnable {
                 }
             }
         });
+
         try {
-            fut.get(interval, TimeUnit.MILLISECONDS);
+            fut.get(timeout, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
         }
 
-        if (calcLantency) {
-            long latency = System.nanoTime() - lastSentInstant;
-            clientLatencyLogger.logLatency(latency);
-            logger.info("Count {}, Latency {}", this.countNumOp, latency / ONE_MILLION);
-        }
-
-        // roundTable = random.nextInt(this.maxIndex);
-        // roundKey = random.nextInt(this.numUniqueKeys);
-        this.roundTable = (roundTable + 1) % this.maxIndex;
-        this.roundKey = (roundKey + 1) % this.numUniqueKeys;
+        roundTable = random.nextInt(this.maxIndex);
+        roundKey = random.nextInt(this.numUniqueKeys);
+        //this.roundTable = (roundTable + 1) % this.maxIndex;
+        //this.roundKey = (roundKey + 1) % this.numUniqueKeys;
         this.countNumOp += 1;
     }
 
     public int getSuccessOps() { return this.successOps; }
 
-    private boolean insertValue(PBFTMapMP bftMap, Integer nameTable, int index) throws Exception {
+    protected boolean insertValue(PBFTMapMP bftMap, Integer nameTable, int index) throws Exception {
         Integer key = index;
         byte[] valueBytes = ByteBuffer.allocate(1024).array();
         byte[] resultBytes = bftMap.putEntry(nameTable, key, valueBytes);
