@@ -98,10 +98,10 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         with open(str(path)) as file:
             for line in file:
                 dt = re.findall("([0-9]{2}:[0-9]{2}:[0-9]{2})", line)
-                rs = re.findall("([0-9]+) ns", line)
+                rs = re.findall("([0-9]+)millis", line)
                 if rs:
                     log_date = datetime.strptime(dt[0], "%H:%M:%S")
-                    latency_ms = int(rs[0]) / 1e6
+                    latency_ms = int(rs[0])
                     # if last_checkpoint_datetime and ((log_date - timedelta(seconds=15)) < last_checkpoint_datetime):
                     latency_by_time[log_date] = latency_ms
 
@@ -192,7 +192,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
             label="requests",
         )
         ax = plt.gca()
-        ax.set_ylim([0, 20])
+        ax.set_ylim([0, 120])
         i += 1
         cs = []
         if node in checkpoint_intervals:
