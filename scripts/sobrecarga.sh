@@ -31,7 +31,7 @@ function start_experiment() {
     local client_timeout=${12}
     echo "Client reads $client_p_read%"
     echo "Unique keys $num_unique_keys"
-    echo "Initial entries $initial_entries MB"
+    echo "Initial entries $initial_entries"
 
     echo "Ensure client is not running"
     client_cmd="
@@ -47,15 +47,15 @@ function start_experiment() {
         sudo sed -i s/'=THREADS=.*'/=THREADS=${server_threads}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service;
         sudo sed -i s/'=INITIAL_ENTRIES=.*'/=INITIAL_ENTRIES=${initial_entries}/g /etc/systemd/system/bft-smart.service;
-        sudo rm -f /srv/config/currentView
-        sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/*;
-        sudo rm -rf /srv/logs/*.log ;
         sudo systemctl daemon-reload;
+        sudo rm -rf /srv/config/currentView || true;
+        sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/* || true;
+        sudo rm -rf /srv/logs/*.log || true;
     "
 
     for ssh_entry in "${ssh_list[@]}"; do
          echo "Reconfiguring $ssh_entry"
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd" &
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd"
     done
     wait
     for ssh_entry in "${ssh_list[@]}"; do
@@ -117,17 +117,17 @@ function start_experiment() {
 
 conflito=0
 percent_of_read_ops=0 
-num_unique_keys=1000
-initial_entries=11000
-client_termination_time=120 # seconds
+num_unique_keys=2000
+initial_entries=2000
+client_termination_time=60 # seconds
 client_interval=5 #millis
-client_timeout=500 #Millis
-client_num_threads=50
+client_timeout=40 #Millis
+client_num_threads=1
 datetime=$(date +%F_%H-%M-%S)
 
-for checkpoint_interval in 400000 800000; do  
-    for server_threads in 4 8 16; do
-        for partitioned in true false; do
+for checkpoint_interval in 800000; do  
+    for server_threads in 8; do
+        for partitioned in true; do
             echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
             start_experiment $partitioned $client_num_threads $client_termination_time 1 $server_threads $client_interval $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $client_timeout;
         done

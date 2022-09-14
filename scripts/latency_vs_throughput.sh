@@ -100,6 +100,7 @@ client_termination_time=40 #seconds
 client_interval=5 #millis
 client_timeout=500 #millis
 checkpoint_interval=999999999
+
 for client_num_threads in 16 32 48 64 72 88 128; do
     server_threads=4
     partitioned=true    
