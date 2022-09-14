@@ -80,10 +80,10 @@ class Client implements Runnable {
         } catch (Exception e) {
         }
 
-        roundTable = random.nextInt(this.maxIndex);
-        roundKey = random.nextInt(this.numUniqueKeys);
-        //this.roundTable = (roundTable + 1) % this.maxIndex;
-        //this.roundKey = (roundKey + 1) % this.numUniqueKeys;
+        //roundKey = random.nextInt(this.numUniqueKeys);
+        //roundTable = random.nextInt(this.maxIndex);
+        this.roundTable = (roundTable + 1) % this.maxIndex;
+        this.roundKey = (roundKey + 1) % this.numUniqueKeys;
         this.countNumOp += 1;
     }
 

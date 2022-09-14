@@ -46,7 +46,7 @@ public class BFTMapClientMP {
     public static void main(String[] args) throws Exception {
         if (args.length < 7) {
             logger.info(
-                    "Usage: ... BFTMapClientMP <num. threads> <process id> <number of operations> <interval> <maxIndex> <numUniqueKeys> <p_read %> <p_conflict %> <verbose?> <parallel?> <async?>");
+                    "Usage: ... BFTMapClientMP <num. threads> <process id> <time to run> <interval> <maxIndex> <numUniqueKeys> <p_read %> <p_conflict %> <verbose?> <parallel?> <async?>");
             System.exit(-1);
         }
 
@@ -77,17 +77,12 @@ public class BFTMapClientMP {
             executorService.scheduleAtFixedRate(clients[i], 100 + i * 10, interval, TimeUnit.MILLISECONDS);
         }
 
-        ScheduledExecutorService latencyScheduler = Executors.newScheduledThreadPool(20); // a few threads to make sure
-                                                                                          // we
-                                                                                          // will have a log for every
-                                                                                          // second
+        ScheduledExecutorService latencyScheduler = Executors.newSingleThreadScheduledExecutor();
         ClientLatency clientLatency = new ClientLatency(999999, max, numUniqueKeys, verbose, parallel, async,
-                numThreads,
-                p_read, p_conflict, interval, timeout);
+                numThreads, p_read, p_conflict, interval, timeout);
         latencyScheduler.scheduleAtFixedRate(clientLatency, 5, 1, TimeUnit.SECONDS);
 
         executorService.awaitTermination(terminationTime, TimeUnit.SECONDS);
-        Thread.sleep(4000);
         logger.info("Finished all client threads execution...");
         System.exit(0);
     }
