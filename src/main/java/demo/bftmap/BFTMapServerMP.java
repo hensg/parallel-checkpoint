@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +62,11 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
         this.partition = partition;
         this.interval = interval;
         this.context = context;
+        Random random = new Random();
         for (int i = 0; i < initThreads; i++) {
             tableMap.addTable(i, new TreeMap<Integer, byte[]>());
-            for (int j = 0; j < entries; j++) {
-                tableMap.getTable(i).put(j, ByteBuffer.allocate(1024).array());
+            for (int j = 0; j < (entries / initThreads * 24414); j++) { // allocate blocks of 4k
+                tableMap.getTable(i).put(j, ByteBuffer.allocate(1024 * 4).array());
             }
         }
         logger.info("Number of tables = {}", tableMap.getNumOfTables());

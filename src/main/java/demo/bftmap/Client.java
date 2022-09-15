@@ -37,7 +37,7 @@ class Client implements Runnable {
     int timeout;
 
     public Client(int id, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
-                  int numThreads, int p_read, int p_conflict, int interval, int timeout) {
+            int numThreads, int p_read, int p_conflict, int interval, int timeout) {
         this.id = id;
         this.numClients = numThreads;
         this.numUniqueKeys = numUniqueKeys;
@@ -55,19 +55,41 @@ class Client implements Runnable {
         logger.info("Started new client {}", id);
     }
 
-    public void closeProxy() { store.closeProxy(); }
+    public void closeProxy() {
+        store.closeProxy();
+    }
 
-    private final static float CALC_LATENCY_THRESHOLD = 0.0005f;
-    private final static int ONE_MILLION = 1_000_000;
     ExecutorService pool = Executors.newScheduledThreadPool(1);
 
     public void run() {
-        final float randomValue = random.nextFloat();
 
         final Future<?> fut = pool.submit(new Runnable() {
             public void run() {
                 try {
-                    insertValue(store, roundTable, roundKey);
+                    if (random.nextInt(100) < p_read) {
+                        getEntry(store, roundTable, roundKey);
+                    } else {
+                        if (random.nextInt(100) < p_conflict) {
+                            int roundKey2 = random.nextInt(maxIndex);
+                            int roundTable2 = random.nextInt(numUniqueKeys);
+
+                            while (roundKey2 == roundKey)
+                                roundKey2 = random.nextInt(maxIndex);
+                            while (roundTable2 == roundTable)
+                                roundTable2 = random.nextInt(numUniqueKeys);
+
+                            if (roundTable > roundTable2) {
+                                // do not remove it, its need for hashcode that is based only in asc order of
+                                // ids
+                                int aux = roundTable;
+                                roundTable = roundTable2;
+                                roundTable2 = aux;
+                            }
+                            putEntries(store, roundTable, roundKey, roundTable2, roundKey2);
+                        } else {
+                            insertValue(store, roundTable, roundKey);
+                        }
+                    }
                 } catch (Exception e) {
                     logger.error("Failed to insert value", e);
                     System.exit(0);
@@ -80,14 +102,14 @@ class Client implements Runnable {
         } catch (Exception e) {
         }
 
-        //roundKey = random.nextInt(this.numUniqueKeys);
-        //roundTable = random.nextInt(this.maxIndex);
-        this.roundTable = (roundTable + 1) % this.maxIndex;
-        this.roundKey = (roundKey + 1) % this.numUniqueKeys;
+        roundKey = random.nextInt(this.numUniqueKeys);
+        roundTable = random.nextInt(this.maxIndex);
         this.countNumOp += 1;
     }
 
-    public int getSuccessOps() { return this.successOps; }
+    public int getSuccessOps() {
+        return this.successOps;
+    }
 
     protected boolean insertValue(PBFTMapMP bftMap, Integer nameTable, int index) throws Exception {
         Integer key = index;
@@ -98,8 +120,8 @@ class Client implements Runnable {
         return true;
     }
 
-    private byte[] putEntries(PBFTMapMP bftMap, Integer nameTable1, Integer key1, Integer nameTable2, Integer key2)
-        throws Exception {
+    protected byte[] putEntries(PBFTMapMP bftMap, Integer nameTable1, Integer key1, Integer nameTable2, Integer key2)
+            throws Exception {
         Integer k1 = key1;
         Integer table1 = nameTable1;
         Integer table2 = nameTable2;
@@ -118,21 +140,21 @@ class Client implements Runnable {
         return resultBytes;
     }
 
-    private int getSizeTable(PBFTMapMP bftMap, Integer tableName) throws Exception {
+    protected int getSizeTable(PBFTMapMP bftMap, Integer tableName) throws Exception {
         int res = bftMap.size1(tableName);
         if (res == -1)
             throw new Exception();
         return res;
     }
 
-    private byte[] getEntry(PBFTMapMP bftMap, Integer tableName, Integer key) {
+    protected byte[] getEntry(PBFTMapMP bftMap, Integer tableName, Integer key) {
         byte[] res = bftMap.getEntry(tableName, key);
         if (res == null)
             return null;
         return res;
     }
 
-    private byte[] getEntries(PBFTMapMP bftMap, Integer tableName1, Integer key1, Integer tablename2, Integer key2) {
+    protected byte[] getEntries(PBFTMapMP bftMap, Integer tableName1, Integer key1, Integer tablename2, Integer key2) {
         byte[] res = bftMap.getEntries(tableName1, key1, tablename2, key2);
         if (res == null)
             return null;

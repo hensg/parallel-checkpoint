@@ -89,7 +89,7 @@ public class ParallelServiceReplica extends ServiceReplica {
     ScheduledExecutorService statisticsThreadExecutor = Executors.newSingleThreadScheduledExecutor();
 
     public ParallelServiceReplica(int id, Executable executor, Recoverable recoverer, int initialWorkers, int period,
-                                  boolean part, int numDisks) throws IOException, ClassNotFoundException {
+            boolean part, int numDisks) throws IOException, ClassNotFoundException {
         super(id, executor, null);
 
         this.numDisks = numDisks;
@@ -145,11 +145,11 @@ public class ParallelServiceReplica extends ServiceReplica {
     private String getPartitionPath(final int threadIndex) {
         StringBuilder sb = new StringBuilder();
         sb.append(File.separatorChar)
-            .append("disk")
-            .append(threadIndex % this.numDisks)
-            .append(File.separatorChar)
-            .append("checkpoint")
-            .append(threadIndex % this.numDisks);
+                .append("disk")
+                .append(threadIndex % this.numDisks)
+                .append(File.separatorChar)
+                .append("checkpoint")
+                .append(threadIndex % this.numDisks);
         return sb.toString();
     }
 
@@ -158,18 +158,22 @@ public class ParallelServiceReplica extends ServiceReplica {
         int tid = 0;
         for (int i = 0; i < n; i++) {
             logger.info("Initializing Service Replica Worker({})", i);
-            workers[i] = new ServiceReplicaWorker(this, (FIFOQueue)this.scheduler.getMapping().getAllQueues()[i], tid);
+            workers[i] = new ServiceReplicaWorker(this, (FIFOQueue) this.scheduler.getMapping().getAllQueues()[i], tid);
             workers[i].start();
             tid++;
         }
     }
 
-    public int getNumActiveThreads() { return this.scheduler.getMapping().getNumWorkers(); }
+    public int getNumActiveThreads() {
+        return this.scheduler.getMapping().getNumWorkers();
+    }
 
-    public CyclicBarrier getReconfBarrier() { return this.scheduler.getMapping().getReconfBarrier(); }
+    public CyclicBarrier getReconfBarrier() {
+        return this.scheduler.getMapping().getReconfBarrier();
+    }
 
     public void receiveMessages(int consId[], int regencies[], int leaders[], CertifiedDecision[] cDecs,
-                                TOMMessage[][] requests) {
+            TOMMessage[][] requests) {
 
         Iterator<String> it = ctxs.keySet().iterator();
         while (it.hasNext()) {
@@ -190,8 +194,8 @@ public class ParallelServiceReplica extends ServiceReplica {
             noop = true;
             for (TOMMessage request : requestsFromConsensus) {
                 logger.debug("(ServiceReplica.receiveMessages) Processing TOMMessage from "
-                                 + "client {} with sequence number {} for session {} decided in consensus {}",
-                             request.getSender(), request.getSequence(), request.getSession(), consId[consensusCount]);
+                        + "client {} with sequence number {} for session {} decided in consensus {}",
+                        request.getSender(), request.getSequence(), request.getSession(), consId[consensusCount]);
 
                 if (request.getViewID() == SVController.getCurrentViewId()) {
                     if (request.getReqType() == TOMMessageType.ORDERED_REQUEST) {
@@ -204,11 +208,12 @@ public class ParallelServiceReplica extends ServiceReplica {
                         MultiOperationCtx ctx = new MultiOperationCtx(reqs.operations.length, request);
                         this.ctxs.put(request.toString(), ctx);
                         MessageContext m = new MessageContext(
-                            request.getSender(), request.getViewID(), request.getReqType(), request.getSession(),
-                            request.getSequence(), request.getOperationId(), request.getReplyServer(),
-                            request.serializedMessageSignature, firstRequest.timestamp, request.numOfNonces,
-                            request.seed, regencies[consensusCount], leaders[consensusCount], consId[consensusCount],
-                            cDecs[consensusCount].getConsMessages(), firstRequest, true);
+                                request.getSender(), request.getViewID(), request.getReqType(), request.getSession(),
+                                request.getSequence(), request.getOperationId(), request.getReplyServer(),
+                                request.serializedMessageSignature, firstRequest.timestamp, request.numOfNonces,
+                                request.seed, regencies[consensusCount], leaders[consensusCount],
+                                consId[consensusCount],
+                                cDecs[consensusCount].getConsMessages(), firstRequest, true);
                         m.setLastInBatch();
                         msg = new MessageContextPair(request, request.groupId, 0, reqs.operations[0].data, m);
                         this.scheduler.schedule(msg);
@@ -224,11 +229,11 @@ public class ParallelServiceReplica extends ServiceReplica {
                     // message sender had an old view, resend the message to
                     // him (but only if it came from consensus an not state
                     // transfer)
-                    tomLayer.getCommunication().send(new int[] {request.getSender()},
-                                                     new TOMMessage(SVController.getStaticConf().getProcessId(),
-                                                                    request.getSession(), request.getSequence(),
-                                                                    TOMUtil.getBytes(SVController.getCurrentView()),
-                                                                    SVController.getCurrentViewId()));
+                    tomLayer.getCommunication().send(new int[] { request.getSender() },
+                            new TOMMessage(SVController.getStaticConf().getProcessId(),
+                                    request.getSession(), request.getSequence(),
+                                    TOMUtil.getBytes(SVController.getCurrentView()),
+                                    SVController.getCurrentViewId()));
                 }
 
                 requestCount++;
@@ -242,9 +247,13 @@ public class ParallelServiceReplica extends ServiceReplica {
         }
     }
 
-    public void setLastExec(int last) { this.tomLayer.setLastExec(last); }
+    public void setLastExec(int last) {
+        this.tomLayer.setLastExec(last);
+    }
 
-    public int getLastExec() { return this.tomLayer.getLastExec(); }
+    public int getLastExec() {
+        return this.tomLayer.getLastExec();
+    }
 
     class ServiceReplicaWorker extends Thread {
 
@@ -260,7 +269,7 @@ public class ParallelServiceReplica extends ServiceReplica {
         public Queue<Operation> log;
 
         public ServiceReplicaWorker(ParallelServiceReplica parallelServiceReplica,
-                                    FIFOQueue<MessageContextPair> requests, int id) {
+                FIFOQueue<MessageContextPair> requests, int id) {
             this.parallelServiceReplica = parallelServiceReplica;
             this.log = new LinkedList<Operation>();
             this.thread_id = id;
@@ -275,8 +284,8 @@ public class ParallelServiceReplica extends ServiceReplica {
         int localTotal = 0;
 
         private void executeConcurrentOperation(int cmd, MessageContextPair msg) throws Exception {
-            msg.resp = ((SingleExecutable)this.parallelServiceReplica.executor)
-                           .executeOrdered(msg.request.getContent(), msg.m);
+            msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
+                    .executeOrdered(msg.request.getContent(), msg.m);
 
             MultiOperationCtx ctx = this.parallelServiceReplica.ctxs.get(msg.request.toString());
             Operation op = new Operation(cmd, msg.classId, msg.request.getContent(), msg.request.getSequence());
@@ -290,16 +299,16 @@ public class ParallelServiceReplica extends ServiceReplica {
                 if (ctx.response.isComplete() && !ctx.finished && (ctx.interger.getAndIncrement() == 0)) {
                     ctx.finished = true;
                     ctx.request.reply = new TOMMessage(this.parallelServiceReplica.id, ctx.request.getSession(),
-                                                       ctx.request.getSequence(), msg.resp,
-                                                       this.parallelServiceReplica.SVController.getCurrentViewId());
+                            ctx.request.getSequence(), msg.resp,
+                            this.parallelServiceReplica.SVController.getCurrentViewId());
                     this.parallelServiceReplica.replier.manageReply(ctx.request, msg.m);
                 }
             }
         }
 
         private void executeSyncOperation(int cmd, MessageContextPair msg) throws Exception {
-            msg.resp = ((SingleExecutable)this.parallelServiceReplica.executor)
-                           .executeOrdered(msg.request.getContent(), msg.m);
+            msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
+                    .executeOrdered(msg.request.getContent(), msg.m);
             Operation op = new Operation(cmd, msg.classId, msg.request.getContent(), msg.request.getSequence());
             this.log.add(op);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -312,8 +321,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                 if (ctx.response.isComplete() && !ctx.finished && (ctx.interger.getAndIncrement() == 0)) {
                     ctx.finished = true;
                     ctx.request.reply = new TOMMessage(this.parallelServiceReplica.id, ctx.request.getSession(),
-                                                       ctx.request.getSequence(), msg.resp,
-                                                       this.parallelServiceReplica.SVController.getCurrentViewId());
+                            ctx.request.getSequence(), msg.resp,
+                            this.parallelServiceReplica.SVController.getCurrentViewId());
                     this.parallelServiceReplica.replier.manageReply(ctx.request, msg.m);
                 }
             }
@@ -338,29 +347,30 @@ public class ParallelServiceReplica extends ServiceReplica {
                         int cmd = dis.readInt();
 
                         logger.debug("Processing message with cmd {} and type {}", BFTMapRequestType.getOp(cmd),
-                                     ct.type);
+                                ct.type);
 
                         if (cmd == BFTMapRequestType.RECOVERER) {
-                            msg.resp = ((SingleExecutable)this.parallelServiceReplica.executor)
-                                           .executeOrdered(msg.request.getContent(), msg.m);
+                            msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
+                                    .executeOrdered(msg.request.getContent(), msg.m);
 
                         } else if (cmd == BFTMapRequestType.RECOVERY_FINISHED) {
                             int partitionId = dis.readInt();
                             double logSizeMB = (this.log.isEmpty()) ? 0 : this.log.size() / 1000000f;
 
                             logger.info(
-                                "Recovery process finished for partition {}! Log has {} operations already stored ({} MB).",
-                                partitionId, this.log.size(), logSizeMB);
+                                    "Recovery process finished for partition {}! Log has {} operations already stored ({} MB).",
+                                    partitionId, this.log.size(), logSizeMB);
                             threadRecoveryFinished = true;
 
                         } else if (ct.type == ClassToThreads.CONC) {
+                            logger.info("Executing concurrent operation {}", BFTMapRequestType.getOp(cmd));
                             this.executeConcurrentOperation(cmd, msg);
 
                         } else if ((ct.type == ClassToThreads.SYNC && ct.tIds.length == 1)) { // SYNC mas só com 1
                             if (cmd == BFTMapRequestType.CKP) {
                                 synchronized (this.checkpointer) {
                                     logger.info(
-                                        "Got a checkpoint command in ClassToThreads.SYNC and threadIds.lenght = 1");
+                                            "Got a checkpoint command in ClassToThreads.SYNC and threadIds.lenght = 1");
                                     checkpointer.addRequest(msg);
                                     this.checkpointer.notify();
                                     this.checkpointer.wait();
@@ -369,11 +379,12 @@ public class ParallelServiceReplica extends ServiceReplica {
                                     logger.info("Log cleaned, now log has {} operations", this.log.size());
                                 }
                             } else {
+                                logger.info("Executing sync operation {}", BFTMapRequestType.getOp(cmd));
                                 this.executeSyncOperation(cmd, msg);
                             }
                         } else if (ct.type == ClassToThreads.SYNC) {
-                            if (thread_id ==
-                                this.parallelServiceReplica.scheduler.getMapping().getExecutorThread(msg.classId)) {
+                            if (thread_id == this.parallelServiceReplica.scheduler.getMapping()
+                                    .getExecutorThread(msg.classId)) {
 
                                 this.parallelServiceReplica.scheduler.getMapping().getBarrier(msg.classId).await();
                                 if (cmd == BFTMapRequestType.CKP) {
@@ -384,29 +395,29 @@ public class ParallelServiceReplica extends ServiceReplica {
                                         this.log.clear();
                                     }
                                 } else {
-                                    msg.resp = ((SingleExecutable)this.parallelServiceReplica.executor)
-                                                   .executeOrdered(msg.request.getContent(), msg.m);
+                                    msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
+                                            .executeOrdered(msg.request.getContent(), msg.m);
                                     Operation op = new Operation(cmd, msg.classId, msg.request.getContent(),
-                                                                 msg.request.getSequence());
+                                            msg.request.getSequence());
                                     this.log.add(op);
                                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                                     ObjectOutputStream oos = new ObjectOutputStream(bos);
                                     oos.writeObject(op);
                                     oos.flush();
 
-                                    MultiOperationCtx ctx =
-                                        this.parallelServiceReplica.ctxs.get(msg.request.toString());
+                                    MultiOperationCtx ctx = this.parallelServiceReplica.ctxs
+                                            .get(msg.request.toString());
 
                                     if (ctx != null) { // recovery log messages
                                                        // have no context
                                         ctx.add(msg.index, msg.resp);
                                         if (ctx.response.isComplete() && !ctx.finished &&
-                                            (ctx.interger.getAndIncrement() == 0)) {
+                                                (ctx.interger.getAndIncrement() == 0)) {
                                             ctx.finished = true;
                                             ctx.request.reply = new TOMMessage(
-                                                this.parallelServiceReplica.id, ctx.request.getSession(),
-                                                ctx.request.getSequence(), msg.resp,
-                                                this.parallelServiceReplica.SVController.getCurrentViewId());
+                                                    this.parallelServiceReplica.id, ctx.request.getSession(),
+                                                    ctx.request.getSequence(), msg.resp,
+                                                    this.parallelServiceReplica.SVController.getCurrentViewId());
                                             this.parallelServiceReplica.replier.manageReply(ctx.request, msg.m);
                                         }
                                     }
@@ -418,7 +429,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                                 if (cmd == BFTMapRequestType.CKP && this.parallelServiceReplica.partition) {
                                     synchronized (this.checkpointer) {
                                         logger.info(
-                                            "Got a checkpoint command in ClassToThreads.SYNC and it's not the class executor");
+                                                "Got a checkpoint command in ClassToThreads.SYNC and it's not the class executor");
                                         checkpointer.addRequest(msg);
                                         this.checkpointer.notify();
                                         this.checkpointer.wait();
@@ -454,7 +465,7 @@ public class ParallelServiceReplica extends ServiceReplica {
         Kryo kryo;
 
         public RecoverHandlerThread(ParallelServiceReplica parallelServiceReplica, int rc_id, byte[] state,
-                                    int metadata, Socket client) {
+                int metadata, Socket client) {
             kryo = new Kryo();
             kryo.register(ArrayList.class);
             kryo.register(Operation.class);
@@ -484,7 +495,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                     op = is.readInt();
                     output = new Output(os, 1500000);
                     logger.info("Recover thread {} received a request with op {}", this.rc_id,
-                                BFTMapRequestType.getOp(op));
+                            BFTMapRequestType.getOp(op));
                     if (op == BFTMapRequestType.METADATA) {
                         logger.info("Recover received a request recover operation of type: METADATA");
                         String data = "";
@@ -492,10 +503,10 @@ public class ParallelServiceReplica extends ServiceReplica {
                             String metadataFile;
                             if (this.parallelServiceReplica.partition) {
                                 metadataFile = getPartitionPath(this.rc_id) + File.separator + "metadata" +
-                                               File.separator + "map" + this.rc_id + "-metadata.txt";
+                                        File.separator + "map" + this.rc_id + "-metadata.txt";
                             } else {
                                 metadataFile = getPartitionPath(this.rc_id) + File.separator + "metadata" +
-                                               File.separator + "ALLmap-metadata.txt";
+                                        File.separator + "ALLmap-metadata.txt";
                             }
                             data = new String(Files.readAllBytes(Paths.get(metadataFile)));
                             data = data.replace("\n", "").replace("\r", "");
@@ -503,7 +514,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                             int x = Integer.parseInt(data);
                             this.metadata = x;
                             logger.info("Sending metadata({}) of partition {} from metadata file {}", this.metadata,
-                                        this.rc_id, metadataFile);
+                                    this.rc_id, metadataFile);
                             kryo.writeClassAndObject(output, this.metadata);
                             // os.writeInt(this.metadata);
                             logger.info("Metadata written to the output of partition {}", this.rc_id);
@@ -531,10 +542,10 @@ public class ParallelServiceReplica extends ServiceReplica {
                         Object checkpointState = null;
                         try (ObjectInputStream ins = new ObjectInputStream(new FileInputStream(cpdir))) {
                             checkpointState = ins.readObject();
-                            this.state = (byte[])checkpointState;
+                            this.state = (byte[]) checkpointState;
                             // os.writeObject(this.state);
                             logger.info("Sending checkpoint of partition {} with {} bytes", this.rc_id,
-                                        this.state.length);
+                                    this.state.length);
                             kryo.writeClassAndObject(output, checkpointState);
                         } catch (FileNotFoundException ex) {
                             logger.warn("There is no checkpoint file to send, sending empty object");
@@ -561,7 +572,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                 }
             } catch (EOFException e) {
                 logger.info("Nothing to read from {} for partition {}, closing socket", this.client.getInetAddress(),
-                            this.rc_id);
+                        this.rc_id);
                 try {
                     is.close();
                 } catch (IOException e1) {
@@ -622,7 +633,7 @@ public class ParallelServiceReplica extends ServiceReplica {
         Kryo kryo;
 
         public Receiver(ParallelServiceReplica parallelServiceReplica, int id, int processId,
-                        ReplicaContext replicaContext) {
+                ReplicaContext replicaContext) {
             this.parallelServiceReplica = parallelServiceReplica;
             this.rc_id = id;
             this.processId = processId;
@@ -646,11 +657,11 @@ public class ParallelServiceReplica extends ServiceReplica {
             boolean stateFound = false;
 
             try (FileInputStream file = new FileInputStream(getPartitionPath(this.rc_id) + File.separator + "states" +
-                                                            File.separator + filename);
-                 ObjectInputStream in = new ObjectInputStream(file)) {
+                    File.separator + filename);
+                    ObjectInputStream in = new ObjectInputStream(file)) {
                 logger.info("Restoring state from local storage");
                 Map<Integer, byte[]> m = new TreeMap<Integer, byte[]>();
-                byte[] b = (byte[])in.readObject();
+                byte[] b = (byte[]) in.readObject();
 
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -678,8 +689,8 @@ public class ParallelServiceReplica extends ServiceReplica {
             // leitura de metadados e inicialização da lista de requisições
             Map<Integer, Integer> requests = new TreeMap<Integer, Integer>();
             try (FileInputStream filet = new FileInputStream(getPartitionPath(this.rc_id) + File.separator +
-                                                             "metadata" + File.separator + dataname);
-                 BufferedReader br = new BufferedReader(new InputStreamReader(filet))) {
+                    "metadata" + File.separator + dataname);
+                    BufferedReader br = new BufferedReader(new InputStreamReader(filet))) {
                 logger.info("Restoring metadata from local storage");
                 cid = Integer.parseInt(br.readLine());
                 requests.put(this.rc_id, 2);
@@ -738,8 +749,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                         oss.get(currentView.getProcesses()[i]).flush();
 
                         logger.info("Reading metadata's request reply from {}", sockets[i].getRemoteSocketAddress());
-                        int lastcid =
-                            (int)kryo.readClassAndObject(new Input(iss.get(currentView.getProcesses()[i]), 1500000));
+                        int lastcid = (int) kryo
+                                .readClassAndObject(new Input(iss.get(currentView.getProcesses()[i]), 1500000));
                         if (lastcid == Integer.MAX_VALUE)
                             lastcid = 0;
                         logger.info("Last CID is {}", lastcid);
@@ -750,7 +761,7 @@ public class ParallelServiceReplica extends ServiceReplica {
 
                     } catch (IOException ex) {
                         logger.error("Receiver thread failed while requesting metadata to {}",
-                                     sockets[i].getRemoteSocketAddress(), ex);
+                                sockets[i].getRemoteSocketAddress(), ex);
                         throw new RuntimeException(ex);
                     }
                 }
@@ -758,14 +769,14 @@ public class ParallelServiceReplica extends ServiceReplica {
 
             // requisitando estado
             logger.info("Request rc_id value is {} and replica Id {}", requests.get(this.rc_id),
-                        this.parallelServiceReplica.id);
+                    this.parallelServiceReplica.id);
             if (requests.get(this.rc_id) != this.parallelServiceReplica.id) {
                 Map<Integer, Integer> classIdLogCount = new HashMap<>();
                 ObjectOutputStream os2 = oss.get(requests.get(this.rc_id));
 
                 try {
                     logger.info("Requesting checkpoint state to {} of partition {}", requests.get(this.rc_id),
-                                this.rc_id);
+                            this.rc_id);
                     os2.writeInt(BFTMapRequestType.STATE);
                     os2.flush();
 
@@ -773,13 +784,13 @@ public class ParallelServiceReplica extends ServiceReplica {
                     DataOutputStream dos;
 
                     Object stateObj = kryo.readClassAndObject(new Input(iss.get(requests.get(this.rc_id)), 1500000));
-                    byte[] state = (byte[])stateObj;
+                    byte[] state = (byte[]) stateObj;
                     if (state.length == 0) {
                         logger.info("Received an empty checkpoint for partition {}, ignoring recovery process",
-                                    this.rc_id);
+                                this.rc_id);
                     } else {
                         logger.info("Received the checkpoint of partition {} with size {} MB from {}", this.rc_id,
-                                    state.length / 1000000f, requests.get(this.rc_id));
+                                state.length / 1000000f, requests.get(this.rc_id));
 
                         bos = new ByteArrayOutputStream();
                         dos = new DataOutputStream(bos);
@@ -794,10 +805,10 @@ public class ParallelServiceReplica extends ServiceReplica {
                         TOMMessage req = new TOMMessage(this.parallelServiceReplica.id, 1, 1, bos.toByteArray(), 1);
                         req.groupId = (Integer.toString(this.rc_id) + "#S").hashCode();
                         MessageContextPair msg = new MessageContextPair(
-                            req, req.groupId, 0, null,
-                            new MessageContext(cid, cid, TOMMessageType.REPLY, cid,
-                                               this.parallelServiceReplica.scheduled, rc_id, rc_id, state, cid, cid,
-                                               cid, rc_id, cid, cid, null, req, this.parallelServiceReplica.partition));
+                                req, req.groupId, 0, null,
+                                new MessageContext(cid, cid, TOMMessageType.REPLY, cid,
+                                        this.parallelServiceReplica.scheduled, rc_id, rc_id, state, cid, cid,
+                                        cid, rc_id, cid, cid, null, req, this.parallelServiceReplica.partition));
                         this.parallelServiceReplica.scheduler.schedule(msg);
                         logger.info("Scheduled checkpoint installation of partition {}", this.rc_id);
 
@@ -807,8 +818,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                         os2.flush();
 
                         logger.info("Receiving log for partition {}", this.rc_id);
-                        Queue<Operation> log = (Queue<Operation>)kryo.readClassAndObject(
-                            new Input(iss.get(requests.get(this.rc_id)), 1500000));
+                        Queue<Operation> log = (Queue<Operation>) kryo.readClassAndObject(
+                                new Input(iss.get(requests.get(this.rc_id)), 1500000));
 
                         // ObjectInputStream ois = new
                         // ObjectInputStream(iss.get(requests.get(this.rc_id)));
@@ -816,17 +827,17 @@ public class ParallelServiceReplica extends ServiceReplica {
                         // (Queue<Operation>)ois.readObject();
 
                         logger.info("Received log of partition {} with {} operations ({} MB)", this.rc_id, log.size(),
-                                    log.size() / 1000000f);
+                                log.size() / 1000000f);
 
                         for (Operation o : log) {
-                            TOMMessage message =
-                                new TOMMessage(this.parallelServiceReplica.id, 1, o.sequence, o.content, 1);
+                            TOMMessage message = new TOMMessage(this.parallelServiceReplica.id, 1, o.sequence,
+                                    o.content, 1);
                             msg = new MessageContextPair(message, o.classID, 0, null, null);
 
-                            int threadId =
-                                this.parallelServiceReplica.scheduler.getMapping().getExecutorThread(msg.classId);
-                            ((FIFOQueue)this.parallelServiceReplica.scheduler.getMapping().getAllQueues()[threadId])
-                                .add(msg);
+                            int threadId = this.parallelServiceReplica.scheduler.getMapping()
+                                    .getExecutorThread(msg.classId);
+                            ((FIFOQueue) this.parallelServiceReplica.scheduler.getMapping().getAllQueues()[threadId])
+                                    .add(msg);
                             logger.debug("Adding to queue of partition {}", threadId);
                             classIdLogCount.put(threadId, classIdLogCount.getOrDefault(threadId, 0) + 1);
                         }
@@ -845,8 +856,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                         req = new TOMMessage(this.parallelServiceReplica.getId(), 1, 1, bos.toByteArray(), 1);
                         req.groupId = (Integer.toString(this.rc_id) + "#").hashCode();
 
-                        ((ParallelServiceReplica)this.parallelServiceReplica)
-                            .scheduler.schedule(new MessageContextPair(req, req.groupId, 0, null, null));
+                        ((ParallelServiceReplica) this.parallelServiceReplica).scheduler
+                                .schedule(new MessageContextPair(req, req.groupId, 0, null, null));
                         logger.info("Scheduled recovery finished message for partition {}.", this.rc_id);
                     }
                 } catch (Exception ex) {
@@ -896,7 +907,7 @@ public class ParallelServiceReplica extends ServiceReplica {
         @Override
         public void run() {
             logger.info("Checkpoint thread {} initialized, using partitions = {}", this.cp_id,
-                        this.parallelServiceReplica.partition);
+                    this.parallelServiceReplica.partition);
             while (true) {
                 synchronized (this) {
                     try {
@@ -933,7 +944,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                                 logger.error("Checkpointer failed while writing to output streams", ex);
                             }
 
-                            b = ((SingleExecutable)this.parallelServiceReplica.executor)
+                            b = ((SingleExecutable) this.parallelServiceReplica.executor)
                                     .executeOrdered(out.toByteArray(), req.m);
                             filename = "map" + this.cp_id + ".ser";
                             dataname = "map" + this.cp_id + "-metadata.txt";
@@ -941,10 +952,10 @@ public class ParallelServiceReplica extends ServiceReplica {
 
                             try {
                                 FileOutputStream fileOut =
-                                    // new
-                                    // FileOutputStream(File.separator+"recovery"+File.separator+"states"+File.separator+filename);
-                                    new FileOutputStream(getPartitionPath(this.cp_id) + File.separator + "states" +
-                                                         File.separator + filename);
+                                        // new
+                                        // FileOutputStream(File.separator+"recovery"+File.separator+"states"+File.separator+filename);
+                                        new FileOutputStream(getPartitionPath(this.cp_id) + File.separator + "states" +
+                                                File.separator + filename);
 
                                 ObjectOutputStream out1 = new ObjectOutputStream(fileOut);
                                 out1.writeObject(b);
@@ -952,10 +963,11 @@ public class ParallelServiceReplica extends ServiceReplica {
                                 out1.close();
                                 fileOut.close();
                                 BufferedWriter writer =
-                                    // new BufferedWriter(new
-                                    // FileWriter(File.separator+"recovery"+File.separator+"metadata"+File.separator+dataname));
-                                    new BufferedWriter(new FileWriter(getPartitionPath(this.cp_id) + File.separator +
-                                                                      "metadata" + File.separator + dataname));
+                                        // new BufferedWriter(new
+                                        // FileWriter(File.separator+"recovery"+File.separator+"metadata"+File.separator+dataname));
+                                        new BufferedWriter(
+                                                new FileWriter(getPartitionPath(this.cp_id) + File.separator +
+                                                        "metadata" + File.separator + dataname));
 
                                 writer.write(Integer.toString(cid));
                                 writer.write("\n#");
@@ -967,23 +979,25 @@ public class ParallelServiceReplica extends ServiceReplica {
                             }
 
                         } else {
-                            b = ((SingleExecutable)this.parallelServiceReplica.executor)
+                            b = ((SingleExecutable) this.parallelServiceReplica.executor)
                                     .executeOrdered(req.request.getContent(), req.m);
                             filename = "ALLmap" + this.cp_id + ".ser";
                             dataname = "ALLmap-metadata.txt";
 
                             try (
-                                FileOutputStream fileOut =
-                                    // new
-                                    // FileOutputStream(File.separator+"recovery"+File.separator+"states"+File.separator+filename);
-                                new FileOutputStream(getPartitionPath(this.cp_id) + File.separator + "states" +
-                                                     File.separator + filename);
-                                ObjectOutputStream out1 = new ObjectOutputStream(fileOut);
-                                BufferedWriter writer =
-                                    // new BufferedWriter(new
-                                    // FileWriter(File.separator+"recovery"+File.separator+"metadata"+File.separator+dataname));
-                                new BufferedWriter(new FileWriter(getPartitionPath(this.cp_id) + File.separator +
-                                                                  "metadata" + File.separator + dataname))) {
+                                    FileOutputStream fileOut =
+                                            // new
+                                            // FileOutputStream(File.separator+"recovery"+File.separator+"states"+File.separator+filename);
+                                            new FileOutputStream(
+                                                    getPartitionPath(this.cp_id) + File.separator + "states" +
+                                                            File.separator + filename);
+                                    ObjectOutputStream out1 = new ObjectOutputStream(fileOut);
+                                    BufferedWriter writer =
+                                            // new BufferedWriter(new
+                                            // FileWriter(File.separator+"recovery"+File.separator+"metadata"+File.separator+dataname));
+                                            new BufferedWriter(
+                                                    new FileWriter(getPartitionPath(this.cp_id) + File.separator +
+                                                            "metadata" + File.separator + dataname))) {
 
                                 out1.writeObject(b);
                                 out1.flush();

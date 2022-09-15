@@ -50,7 +50,7 @@ public class ParallelScheduler implements Scheduler {
             ids[i] = i;
         }
         int lastCts = this.cts.length;
-        HibridClassToThreads[] newCts = new HibridClassToThreads[lastCts+2];
+        HibridClassToThreads[] newCts = new HibridClassToThreads[lastCts + 2];
         System.arraycopy(this.cts, 0, newCts, 0, lastCts);
         newCts[lastCts++] = new HibridClassToThreads(ParallelMapping.CONC_ALL, ClassToThreads.CONC, ids);
         newCts[lastCts++] = new HibridClassToThreads(ParallelMapping.SYNC_ALL, ClassToThreads.SYNC, ids);
@@ -59,19 +59,19 @@ public class ParallelScheduler implements Scheduler {
         logger.info("Mapping class to threads generated, size = {}", this.cts.length);
         this.classes = new HashMap<Integer, HibridClassToThreads>();
         for (int i = 0; i < cts.length; i++) {
+            logger.info("Generated hash {} for op {}", this.cts[i].classId, cts[i]);
             try {
-                // if (cts[i].tIds.length <= 2) {
+                if (cts[i].tIds.length <= 2) {
                     this.classes.put(cts[i].classId, cts[i]);
-                    logger.info("Classes with id {} to thread {} of type {}",
-                        cts[i].classId, i,
-                        this.classes.get(cts[i].classId).type);
-                // }
+                    logger.debug("Classes with id {} to thread {} of type {}",
+                            cts[i].classId, i,
+                            this.classes.get(cts[i].classId).type);
+                }
             } catch (NullPointerException ex) {
                 logger.info("error for i = {}", i);
                 System.exit(-1);
             }
         }
-
 
         this.mapping = new ParallelMapping(numberWorkers, cts);
         this.cmds = 0;
@@ -93,7 +93,7 @@ public class ParallelScheduler implements Scheduler {
         logger.info("Parallel logging initialized with {} workers", this.workers);
         logger.info("Classes to threads generated: {}", this.classes.size());
         StringBuilder sb = new StringBuilder();
-        for (Entry<Integer, HibridClassToThreads> entry: this.classes.entrySet()) {
+        for (Entry<Integer, HibridClassToThreads> entry : this.classes.entrySet()) {
             sb.append(entry.getKey() + "=" + entry.getValue());
         }
 
@@ -190,6 +190,7 @@ public class ParallelScheduler implements Scheduler {
             // TRATAR COMO CONFLICT ALL
             // criar uma classe que sincroniza tudo
             logger.error("Class to threads mapping not found, classId: {}", request.classId);
+            throw new RuntimeException();
         }
         if (ct.type == ClassToThreads.CONC) {// conc
             logger.debug("Added request to queue of thread {}", ct.threadIndex);
@@ -213,7 +214,7 @@ public class ParallelScheduler implements Scheduler {
         // FIXME: Adiantar o checkpoint para bater com o do scheduler serial.
         // Cuidar com o adiantamento causado por conflito que pode acabar
         // gerando mais CP
-        if (cmds % (CPperiod/workers) == 0) { // create cp request
+        if (cmds % (CPperiod / workers) == 0) { // create cp request
             logger.info("Time for checkpointing with {} commands executed, extra CPs {}", cmds, extraCPs);
             if (extraCPs > 0) {
                 extraCPs -= 1;
@@ -260,7 +261,7 @@ public class ParallelScheduler implements Scheduler {
             }
 
             logger.info("CP Class Queue lenght is {}", CP_class.queues.length);
-            if (CP_class.queues.length > 1) {                
+            if (CP_class.queues.length > 1) {
                 extraCPs += (CP_class.queues.length - 1);
             }
             for (Queue q : CP_class.queues) {

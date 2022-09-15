@@ -31,7 +31,7 @@ import parallelism.ParallelMapping;
  */
 public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
 
-    private static final Logger logger = LoggerFactory.getLogger(PBFTMapMP.class);
+    private final Logger logger = LoggerFactory.getLogger(PBFTMapMP.class);
     protected ParallelServiceProxy proxy = null;
     protected ByteArrayOutputStream out = null;
     protected boolean parallel = false;
@@ -72,8 +72,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.CONC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
                     return null;
                 } else {
@@ -85,7 +85,7 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             // byte[] rep = KVProxy.invokeUnordered(out.toByteArray());
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
-            Map<Integer, byte[]> table = (Map<Integer, byte[]>)in.readObject();
+            Map<Integer, byte[]> table = (Map<Integer, byte[]>) in.readObject();
             in.close();
             return table;
         } catch (ClassNotFoundException | IOException ex) {
@@ -109,16 +109,13 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.SYNC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.SYNC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
                 } else {
-                    long last = System.nanoTime();
                     rep = proxy.invokeParallel(out.toByteArray(), sb.toString().hashCode());
-                    long now = System.nanoTime();
-                    values.add(now - last);
                 }
             } else {
                 rep = proxy.invokeOrdered(out.toByteArray());
@@ -147,8 +144,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.SYNC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.SYNC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -252,8 +249,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.CONC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -269,7 +266,7 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             ObjectInputStream in = new ObjectInputStream(bis);
             Map<Integer, byte[]> table = null;
             try {
-                table = (Map<Integer, byte[]>)in.readObject();
+                table = (Map<Integer, byte[]>) in.readObject();
             } catch (ClassNotFoundException ex) {
                 logger.error("Class cast error", ex.getCause());
                 System.exit(-1);
@@ -298,24 +295,25 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             dos.flush();
             byte[] rep = null;
 
-            if (parallel) {
-                if (async) {
-                    int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.SYNC_ALL);
-                    asyncProxy.cleanAsynchRequest(id);
+            // if (parallel) {
+            // if (async) {
+            // int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(),
+            // replyCounterListener,
+            // TOMMessageType.ORDERED_REQUEST,
+            // ParallelMapping.SYNC_ALL);
+            // asyncProxy.cleanAsynchRequest(id);
 
-                    return null;
-                } else {
+            // return null;
+            // } else {
 
-                    // long last = System.nanoTime();
-                    rep = proxy.invokeParallel(out.toByteArray(), sb.toString().hashCode());
-                    // long now = System.nanoTime();
-                    // values.add(now - last);
-                }
-            } else {
-                rep = proxy.invokeOrdered(out.toByteArray());
-            }
+            // long last = System.nanoTime();
+            rep = proxy.invokeParallel(out.toByteArray(), sb.toString().hashCode());
+            // long now = System.nanoTime();
+            // values.add(now - last);
+            // }
+            // } else {
+            // rep = proxy.invokeOrdered(out.toByteArray());
+            // }
             return rep;
         } catch (IOException ex) {
             logger.error("IO error", ex.getCause());
@@ -343,8 +341,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.SYNC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.SYNC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -370,13 +368,13 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             dos.writeInt(BFTMapRequestType.TAB_REMOVE);
-            dos.writeUTF((String)key);
+            dos.writeUTF((String) key);
             byte[] rep;
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.CONC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -388,7 +386,7 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             }
             ByteArrayInputStream bis = new ByteArrayInputStream(rep);
             ObjectInputStream in = new ObjectInputStream(bis);
-            Map<Integer, byte[]> table = (Map<Integer, byte[]>)in.readObject();
+            Map<Integer, byte[]> table = (Map<Integer, byte[]>) in.readObject();
             in.close();
             return table;
         } catch (ClassNotFoundException | IOException ex) {
@@ -408,8 +406,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.CONC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return null;
@@ -441,8 +439,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.CONC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return id;
@@ -472,8 +470,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.CONC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return id;
@@ -519,8 +517,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.CONC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return false;
@@ -559,8 +557,8 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             if (parallel) {
                 if (async) {
                     int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(), replyCounterListener,
-                                                                    TOMMessageType.ORDERED_REQUEST,
-                                                                    ParallelMapping.CONC_ALL);
+                            TOMMessageType.ORDERED_REQUEST,
+                            ParallelMapping.CONC_ALL);
                     asyncProxy.cleanAsynchRequest(id);
 
                     return false;

@@ -35,19 +35,18 @@ function start_experiment() {
 
     echo "Ensure client is not running"
     client_cmd="
-        sudo killall -9 /usr/bin/java;
+        sudo killall -9 /usr/bin/java || true;
     "
     ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd &
 
     echo "Starting experiments, reconfiguring service's replica"
     reconfigure_cmd="
         sudo service bft-smart stop;
-        sudo sed -i s/'=PARTITIONED=.*'/=PARTITIONED=${partitioned}/g /etc/systemd/system/bft-smart.service;
-        sudo sed -i s/'=PARALLEL=.*'/=PARALLEL=${partitioned}/g /etc/systemd/system/bft-smart.service;
-        sudo sed -i s/'=THREADS=.*'/=THREADS=${server_threads}/g /etc/systemd/system/bft-smart.service;
-        sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service;
-        sudo sed -i s/'=INITIAL_ENTRIES=.*'/=INITIAL_ENTRIES=${initial_entries}/g /etc/systemd/system/bft-smart.service;
-        sudo systemctl daemon-reload;
+        sudo sed -i s/'=PARTITIONED=.*'/=PARTITIONED=${partitioned}/g /etc/systemd/system/bft-smart.service || true;
+        sudo sed -i s/'=PARALLEL=.*'/=PARALLEL=${partitioned}/g /etc/systemd/system/bft-smart.service || true;
+        sudo sed -i s/'=THREADS=.*'/=THREADS=${server_threads}/g /etc/systemd/system/bft-smart.service || true;
+        sudo sed -i s/'=CHECKPOINT_INTERVAL=.*'/=CHECKPOINT_INTERVAL=${checkpoint_interval}/g /etc/systemd/system/bft-smart.service || true;
+        sudo sed -i s/'=INITIAL_ENTRIES=.*'/=INITIAL_ENTRIES=${initial_entries}/g /etc/systemd/system/bft-smart.service || true;
         sudo rm -rf /srv/config/currentView || true;
         sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/* || true;
         sudo rm -rf /srv/logs/*.log || true;
@@ -55,11 +54,11 @@ function start_experiment() {
 
     for ssh_entry in "${ssh_list[@]}"; do
          echo "Reconfiguring $ssh_entry"
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd"
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd" &
     done
     wait
     for ssh_entry in "${ssh_list[@]}"; do
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo service bft-smart start;"
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo systemctl daemon-reload; sudo service bft-smart start;"
     done
     sleep 20
 
@@ -67,23 +66,23 @@ function start_experiment() {
     warmup_client_termination_time=5
 
     echo "Services reconfigured with paralell $partitioned and checkpoint interval $checkpoint_interval"
-    client_cmd="
-         sudo truncate -s 0 /srv/logs/*.log;
-         tail -f /srv/logs/client.log &;
-         cd /srv;
-         sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $warmup_client_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async $client_timeout;
-         kill %1;
-    "
-    echo "Warming up"
-    ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
+    #client_cmd="
+    #     sudo truncate -s 0 /srv/logs/*.log;
+    #     tail -f /srv/logs/client.log &;
+    #     cd /srv;
+    #     sudo /usr/bin/java -cp /srv/BFT-SMaRt-parallel-cp-1.0-SNAPSHOT.jar demo.bftmap.BFTMapClientMP $client_num_threads 1 $warmup_client_termination_time $client_interval $client_max_index $num_unique_keys $client_p_read $client_p_conflict $client_verbose $client_parallel $client_async $client_timeout;
+    #     kill %1;
+    #"
+    # echo "Warming up"
+    # ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_client}.emulab.net $client_cmd
 
-    clean_warmup_logs="
-        sudo truncate -s 0 /srv/logs/*.log
-    "
-    for ssh_entry in "${ssh_list[@]}"; do
-         echo "Cleaning logs after warmup $ssh_entry"
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$clean_warmup_logs" &
-    done
+    # clean_warmup_logs="
+    #     sudo truncate -s 0 /srv/logs/*.log
+    # "
+    # for ssh_entry in "${ssh_list[@]}"; do
+    #      echo "Cleaning logs after warmup $ssh_entry"
+    #      ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$clean_warmup_logs" &
+    # done
 
     client_cmd="
          sudo truncate -s 0 /srv/logs/*.log;
@@ -116,13 +115,13 @@ function start_experiment() {
 
 
 conflito=0
-percent_of_read_ops=0 
-num_unique_keys=2000
-initial_entries=2000
+percent_of_read_ops=0
+num_unique_keys=4
+initial_entries=50 # 50 MB
 client_termination_time=60 # seconds
 client_interval=5 #millis
 client_timeout=40 #Millis
-client_num_threads=1
+client_num_threads=70
 datetime=$(date +%F_%H-%M-%S)
 
 #for checkpoint_interval in 400000 800000; do  
