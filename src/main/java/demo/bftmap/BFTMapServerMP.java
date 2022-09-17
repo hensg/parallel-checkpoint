@@ -62,7 +62,6 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
         this.partition = partition;
         this.interval = interval;
         this.context = context;
-        Random random = new Random();
         for (int i = 0; i < initThreads; i++) {
             tableMap.addTable(i, new TreeMap<Integer, byte[]>());
             for (int j = 0; j < (entries / initThreads * 24414); j++) { // allocate blocks of 4k
@@ -231,7 +230,6 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
     }
 
     public byte[] getSnapshot(int[] particoes) {
-        long start = System.nanoTime();
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(bos);
                 ObjectOutputStream out = new ObjectOutputStream(bos)) {

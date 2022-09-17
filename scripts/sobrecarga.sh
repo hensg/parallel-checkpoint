@@ -115,13 +115,13 @@ function start_experiment() {
 
 
 conflito=0
-percent_of_read_ops=0
+percent_of_read_ops=50
 num_unique_keys=4
 initial_entries=50 # 50 MB
 client_termination_time=60 # seconds
 client_interval=5 #millis
 client_timeout=40 #Millis
-client_num_threads=70
+client_num_threads=60
 datetime=$(date +%F_%H-%M-%S)
 
 #for checkpoint_interval in 400000 800000; do  

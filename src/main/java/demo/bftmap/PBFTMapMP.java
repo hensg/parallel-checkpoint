@@ -295,25 +295,24 @@ public class PBFTMapMP implements Map<Integer, Map<Integer, byte[]>> {
             dos.flush();
             byte[] rep = null;
 
-            // if (parallel) {
-            // if (async) {
-            // int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(),
-            // replyCounterListener,
-            // TOMMessageType.ORDERED_REQUEST,
-            // ParallelMapping.SYNC_ALL);
-            // asyncProxy.cleanAsynchRequest(id);
+            if (parallel) {
+              if (async) {
+                int id = asyncProxy.invokeParallelAsynchRequest(out.toByteArray(),
+                replyCounterListener,
+                TOMMessageType.ORDERED_REQUEST,
+                ParallelMapping.SYNC_ALL);
+                asyncProxy.cleanAsynchRequest(id);
 
-            // return null;
-            // } else {
-
-            // long last = System.nanoTime();
-            rep = proxy.invokeParallel(out.toByteArray(), sb.toString().hashCode());
-            // long now = System.nanoTime();
-            // values.add(now - last);
-            // }
-            // } else {
-            // rep = proxy.invokeOrdered(out.toByteArray());
-            // }
+                return null;
+              } else {
+                //long last = System.nanoTime();
+                rep = proxy.invokeParallel(out.toByteArray(), sb.toString().hashCode());
+                //long now = System.nanoTime();
+                //values.add(now - last);
+              }
+            } else {
+              rep = proxy.invokeOrdered(out.toByteArray());
+            }
             return rep;
         } catch (IOException ex) {
             logger.error("IO error", ex.getCause());

@@ -13,6 +13,8 @@ import bftsmart.tom.server.SingleExecutable;
 import bftsmart.tom.util.TOMUtil;
 import bftsmart.util.MultiOperationRequest;
 import bftsmart.util.ThroughputStatistics;
+import bftsmart.util.ThroughputStatistics2;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.InputChunked;
@@ -62,6 +64,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import parallelism.scheduler.DefaultScheduler;
@@ -78,7 +82,7 @@ public class ParallelServiceReplica extends ServiceReplica {
     private boolean recovering = true;
     private List<MessageContextPair> msgBuffer = new ArrayList<>();
     public Scheduler scheduler;
-    private ThroughputStatistics statistics;
+    private ThroughputStatistics2 statistics;
     private ServiceReplicaWorker[] workers;
     protected Map<String, MultiOperationCtx> ctxs = new Hashtable<>();
     private RecoverThread[] recoverers;
@@ -107,7 +111,7 @@ public class ParallelServiceReplica extends ServiceReplica {
             this.scheduler = new DefaultScheduler(initialWorkers, period);
         }
 
-        statistics = new ThroughputStatistics(this.scheduler.getNumWorkers(), id);
+        statistics = new ThroughputStatistics2(this.scheduler.getNumWorkers(), id);
         statisticsThreadExecutor.scheduleAtFixedRate(statistics, 0, 1, TimeUnit.SECONDS);
 
         logger.info("Initializing recover threads");
@@ -275,7 +279,6 @@ public class ParallelServiceReplica extends ServiceReplica {
             this.thread_id = id;
             this.requests = requests;
             this.checkpointer = new Checkpointer(this.parallelServiceReplica, this.thread_id);
-            this.checkpointer.start();
 
             logger.info("Service replica worker initialized, queue {}", requests.hashCode());
         }
@@ -335,9 +338,11 @@ public class ParallelServiceReplica extends ServiceReplica {
             while (true) {
 
                 try {
+                    logger.info("Thread {}, Draining to queue", this.thread_id);
                     this.requests.drainToQueue(execQueue);
                     localC++;
                     localTotal = localTotal + execQueue.getSize();
+                    logger.info("Thread {}, Drained to queue", this.thread_id);
 
                     do {
                         msg = execQueue.getNext();
@@ -346,7 +351,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                         DataInputStream dis = new DataInputStream(in);
                         int cmd = dis.readInt();
 
-                        logger.debug("Processing message with cmd {} and type {}", BFTMapRequestType.getOp(cmd),
+                        logger.info("Thread {} processing message with cmd {} and type {}", this.thread_id, BFTMapRequestType.getOp(cmd),
                                 ct.type);
 
                         if (cmd == BFTMapRequestType.RECOVERER) {
@@ -363,23 +368,20 @@ public class ParallelServiceReplica extends ServiceReplica {
                             threadRecoveryFinished = true;
 
                         } else if (ct.type == ClassToThreads.CONC) {
-                            logger.info("Executing concurrent operation {}", BFTMapRequestType.getOp(cmd));
+                            logger.debug("Executing concurrent operation {}", BFTMapRequestType.getOp(cmd));
                             this.executeConcurrentOperation(cmd, msg);
 
                         } else if ((ct.type == ClassToThreads.SYNC && ct.tIds.length == 1)) { // SYNC mas só com 1
                             if (cmd == BFTMapRequestType.CKP) {
-                                synchronized (this.checkpointer) {
-                                    logger.info(
-                                            "Got a checkpoint command in ClassToThreads.SYNC and threadIds.lenght = 1");
-                                    checkpointer.addRequest(msg);
-                                    this.checkpointer.notify();
-                                    this.checkpointer.wait();
-                                    logger.info("Cleaning log with {} operations", this.log.size());
-                                    this.log.clear();
-                                    logger.info("Log cleaned, now log has {} operations", this.log.size());
-                                }
+                                logger.info(
+                                        "Thread {}, Got a checkpoint command in ClassToThreads.SYNC and threadIds.lenght = 1", this.thread_id);
+                                logger.info("Thread {} executing the checkpoint", this.thread_id);
+                                checkpointer.makeCheckpoint(msg);
+                                logger.info("Thread {}, Cleaning log with {} operations", this.thread_id, this.log.size());
+                                this.log.clear();
+                                logger.info("Thread {}, Log cleaned, now log has {} operations", this.thread_id, this.log.size());
                             } else {
-                                logger.info("Executing sync operation {}", BFTMapRequestType.getOp(cmd));
+                                logger.debug("Executing sync operation {}", BFTMapRequestType.getOp(cmd));
                                 this.executeSyncOperation(cmd, msg);
                             }
                         } else if (ct.type == ClassToThreads.SYNC) {
@@ -388,12 +390,8 @@ public class ParallelServiceReplica extends ServiceReplica {
 
                                 this.parallelServiceReplica.scheduler.getMapping().getBarrier(msg.classId).await();
                                 if (cmd == BFTMapRequestType.CKP) {
-                                    synchronized (this.checkpointer) {
-                                        checkpointer.addRequest(msg);
-                                        this.checkpointer.notify();
-                                        this.checkpointer.wait();
-                                        this.log.clear();
-                                    }
+                                    checkpointer.makeCheckpoint(msg);
+                                    this.log.clear();
                                 } else {
                                     msg.resp = ((SingleExecutable) this.parallelServiceReplica.executor)
                                             .executeOrdered(msg.request.getContent(), msg.m);
@@ -427,14 +425,10 @@ public class ParallelServiceReplica extends ServiceReplica {
                                 this.parallelServiceReplica.scheduler.getMapping().getBarrier(msg.classId).await();
 
                                 if (cmd == BFTMapRequestType.CKP && this.parallelServiceReplica.partition) {
-                                    synchronized (this.checkpointer) {
-                                        logger.info(
-                                                "Got a checkpoint command in ClassToThreads.SYNC and it's not the class executor");
-                                        checkpointer.addRequest(msg);
-                                        this.checkpointer.notify();
-                                        this.checkpointer.wait();
-                                        this.log.clear();
-                                    }
+                                    logger.info(
+                                            "Got a checkpoint command in ClassToThreads.SYNC and it's not the class executor");
+                                    checkpointer.makeCheckpoint(msg);
+                                    this.log.clear();
                                 }
                                 this.parallelServiceReplica.scheduler.getMapping().getBarrier(msg.classId).await();
                             }
@@ -886,139 +880,113 @@ public class ParallelServiceReplica extends ServiceReplica {
         }
     }
 
-    class Checkpointer extends Thread {
+    class Checkpointer {
 
         private final Logger logger = LoggerFactory.getLogger(Checkpointer.class);
         private final ParallelServiceReplica parallelServiceReplica;
         private int cp_id;
 
-        // public byte[] req = null;
-        private MessageContextPair req = null;
-
-        // public Queue<byte[]> requests;
-        private Queue<MessageContextPair> requests;
-
         public Checkpointer(ParallelServiceReplica parallelServiceReplica, int id) {
             this.parallelServiceReplica = parallelServiceReplica;
             this.cp_id = id;
-            this.requests = new LinkedList<MessageContextPair>();
         }
 
-        @Override
-        public void run() {
+        public void makeCheckpoint(MessageContextPair req) {
             logger.info("Checkpoint thread {} initialized, using partitions = {}", this.cp_id,
-                    this.parallelServiceReplica.partition);
-            while (true) {
-                synchronized (this) {
-                    try {
-                        this.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    logger.info("Initializing checkpointing procedure");
-                    while (this.requests.size() > 0) {
-                        req = this.requests.poll();
-                        byte[] b;
-                        int cid = 0;
-                        String filename;
-                        String dataname;
-                        ByteArrayInputStream in = new ByteArrayInputStream(req.request.getContent());
-                        try {
-                            int n = new DataInputStream(in).readInt();
-                            String s = new DataInputStream(in).readUTF();
-                            cid = new DataInputStream(in).readInt();
-                        } catch (IOException ex) {
-                            logger.error("Checkpointer failed while reading input streams", ex);
-                            System.exit(-1);
-                        }
+            this.parallelServiceReplica.partition);
+            logger.info("Initializing checkpointing procedure");
+            byte[] b;
+            int cid = 0;
+            String filename;
+            String dataname;
+            ByteArrayInputStream in = new ByteArrayInputStream(req.request.getContent());
+            try {
+                int n = new DataInputStream(in).readInt();
+                String s = new DataInputStream(in).readUTF();
+                cid = new DataInputStream(in).readInt();
+            } catch (IOException ex) {
+                logger.error("Checkpointer failed while reading input streams", ex);
+                System.exit(-1);
+            }
 
-                        if (this.parallelServiceReplica.partition) {
+            if (this.parallelServiceReplica.partition) {
 
-                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            DataOutputStream dos = new DataOutputStream(out);
-                            String s = Integer.toString(this.cp_id);
-                            try {
-                                dos.writeInt(BFTMapRequestType.CKP);
-                                dos.writeUTF(s);
-                            } catch (IOException ex) {
-                                logger.error("Checkpointer failed while writing to output streams", ex);
-                            }
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(out);
+                String s = Integer.toString(this.cp_id);
+                try {
+                    dos.writeInt(BFTMapRequestType.CKP);
+                    dos.writeUTF(s);
+                    dos.flush();
+                } catch (IOException ex) {
+                    logger.error("Checkpointer failed while writing to output streams", ex);
+                }
 
-                            b = ((SingleExecutable) this.parallelServiceReplica.executor)
-                                    .executeOrdered(out.toByteArray(), req.m);
-                            filename = "map" + this.cp_id + ".ser";
-                            dataname = "map" + this.cp_id + "-metadata.txt";
-                            // logger.info("array size = "+req.length);
+                b = ((SingleExecutable) this.parallelServiceReplica.executor)
+                        .executeOrdered(out.toByteArray(), req.m);
+                filename = "map" + this.cp_id + ".ser";
+                dataname = "map" + this.cp_id + "-metadata.txt";
+                // logger.info("array size = "+req.length);
 
-                            try {
-                                FileOutputStream fileOut =
-                                        // new
-                                        // FileOutputStream(File.separator+"recovery"+File.separator+"states"+File.separator+filename);
-                                        new FileOutputStream(getPartitionPath(this.cp_id) + File.separator + "states" +
+                try {
+                    FileOutputStream fileOut =
+                            // new
+                            // FileOutputStream(File.separator+"recovery"+File.separator+"states"+File.separator+filename);
+                            new FileOutputStream(getPartitionPath(this.cp_id) + File.separator + "states" +
+                                    File.separator + filename);
+
+                    ObjectOutputStream out1 = new ObjectOutputStream(fileOut);
+                    out1.writeObject(b);
+                    out1.flush();
+                    out1.close();
+                    fileOut.close();
+                    BufferedWriter writer =
+                            // new BufferedWriter(new
+                            // FileWriter(File.separator+"recovery"+File.separator+"metadata"+File.separator+dataname));
+                            new BufferedWriter(
+                                    new FileWriter(getPartitionPath(this.cp_id) + File.separator +
+                                            "metadata" + File.separator + dataname));
+
+                    writer.write(Integer.toString(cid));
+                    writer.write("\n#");
+                    writer.close();
+                } catch (Exception ex) {
+                    logger.error("Error trying to write checkpoint", ex);
+                    System.exit(-1);
+                }
+
+            } else {
+                b = ((SingleExecutable) this.parallelServiceReplica.executor)
+                        .executeOrdered(req.request.getContent(), req.m);
+                filename = "ALLmap" + this.cp_id + ".ser";
+                dataname = "ALLmap-metadata.txt";
+
+                try (
+                        FileOutputStream fileOut =
+                                // new
+                                // FileOutputStream(File.separator+"recovery"+File.separator+"states"+File.separator+filename);
+                                new FileOutputStream(
+                                        getPartitionPath(this.cp_id) + File.separator + "states" +
                                                 File.separator + filename);
+                        ObjectOutputStream out1 = new ObjectOutputStream(fileOut);
+                        BufferedWriter writer =
+                                // new BufferedWriter(new
+                                // FileWriter(File.separator+"recovery"+File.separator+"metadata"+File.separator+dataname));
+                                new BufferedWriter(
+                                        new FileWriter(getPartitionPath(this.cp_id) + File.separator +
+                                                "metadata" + File.separator + dataname))) {
 
-                                ObjectOutputStream out1 = new ObjectOutputStream(fileOut);
-                                out1.writeObject(b);
-                                out1.flush();
-                                out1.close();
-                                fileOut.close();
-                                BufferedWriter writer =
-                                        // new BufferedWriter(new
-                                        // FileWriter(File.separator+"recovery"+File.separator+"metadata"+File.separator+dataname));
-                                        new BufferedWriter(
-                                                new FileWriter(getPartitionPath(this.cp_id) + File.separator +
-                                                        "metadata" + File.separator + dataname));
+                    out1.writeObject(b);
+                    out1.flush();
 
-                                writer.write(Integer.toString(cid));
-                                writer.write("\n#");
-                                writer.close();
-                                this.notify();
-                            } catch (Exception ex) {
-                                logger.error("Error trying to write checkpoint", ex);
-                                System.exit(-1);
-                            }
-
-                        } else {
-                            b = ((SingleExecutable) this.parallelServiceReplica.executor)
-                                    .executeOrdered(req.request.getContent(), req.m);
-                            filename = "ALLmap" + this.cp_id + ".ser";
-                            dataname = "ALLmap-metadata.txt";
-
-                            try (
-                                    FileOutputStream fileOut =
-                                            // new
-                                            // FileOutputStream(File.separator+"recovery"+File.separator+"states"+File.separator+filename);
-                                            new FileOutputStream(
-                                                    getPartitionPath(this.cp_id) + File.separator + "states" +
-                                                            File.separator + filename);
-                                    ObjectOutputStream out1 = new ObjectOutputStream(fileOut);
-                                    BufferedWriter writer =
-                                            // new BufferedWriter(new
-                                            // FileWriter(File.separator+"recovery"+File.separator+"metadata"+File.separator+dataname));
-                                            new BufferedWriter(
-                                                    new FileWriter(getPartitionPath(this.cp_id) + File.separator +
-                                                            "metadata" + File.separator + dataname))) {
-
-                                out1.writeObject(b);
-                                out1.flush();
-
-                                writer.write(Integer.toString(cid));
-                                writer.write("\n#");
-                                this.notify();
-                            } catch (Exception ex) {
-                                logger.error("Error trying to write checkpoint", ex);
-                                System.exit(-1);
-                            }
-                        }
-                    }
-                    logger.info("Checkpointing has finished");
+                    writer.write(Integer.toString(cid));
+                    writer.write("\n#");
+                } catch (Exception ex) {
+                    logger.error("Error trying to write checkpoint", ex);
+                    System.exit(-1);
                 }
             }
-        }
-
-        public void addRequest(MessageContextPair m) {
-            // logger.info(this.id+" added to queue");
-            this.requests.add(m);
-        }
+            logger.info("Checkpointing has finished");
+       }
     }
 }

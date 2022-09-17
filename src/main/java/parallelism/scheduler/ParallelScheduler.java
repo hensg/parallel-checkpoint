@@ -193,12 +193,12 @@ public class ParallelScheduler implements Scheduler {
             throw new RuntimeException();
         }
         if (ct.type == ClassToThreads.CONC) {// conc
-            logger.debug("Added request to queue of thread {}", ct.threadIndex);
+            logger.info("Added request to queue of thread {}", ct.threadIndex);
             ct.queues[ct.threadIndex].add(request);
             ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
         } else { // sync
             for (Queue q : ct.queues) {
-                logger.debug("Added request to queue {}", q);
+                logger.info("Added request to queue {}", q);
                 q.add(request);
             }
         }
@@ -234,6 +234,9 @@ public class ParallelScheduler implements Scheduler {
             if (conflict.size() > 1) {
                 logger.info("Conflict checkpointing: {}", sb);
             }
+
+            logger.info("Checkpoint request created for partitions: {}, conflict list {}", sb.toString(), conflict);
+
             try {
                 dos.writeInt(BFTMapRequestType.CKP);
                 dos.writeUTF(sb.toString());

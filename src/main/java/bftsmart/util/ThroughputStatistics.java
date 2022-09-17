@@ -110,9 +110,10 @@ public class ThroughputStatistics implements Runnable {
          * false; } else { counters[threadId] = counters[threadId] + amount; }
          */
         // if (!stoped) {
-        counters[threadId][now.get()] = counters[threadId][now.get()] + amount;
+        int pos = now.get();
+        counters[threadId][pos] = counters[threadId][pos] + amount;
         // }
-
     }
+
 
 }

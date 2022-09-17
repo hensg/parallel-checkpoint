@@ -26,6 +26,7 @@ class ClientLatency extends Client {
     }
 
     ExecutorService pool = Executors.newScheduledThreadPool(1);
+    String operation = null;
 
     @Override
     public void run() {
@@ -34,6 +35,7 @@ class ClientLatency extends Client {
             public void run() {
                 try {
                     if (random.nextInt(100) < p_read) {
+                        operation = "get entry";
                         getEntry(store, roundTable, roundKey);
                     } else {
                         if (random.nextInt(100) < p_conflict) {
@@ -52,8 +54,10 @@ class ClientLatency extends Client {
                                 roundTable = roundTable2;
                                 roundTable2 = aux;
                             }
+                            operation = "swap";
                             putEntries(store, roundTable, roundKey, roundTable2, roundKey2);
                         } else {
+                            operation = "put entry";
                             insertValue(store, roundTable, roundKey);
                         }
                     }
@@ -70,7 +74,7 @@ class ClientLatency extends Client {
         }
 
         final long latency = System.nanoTime() - lastSentInstant;
-        logger.info("Count {}, Latency {}millis", this.countNumOp, latency / ONE_MILLION);
+        logger.info("Count {}, Latency {}millis, Table {}, Key {}, operation {}", this.countNumOp, latency / ONE_MILLION, roundTable, roundKey, operation);
 
         roundTable = random.nextInt(this.maxIndex);
         roundKey = random.nextInt(this.numUniqueKeys);
