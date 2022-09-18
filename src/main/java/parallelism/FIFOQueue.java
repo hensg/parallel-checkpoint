@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FIFOQueue<E> implements BlockingQueue<E> {
 
+    private final static Logger logger = LoggerFactory.getLogger(FIFOQueue.class);
     private boolean available = false;
     private Lock lock = new ReentrantLock();
     private Condition cond = lock.newCondition();
@@ -66,7 +67,9 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
                 try {
                     // c++;
                     // System.out.println("--------------------------------------- Valor de c: "+c);
+                    logger.info("Waiting");
                     cond.await();
+                    logger.info("Released");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

@@ -193,13 +193,13 @@ public class ParallelScheduler implements Scheduler {
             throw new RuntimeException();
         }
         if (ct.type == ClassToThreads.CONC) {// conc
-            logger.info("Added request to queue of thread {}", ct.threadIndex);
+            logger.info("Added request to queue of thread {}", ct.gettIds()[ct.threadIndex]);
             ct.queues[ct.threadIndex].add(request);
             ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
         } else { // sync
-            for (Queue q : ct.queues) {
-                logger.info("Added request to queue {}", q);
-                q.add(request);
+            for (int i = 0; i < ct.queues.length; i++) {
+                logger.info("Added request to queue of thread {}", ct.gettIds()[ct.threadIndex]);
+                ct.queues[i].add(request);
             }
         }
         cmds++;

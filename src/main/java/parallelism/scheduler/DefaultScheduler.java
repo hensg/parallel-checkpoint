@@ -56,8 +56,8 @@ public class DefaultScheduler implements Scheduler {
         for (int i = 0; i < cts.length; i++) {
             this.classes.put(cts[i].classId, cts[i]);
             logger.info("Classes with id {} to thread {} of type {}",
-                cts[i].classId, i,
-                this.classes.get(cts[i].classId).type);
+                    cts[i].classId, i,
+                    this.classes.get(cts[i].classId).type);
         }
         this.mapping = new ParallelMapping(numberWorkers, cts);
         this.CPperiod = period;

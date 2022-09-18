@@ -21,6 +21,8 @@ import com.esotericsoftware.kryo.io.InputChunked;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.io.OutputChunked;
 import demo.bftmap.BFTMapRequestType;
+import demo.bftmap.BFTMapServerMP;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -197,7 +199,7 @@ public class ParallelServiceReplica extends ServiceReplica {
             int requestCount = 0;
             noop = true;
             for (TOMMessage request : requestsFromConsensus) {
-                logger.debug("(ServiceReplica.receiveMessages) Processing TOMMessage from "
+                logger.info("(ServiceReplica.receiveMessages) Processing TOMMessage from "
                         + "client {} with sequence number {} for session {} decided in consensus {}",
                         request.getSender(), request.getSequence(), request.getSession(), consId[consensusCount]);
 
@@ -338,11 +340,13 @@ public class ParallelServiceReplica extends ServiceReplica {
             while (true) {
 
                 try {
-                    logger.info("Thread {}, Draining to queue", this.thread_id);
+                    logger.info("Thread {}, Draining to queue. Replica queue size: {}", this.thread_id,
+                            this.requests.size());
                     this.requests.drainToQueue(execQueue);
                     localC++;
                     localTotal = localTotal + execQueue.getSize();
-                    logger.info("Thread {}, Drained to queue", this.thread_id);
+                    logger.info("Thread {}, Drained to queue. Replica queue size: {}", this.thread_id,
+                            this.requests.size());
 
                     do {
                         msg = execQueue.getNext();
@@ -351,7 +355,8 @@ public class ParallelServiceReplica extends ServiceReplica {
                         DataInputStream dis = new DataInputStream(in);
                         int cmd = dis.readInt();
 
-                        logger.info("Thread {} processing message with cmd {} and type {}", this.thread_id, BFTMapRequestType.getOp(cmd),
+                        logger.info("Thread {} processing message with cmd {} and type {}", this.thread_id,
+                                BFTMapRequestType.getOp(cmd),
                                 ct.type);
 
                         if (cmd == BFTMapRequestType.RECOVERER) {
@@ -374,12 +379,15 @@ public class ParallelServiceReplica extends ServiceReplica {
                         } else if ((ct.type == ClassToThreads.SYNC && ct.tIds.length == 1)) { // SYNC mas só com 1
                             if (cmd == BFTMapRequestType.CKP) {
                                 logger.info(
-                                        "Thread {}, Got a checkpoint command in ClassToThreads.SYNC and threadIds.lenght = 1", this.thread_id);
+                                        "Thread {}, Got a checkpoint command in ClassToThreads.SYNC and threadIds.lenght = 1",
+                                        this.thread_id);
                                 logger.info("Thread {} executing the checkpoint", this.thread_id);
                                 checkpointer.makeCheckpoint(msg);
-                                logger.info("Thread {}, Cleaning log with {} operations", this.thread_id, this.log.size());
+                                logger.info("Thread {}, Cleaning log with {} operations", this.thread_id,
+                                        this.log.size());
                                 this.log.clear();
-                                logger.info("Thread {}, Log cleaned, now log has {} operations", this.thread_id, this.log.size());
+                                logger.info("Thread {}, Log cleaned, now log has {} operations", this.thread_id,
+                                        this.log.size());
                             } else {
                                 logger.debug("Executing sync operation {}", BFTMapRequestType.getOp(cmd));
                                 this.executeSyncOperation(cmd, msg);
@@ -893,7 +901,7 @@ public class ParallelServiceReplica extends ServiceReplica {
 
         public void makeCheckpoint(MessageContextPair req) {
             logger.info("Checkpoint thread {} initialized, using partitions = {}", this.cp_id,
-            this.parallelServiceReplica.partition);
+                    this.parallelServiceReplica.partition);
             logger.info("Initializing checkpointing procedure");
             byte[] b;
             int cid = 0;
@@ -922,8 +930,9 @@ public class ParallelServiceReplica extends ServiceReplica {
                     logger.error("Checkpointer failed while writing to output streams", ex);
                 }
 
-                b = ((SingleExecutable) this.parallelServiceReplica.executor)
-                        .executeOrdered(out.toByteArray(), req.m);
+                // b = ((SingleExecutable) this.parallelServiceReplica.executor)
+                // .executeOrdered(out.toByteArray(), req.m);
+                b = ((BFTMapServerMP) this.parallelServiceReplica.executor).getSnapshot(new int[] { this.cp_id });
                 filename = "map" + this.cp_id + ".ser";
                 dataname = "map" + this.cp_id + "-metadata.txt";
                 // logger.info("array size = "+req.length);
@@ -956,8 +965,9 @@ public class ParallelServiceReplica extends ServiceReplica {
                 }
 
             } else {
-                b = ((SingleExecutable) this.parallelServiceReplica.executor)
-                        .executeOrdered(req.request.getContent(), req.m);
+                // b = ((SingleExecutable) this.parallelServiceReplica.executor)
+                // .executeOrdered(req.request.getContent(), req.m);
+                b = ((BFTMapServerMP) this.parallelServiceReplica.executor).getSnapshot(new int[] { this.cp_id });
                 filename = "ALLmap" + this.cp_id + ".ser";
                 dataname = "ALLmap-metadata.txt";
 
@@ -987,6 +997,6 @@ public class ParallelServiceReplica extends ServiceReplica {
                 }
             }
             logger.info("Checkpointing has finished");
-       }
+        }
     }
 }
