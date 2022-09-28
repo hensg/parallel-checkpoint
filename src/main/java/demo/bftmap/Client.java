@@ -63,6 +63,11 @@ class Client implements Runnable {
 
     public void run() {
 
+        roundKey = random.nextInt(this.numUniqueKeys);
+        roundTable = random.nextInt(this.maxIndex);
+        //roundKey = 0;
+        //roundTable = 0;
+
         final Future<?> fut = pool.submit(new Runnable() {
             public void run() {
                 try {
@@ -92,7 +97,6 @@ class Client implements Runnable {
                     }
                 } catch (Exception e) {
                     logger.error("Failed to insert value", e);
-                    System.exit(0);
                 }
             }
         });
@@ -102,8 +106,6 @@ class Client implements Runnable {
         } catch (Exception e) {
         }
 
-        roundKey = random.nextInt(this.numUniqueKeys);
-        roundTable = random.nextInt(this.maxIndex);
         this.countNumOp += 1;
     }
 

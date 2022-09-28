@@ -31,6 +31,12 @@ class ClientLatency extends Client {
     @Override
     public void run() {
         final long lastSentInstant = System.nanoTime();
+
+        roundTable = random.nextInt(this.maxIndex);
+        roundKey = random.nextInt(this.numUniqueKeys);
+        //roundTable = 1;
+        //roundKey = 1;
+
         final Future<?> fut = pool.submit(new Runnable() {
             public void run() {
                 try {
@@ -63,7 +69,6 @@ class ClientLatency extends Client {
                     }
                 } catch (Exception e) {
                     logger.error("Failed to insert value", e);
-                    System.exit(0);
                 }
             }
         });
@@ -75,9 +80,6 @@ class ClientLatency extends Client {
 
         final long latency = System.nanoTime() - lastSentInstant;
         logger.info("Count {}, Latency {}millis, Table {}, Key {}, operation {}", this.countNumOp, latency / ONE_MILLION, roundTable, roundKey, operation);
-
-        roundTable = random.nextInt(this.maxIndex);
-        roundKey = random.nextInt(this.numUniqueKeys);
         this.countNumOp += 1;
     }
 

@@ -77,7 +77,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         node = re.findall("throughput_([0-9]{3}).log", str(path))[0]
         with open(str(path)) as file:
             for line in file:
-                if "ThroughputStatistics - Replica" in line:
+                if "ThroughputStatistics2 - Replica" or "ThroughputStatistics2 - Replica" in line:
                     rs = re.findall(r"(\d+\.?\d*) operations/sec", line)
                     if rs:
                         dt = re.findall("([0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3})", line)
@@ -168,7 +168,6 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         plt.show()
         print(path)
         plt.close()
-        break
 
     fig = plt.figure()
     fig.suptitle(
@@ -204,7 +203,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
                     cs = []
 
         ax.legend(labels=["latency", "checkpointing"], loc="upper right")
-        break
+
     fig.tight_layout()
     plt.savefig(
         "images/name=sobrecarga"
@@ -246,3 +245,4 @@ for path in Path(args.dir).rglob("*client.log"):
     ]
 
     _generate(parallel, read, conflict, run, threads, checkpoint, dt)
+    print("Finished")

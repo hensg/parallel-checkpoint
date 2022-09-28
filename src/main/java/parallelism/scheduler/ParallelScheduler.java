@@ -3,6 +3,7 @@ package parallelism.scheduler;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -216,19 +217,22 @@ public class ParallelScheduler implements Scheduler {
         // gerando mais CP
         if (cmds % (CPperiod / workers) == 0) { // create cp request
             logger.info("Time for checkpointing with {} commands executed, extra CPs {}", cmds, extraCPs);
-            if (extraCPs > 0) {
-                extraCPs -= 1;
-                return;
-            }
+            //if (extraCPs > 0) {
+            //    extraCPs -= 1;
+            //    return;
+            //}
 
             List<Integer> conflict = conflictMapping(conf, workers, starter % workers);
             Collections.sort(conflict);
+            //List<Integer> conflict = new ArrayList<>();
+            //conflict.add(0);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < conflict.size(); i++) {
                 sb.append(conflict.get(i));
+                //sb.append("0");
                 sb.append('#');
             }
             if (conflict.size() > 1) {

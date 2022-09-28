@@ -54,6 +54,9 @@
     <logger name="bftsmart.util.ThroughputStatistics" additivity="false">
       <appender-ref ref="throughputLogger" />
     </logger>
+    <logger name="bftsmart.util.ThroughputStatistics2" additivity="false">
+      <appender-ref ref="throughputLogger" />
+    </logger>
     <Root level="info" additivity="false">
       <appender-ref ref="fileLoggerServer" />
     </Root>
