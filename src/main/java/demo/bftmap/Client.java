@@ -4,6 +4,7 @@ import bftsmart.demo.bftmap.BFTMap;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -35,6 +36,7 @@ class Client implements Runnable {
     int roundKey;
     int roundTable;
     int timeout;
+    private BlackList blacklist;
 
     public Client(int id, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
             int numThreads, int p_read, int p_conflict, int interval, int timeout) {
@@ -52,7 +54,8 @@ class Client implements Runnable {
         this.interval = interval;
         this.timeout = timeout;
         this.store = new PBFTMapMP(id, parallel, async, null);
-        logger.info("Started new client {}", id);
+        this.blacklist = new BlackList();
+        logger.info("Started new client {} - maxIndex {}, numUniqueKeys {}", id, this.maxIndex, this.numUniqueKeys);
     }
 
     public void closeProxy() {
@@ -64,7 +67,12 @@ class Client implements Runnable {
     public void run() {
 
         roundKey = random.nextInt(this.numUniqueKeys);
-        roundTable = random.nextInt(this.maxIndex);
+
+        do {
+          roundTable = random.nextInt(this.maxIndex);
+        } while (blacklist.isBlacklisted(roundTable));
+        //logger.info("Round table is {}", roundTable);
+
         //roundKey = 0;
         //roundTable = 0;
 
@@ -103,7 +111,10 @@ class Client implements Runnable {
 
         try {
             fut.get(timeout, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
+        } catch  (ExecutionException e) {
+            logger.error("ERRORR", e);
+        } catch (InterruptedException|TimeoutException e) {
+            //blacklist.add(roundTable);
         }
 
         this.countNumOp += 1;

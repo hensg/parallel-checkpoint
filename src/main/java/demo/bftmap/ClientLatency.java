@@ -1,10 +1,12 @@
 package demo.bftmap;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +29,16 @@ class ClientLatency extends Client {
 
     ExecutorService pool = Executors.newScheduledThreadPool(1);
     String operation = null;
+    private BlackList blacklist;
+
 
     @Override
     public void run() {
         final long lastSentInstant = System.nanoTime();
 
-        roundTable = random.nextInt(this.maxIndex);
+        do {
+          roundTable = random.nextInt(this.maxIndex);
+        } while (blacklist.isBlacklisted(roundTable));
         roundKey = random.nextInt(this.numUniqueKeys);
         //roundTable = 1;
         //roundKey = 1;
@@ -75,7 +81,10 @@ class ClientLatency extends Client {
 
         try {
             fut.get(timeout, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
+        } catch  (ExecutionException e) {
+            logger.error("ERRORR", e);
+        } catch (InterruptedException|TimeoutException e) {
+            //blacklist.add(roundTable);
         }
 
         final long latency = System.nanoTime() - lastSentInstant;

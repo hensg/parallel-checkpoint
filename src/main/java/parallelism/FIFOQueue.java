@@ -50,11 +50,16 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
         last = head = new Node<E>(null);
     }
 
+    private int count = 0;
+
     @Override
     public void put(E e) throws InterruptedException {
+       // if (count > 40000)
+       //   return;
         lock.lock();
         last = last.next = new Node<E>(e);
         available = true;
+        count++;
         cond.signalAll();
         lock.unlock();
     }
@@ -79,8 +84,8 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
             this.head.next = null;
             // assert head.item == null;
             last = head;
-
         } finally {
+            count--;
             lock.unlock();
         }
     }

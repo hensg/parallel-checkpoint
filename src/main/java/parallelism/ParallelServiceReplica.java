@@ -199,7 +199,7 @@ public class ParallelServiceReplica extends ServiceReplica {
             int requestCount = 0;
             noop = true;
             for (TOMMessage request : requestsFromConsensus) {
-                logger.info("(ServiceReplica.receiveMessages) Processing TOMMessage from "
+                logger.debug("(ServiceReplica.receiveMessages) Processing TOMMessage from "
                         + "client {} with sequence number {} for session {} decided in consensus {}",
                         request.getSender(), request.getSequence(), request.getSession(), consId[consensusCount]);
 
@@ -355,7 +355,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                         DataInputStream dis = new DataInputStream(in);
                         int cmd = dis.readInt();
 
-                        logger.info("Thread {} processing message with cmd {} and type {}", this.thread_id,
+                        logger.debug("Thread {} processing message with cmd {} and type {}", this.thread_id,
                                 BFTMapRequestType.getOp(cmd),
                                 ct.type);
 
@@ -367,7 +367,7 @@ public class ParallelServiceReplica extends ServiceReplica {
                             int partitionId = dis.readInt();
                             double logSizeMB = (this.log.isEmpty()) ? 0 : this.log.size() / 1000000f;
 
-                            logger.info(
+                            logger.debug(
                                     "Recovery process finished for partition {}! Log has {} operations already stored ({} MB).",
                                     partitionId, this.log.size(), logSizeMB);
                             threadRecoveryFinished = true;
@@ -378,12 +378,12 @@ public class ParallelServiceReplica extends ServiceReplica {
 
                         } else if ((ct.type == ClassToThreads.SYNC && ct.tIds.length == 1)) { // SYNC mas só com 1
                             if (cmd == BFTMapRequestType.CKP) {
-                                logger.info(
+                                logger.debug(
                                         "Thread {}, Got a checkpoint command in ClassToThreads.SYNC and threadIds.lenght = 1",
                                         this.thread_id);
-                                logger.info("Thread {} executing the checkpoint", this.thread_id);
+                                logger.debug("Thread {} executing the checkpoint", this.thread_id);
                                 checkpointer.makeCheckpoint(msg);
-                                logger.info("Thread {}, Cleaning log with {} operations", this.thread_id,
+                                logger.debug("Thread {}, Cleaning log with {} operations", this.thread_id,
                                         this.log.size());
                                 this.log.clear();
                                 logger.info("Thread {}, Log cleaned, now log has {} operations", this.thread_id,

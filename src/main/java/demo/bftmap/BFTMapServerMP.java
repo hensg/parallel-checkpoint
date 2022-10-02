@@ -239,6 +239,7 @@ public final class BFTMapServerMP extends DefaultSingleRecoverable implements Se
                 logger.info("Getting snapshot of partition {} with {} entries", particoes[i],
                         tableMap.getTable(particoes[i]).size());
             }
+            Thread.sleep(20000);
             dos.flush();
             out.flush();
             bos.flush();

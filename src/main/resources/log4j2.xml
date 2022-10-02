@@ -41,15 +41,18 @@
     <logger name="demo.bftmap.BFTMapClientMP" additivity="false">
       <appender-ref ref="fileLoggerClient" />
     </logger>
-    <logger name="demo.bftmap.Client" additivity="false">
+    <logger name="demo.bftmap.Client">
       <appender-ref ref="fileLoggerClient" />
+    </logger>
+    <logger name="demo.bftmap.BlackList">
+      <appender-ref ref="console" />
     </logger>
     <logger name="demo.bftmap.PBFTMapMP" additivity="false">
       <appender-ref ref="fileLoggerClient" />
     </logger>
     <logger name="demo.bftmap.ClientLatency">
       <appender-ref ref="fileLoggerClientLatency" />
-      <appender-ref ref="fileLoggerClient" />
+      <appender-ref ref="console" />
     </logger>
     <logger name="bftsmart.util.ThroughputStatistics" additivity="false">
       <appender-ref ref="throughputLogger" />
@@ -59,6 +62,7 @@
     </logger>
     <Root level="info" additivity="false">
       <appender-ref ref="fileLoggerServer" />
+      <appender-ref ref="console" />
     </Root>
   </Loggers>
 </Configuration>

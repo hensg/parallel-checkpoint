@@ -77,10 +77,10 @@ public class BFTMapClientMP {
             executorService.scheduleAtFixedRate(clients[i], 100 + i * 10, interval, TimeUnit.MILLISECONDS);
         }
 
-        ScheduledExecutorService latencyScheduler = Executors.newSingleThreadScheduledExecutor();
-        ClientLatency clientLatency = new ClientLatency(999999, max, numUniqueKeys, verbose, parallel, async,
-                numThreads, p_read, p_conflict, interval, timeout);
-        latencyScheduler.scheduleAtFixedRate(clientLatency, 5, 1, TimeUnit.SECONDS);
+        //ScheduledExecutorService latencyScheduler = Executors.newSingleThreadScheduledExecutor();
+        //ClientLatency clientLatency = new ClientLatency(999999, max, numUniqueKeys, verbose, parallel, async,
+        //        numThreads, p_read, p_conflict, interval, timeout);
+        //latencyScheduler.scheduleAtFixedRate(clientLatency, 5, 1, TimeUnit.SECONDS);
 
         executorService.awaitTermination(terminationTime, TimeUnit.SECONDS);
         logger.info("Finished all client threads execution...");

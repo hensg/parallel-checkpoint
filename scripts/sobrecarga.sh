@@ -50,6 +50,7 @@ function start_experiment() {
         sudo rm -rf /srv/config/currentView || true;
         sudo rm -rf /disk*/checkpoint*/metadata/* /disk*/checkpoint*/states/* || true;
         sudo rm -rf /srv/logs/*.log || true;
+        sudo systemctl daemon-reload;
     "
 
     for ssh_entry in "${ssh_list[@]}"; do
@@ -57,10 +58,11 @@ function start_experiment() {
          ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "$reconfigure_cmd" &
     done
     wait
+    sleep 5
     for ssh_entry in "${ssh_list[@]}"; do
-         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo systemctl daemon-reload; sudo service bft-smart start;"
+         ssh -p 22 -o TCPKeepAlive=yes -o ServerAliveInterval=60 -o StrictHostKeyChecking=no ${user_id}@pc${ssh_entry}.emulab.net "sudo systemctl daemon-reload && sudo service bft-smart start;"
     done
-    sleep 20
+    sleep 5
 
     
     warmup_client_termination_time=5
@@ -120,14 +122,14 @@ num_unique_keys=4
 initial_entries=50 # 50 MB
 client_termination_time=60 # seconds
 client_interval=5 #millis
-client_timeout=40 #Millis
+client_timeout=1000 #Millis
 client_num_threads=40
 datetime=$(date +%F_%H-%M-%S)
 
 #for checkpoint_interval in 400000 800000; do  
-for checkpoint_interval in 1600000; do  
+for checkpoint_interval in 800000; do  
     #for server_threads in 4 8 16; do
-    for server_threads in 24; do
+    for server_threads in 4; do
         for partitioned in true; do
             echo "Executing $num_ops operações for particionado=$partitioned, numLogs=$num_logs, num_ops_by_client=$num_ops_by_client, server_threads=$server_threads, checkpoint=$checkpoint_interval"
             start_experiment $partitioned $client_num_threads $client_termination_time 1 $server_threads $client_interval $conflito $checkpoint_interval $num_unique_keys $initial_entries $percent_of_read_ops $client_timeout;

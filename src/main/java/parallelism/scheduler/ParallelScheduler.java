@@ -184,6 +184,8 @@ public class ParallelScheduler implements Scheduler {
         }
     }
 
+    private boolean check = true;
+
     @Override
     public void schedule(MessageContextPair request) {
         HibridClassToThreads ct = this.mapping.getClass(request.classId);
@@ -216,6 +218,8 @@ public class ParallelScheduler implements Scheduler {
         // Cuidar com o adiantamento causado por conflito que pode acabar
         // gerando mais CP
         if (cmds % (CPperiod / workers) == 0) { // create cp request
+        //if (check) {
+            check = false;
             logger.info("Time for checkpointing with {} commands executed, extra CPs {}", cmds, extraCPs);
             //if (extraCPs > 0) {
             //    extraCPs -= 1;
