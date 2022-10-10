@@ -65,8 +65,8 @@ public class ParallelScheduler implements Scheduler {
                 if (cts[i].tIds.length <= 2) {
                     this.classes.put(cts[i].classId, cts[i]);
                     logger.debug("Classes with id {} to thread {} of type {}",
-                            cts[i].classId, i,
-                            this.classes.get(cts[i].classId).type);
+                                 cts[i].classId, i,
+                                 this.classes.get(cts[i].classId).type);
                 }
             } catch (NullPointerException ex) {
                 logger.info("error for i = {}", i);
@@ -171,7 +171,7 @@ public class ParallelScheduler implements Scheduler {
     @Override
     public void scheduleReplicaReconfiguration() {
         TOMMessage reconf = new TOMMessage(0, 0, 0, 0, null, 0, TOMMessageType.ORDERED_REQUEST,
-                ParallelMapping.CONFLICT_RECONFIGURATION);
+                                           ParallelMapping.CONFLICT_RECONFIGURATION);
         MessageContextPair m = new MessageContextPair(reconf, ParallelMapping.CONFLICT_RECONFIGURATION, -1, null, null);
         BlockingQueue[] q = this.getMapping().getAllQueues();
         try {
@@ -196,12 +196,12 @@ public class ParallelScheduler implements Scheduler {
             throw new RuntimeException();
         }
         if (ct.type == ClassToThreads.CONC) {// conc
-            logger.info("Added request to queue of thread {}", ct.gettIds()[ct.threadIndex]);
+            logger.debug("Added request to queue of thread {}", ct.gettIds()[ct.threadIndex]);
             ct.queues[ct.threadIndex].add(request);
             ct.threadIndex = (ct.threadIndex + 1) % ct.queues.length;
         } else { // sync
             for (int i = 0; i < ct.queues.length; i++) {
-                logger.info("Added request to queue of thread {}", ct.gettIds()[ct.threadIndex]);
+                logger.debug("Added request to queue of thread {}", ct.gettIds()[ct.threadIndex]);
                 ct.queues[i].add(request);
             }
         }
@@ -217,26 +217,18 @@ public class ParallelScheduler implements Scheduler {
         // FIXME: Adiantar o checkpoint para bater com o do scheduler serial.
         // Cuidar com o adiantamento causado por conflito que pode acabar
         // gerando mais CP
-        if (cmds % (CPperiod / workers) == 0) { // create cp request
-        //if (check) {
-            check = false;
+        if (cmds % ((float)CPperiod / workers) == 0.0) { // create cp request
             logger.info("Time for checkpointing with {} commands executed, extra CPs {}", cmds, extraCPs);
-            //if (extraCPs > 0) {
-            //    extraCPs -= 1;
-            //    return;
-            //}
 
             List<Integer> conflict = conflictMapping(conf, workers, starter % workers);
             Collections.sort(conflict);
-            //List<Integer> conflict = new ArrayList<>();
-            //conflict.add(0);
+
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < conflict.size(); i++) {
                 sb.append(conflict.get(i));
-                //sb.append("0");
                 sb.append('#');
             }
             if (conflict.size() > 1) {
@@ -279,8 +271,10 @@ public class ParallelScheduler implements Scheduler {
                 logger.info("Adding checkpoint cmd of class {} to queue {}", CP_class, q.hashCode());
                 q.add(cp);
             }
+
+            logger.info("Conflict:{}, CheckpointPartitions:{}", conflict, sb.toString());
             starter++;
         }
-    }
 
+    }
 }

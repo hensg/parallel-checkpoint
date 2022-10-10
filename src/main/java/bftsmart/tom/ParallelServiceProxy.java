@@ -65,7 +65,7 @@ public class ParallelServiceProxy extends ServiceProxy {
      *                        quorum of replies
      */
     public ParallelServiceProxy(int processId, String configHome, Comparator<byte[]> replyComparator,
-            Extractor replyExtractor) {
+                                Extractor replyExtractor) {
         super(processId, configHome, replyComparator, replyExtractor);
     }
 
@@ -105,10 +105,10 @@ public class ParallelServiceProxy extends ServiceProxy {
 
             replyServer = getRandomlyServerId();
             hashResponseController = new HashResponseController(getViewManager().getCurrentViewPos(replyServer),
-                    getViewManager().getCurrentViewProcesses().length);
+                                                                getViewManager().getCurrentViewProcesses().length);
 
             TOMMessage sm = new TOMMessage(getProcessId(), getSession(), reqId, operationId, request,
-                    getViewManager().getCurrentViewId(), requestType);
+                                           getViewManager().getCurrentViewId(), requestType);
             sm.setReplyServer(replyServer);
 
             TOMulticast(sm);
@@ -195,7 +195,7 @@ public class ParallelServiceProxy extends ServiceProxy {
         canSendLock.unlock();
         return ret;
     }
-    
+
     protected int getReplyQuorum() {
         if (getViewManager().getStaticConf().isBFT()) {
             return (int) Math.ceil((getViewManager().getCurrentViewN() + getViewManager().getCurrentViewF()) / 2) + 1;
@@ -206,8 +206,8 @@ public class ParallelServiceProxy extends ServiceProxy {
 
     public void TOMulticast(byte[] m, int reqId, int operationId, TOMMessageType reqType, int groupId) {
         getCommunicationSystem().send(isUseSignatures(), getViewManager().getCurrentViewProcesses(),
-                new TOMMessage(getProcessId(), getSession(), reqId, operationId, m, getViewManager().getCurrentViewId(),
-                        reqType, groupId));
+                                      new TOMMessage(getProcessId(), getSession(), reqId, operationId, m, getViewManager().getCurrentViewId(),
+                                                     reqType, groupId));
     }
 
 }

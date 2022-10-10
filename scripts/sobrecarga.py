@@ -20,7 +20,7 @@ parser.add_argument("--dir", type=str, required=True)
 
 args = parser.parse_args()
 
-Y_MAX = 32000
+Y_MAX = 30000
 
 
 def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
@@ -116,14 +116,14 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
             )
         )
         # plt.subplot(1, 1, i)
-        plt.subplot(1, 1, 1)
+        #plt.subplot(1, 1, 1)
         plt.title("Replica " + str(i))
         plt.xlabel("datetime")
         plt.xticks(rotation=45)
         plt.ylabel("req/sec")
         plt.plot(
-            throughput_datetime[node][6:-14],
-            throughput_reqsec[node][6:-14],
+            throughput_datetime[node],
+            throughput_reqsec[node],
             label="requests",
         )
         # seclocator = matdates.SecondLocator(interval=4)
@@ -179,7 +179,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
     i = 1
     for node in throughput_datetime:
         # plt.subplot(2, 2, i)
-        plt.subplot(1, 1, i)
+        # plt.subplot(1, 1, i)
         plt.title("Replica " + str(i))
         plt.xlabel("datetime")
         plt.xticks(rotation=45)
@@ -223,6 +223,7 @@ def _generate(parallel, read, conflict, run, threads, checkpoint, datetime_exp):
         + ".png",
         dpi=355,
     )
+    plt.show()
     plt.close()
 
 

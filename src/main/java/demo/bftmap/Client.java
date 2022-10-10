@@ -1,9 +1,9 @@
 package demo.bftmap;
 
-import bftsmart.demo.bftmap.BFTMap;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.Random;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 class Client implements Runnable {
 
-    protected static final Logger logger = LoggerFactory.getLogger(Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
     int id;
     int numberOfOps;
     int interval;
@@ -36,10 +36,10 @@ class Client implements Runnable {
     int roundKey;
     int roundTable;
     int timeout;
-    private BlackList blacklist;
+    Blacklist blacklist;
 
     public Client(int id, int maxIndex, int numUniqueKeys, boolean verbose, boolean parallel, boolean async,
-            int numThreads, int p_read, int p_conflict, int interval, int timeout) {
+                  int numThreads, int p_read, int p_conflict, int interval, int timeout, Blacklist blacklist) {
         this.id = id;
         this.numClients = numThreads;
         this.numUniqueKeys = numUniqueKeys;
@@ -54,7 +54,7 @@ class Client implements Runnable {
         this.interval = interval;
         this.timeout = timeout;
         this.store = new PBFTMapMP(id, parallel, async, null);
-        this.blacklist = new BlackList();
+        this.blacklist = blacklist;
         logger.info("Started new client {} - maxIndex {}, numUniqueKeys {}", id, this.maxIndex, this.numUniqueKeys);
     }
 
@@ -64,57 +64,41 @@ class Client implements Runnable {
 
     ExecutorService pool = Executors.newScheduledThreadPool(1);
 
+
     public void run() {
-
         roundKey = random.nextInt(this.numUniqueKeys);
-
-        do {
-          roundTable = random.nextInt(this.maxIndex);
-        } while (blacklist.isBlacklisted(roundTable));
-        //logger.info("Round table is {}", roundTable);
-
-        //roundKey = 0;
-        //roundTable = 0;
-
-        final Future<?> fut = pool.submit(new Runnable() {
-            public void run() {
-                try {
-                    if (random.nextInt(100) < p_read) {
-                        getEntry(store, roundTable, roundKey);
-                    } else {
-                        if (random.nextInt(100) < p_conflict) {
-                            int roundKey2 = random.nextInt(maxIndex);
-                            int roundTable2 = random.nextInt(numUniqueKeys);
-
-                            while (roundKey2 == roundKey)
-                                roundKey2 = random.nextInt(maxIndex);
-                            while (roundTable2 == roundTable)
-                                roundTable2 = random.nextInt(numUniqueKeys);
-
-                            if (roundTable > roundTable2) {
-                                // do not remove it, its need for hashcode that is based only in asc order of
-                                // ids
-                                int aux = roundTable;
-                                roundTable = roundTable2;
-                                roundTable2 = aux;
-                            }
-                            putEntries(store, roundTable, roundKey, roundTable2, roundKey2);
-                        } else {
-                            insertValue(store, roundTable, roundKey);
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.error("Failed to insert value", e);
-                }
-            }
-        });
+        roundTable = random.nextInt(this.maxIndex);
+        if (blacklist.contains(roundTable))
+            return;
 
         try {
-            fut.get(timeout, TimeUnit.MILLISECONDS);
-        } catch  (ExecutionException e) {
-            logger.error("ERRORR", e);
-        } catch (InterruptedException|TimeoutException e) {
-            //blacklist.add(roundTable);
+            if (random.nextInt(100) < p_read) {
+                getEntry(store, roundTable, roundKey);
+            } else {
+                if (random.nextInt(100) < p_conflict) {
+                    int roundKey2 = random.nextInt(maxIndex);
+                    int roundTable2 = random.nextInt(numUniqueKeys);
+
+                    while (roundKey2 == roundKey)
+                        roundKey2 = random.nextInt(maxIndex);
+                    while (roundTable2 == roundTable)
+                        roundTable2 = random.nextInt(numUniqueKeys);
+
+                    if (roundTable > roundTable2) {
+                        // do not remove it, its need for hashcode that is based only in asc order of
+                        // ids
+                        int aux = roundTable;
+                        roundTable = roundTable2;
+                        roundTable2 = aux;
+                    }
+                    putEntries(store, roundTable, roundKey, roundTable2, roundKey2);
+                } else {
+                    insertValue(store, roundTable, roundKey);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to insert value into table: {}, key: {}", roundTable, roundKey, e);
+            System.exit(0);
         }
 
         this.countNumOp += 1;
@@ -134,7 +118,7 @@ class Client implements Runnable {
     }
 
     protected byte[] putEntries(PBFTMapMP bftMap, Integer nameTable1, Integer key1, Integer nameTable2, Integer key2)
-            throws Exception {
+    throws Exception {
         Integer k1 = key1;
         Integer table1 = nameTable1;
         Integer table2 = nameTable2;

@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
   <Appenders>
+    <RollingFile name="fileLoggerScheduler" fileName="logs/scheduler.log" filePattern="logs/scheduler-%d{yyyy-MM-dd}.log">
+      <PatternLayout>
+        <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1.} - %msg%n%ex{full}</pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+      </Policies>
+    </RollingFile>
     <RollingFile name="throughputLogger" fileName="logs/throughput.log" filePattern="logs/throughput-%d{yyyy-MM-dd}.log">
       <PatternLayout>
         <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1.} - %msg%n%ex{full}</pattern>
@@ -10,6 +18,14 @@
       </Policies>
     </RollingFile>
     <RollingFile name="fileLoggerServer" fileName="logs/server.log" filePattern="logs/server-%d{yyyy-MM-dd}.log">
+      <PatternLayout>
+        <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1.} - %msg%n%ex{full}</pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+      </Policies>
+    </RollingFile>
+    <RollingFile name="parallelSchedulerLogger" fileName="logs/scheduler.log" filePattern="logs/server-%d{yyyy-MM-dd}.log">
       <PatternLayout>
         <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1.} - %msg%n%ex{full}</pattern>
       </PatternLayout>
@@ -38,21 +54,23 @@
     </Console>
   </Appenders>
   <Loggers>
+    <logger name="parallelism.scheduler.ParallelScheduler" additivity="false">
+      <appender-ref ref="fileLoggerScheduler" />
+    </logger>
+    <logger name="demo.bftmap.PBFTMapMP" additivity="false">
+      <appender-ref ref="fileLoggerClient" />
+    </logger>
     <logger name="demo.bftmap.BFTMapClientMP" additivity="false">
       <appender-ref ref="fileLoggerClient" />
     </logger>
     <logger name="demo.bftmap.Client">
       <appender-ref ref="fileLoggerClient" />
     </logger>
-    <logger name="demo.bftmap.BlackList">
-      <appender-ref ref="console" />
-    </logger>
-    <logger name="demo.bftmap.PBFTMapMP" additivity="false">
-      <appender-ref ref="fileLoggerClient" />
-    </logger>
     <logger name="demo.bftmap.ClientLatency">
       <appender-ref ref="fileLoggerClientLatency" />
-      <appender-ref ref="console" />
+    </logger>
+    <logger name="parallelism.scheduler.ParallelScheduler">
+      <appender-ref ref="fileLoggerScheduler" />
     </logger>
     <logger name="bftsmart.util.ThroughputStatistics" additivity="false">
       <appender-ref ref="throughputLogger" />
@@ -61,8 +79,8 @@
       <appender-ref ref="throughputLogger" />
     </logger>
     <Root level="info" additivity="false">
-      <appender-ref ref="fileLoggerServer" />
       <appender-ref ref="console" />
+      <appender-ref ref="fileLoggerServer" />
     </Root>
   </Loggers>
 </Configuration>

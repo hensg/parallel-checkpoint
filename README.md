@@ -1,7 +1,18 @@
-#
+# Parallel Checkpoint
 
-Disclaimer:
-This project was designed and published by Everaldo de Avila Gomes Junior in his master thesis entitled "Redução do custo de durabilidade em Replicacção Máquina de Estados através de checkpoints particionados".
+Build the project:
+```
+$ mvn clean package
+```
 
+Run server:
+```
+$ ./run_replica.sh 0
+$ ./run_replica.sh 1
+$ ./run_replica.sh 2
+```
 
-I'm organizing some parts of the experimental evaluations related to this project and project structure as a whole.
+Run client:
+```
+$ ./run_client.sh
+```

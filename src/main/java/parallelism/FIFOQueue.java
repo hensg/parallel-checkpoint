@@ -54,8 +54,6 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
 
     @Override
     public void put(E e) throws InterruptedException {
-       // if (count > 40000)
-       //   return;
         lock.lock();
         last = last.next = new Node<E>(e);
         available = true;
@@ -64,7 +62,7 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
         lock.unlock();
     }
 
-    // public static int c = 0;
+    // public static ins c = 0;
     public void drainToQueue(ExecutionFIFOQueue<E> q) {
         lock.lock();
         try {
@@ -72,9 +70,7 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
                 try {
                     // c++;
                     // System.out.println("--------------------------------------- Valor de c: "+c);
-                    logger.info("Waiting");
                     cond.await();
-                    logger.info("Released");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -130,6 +126,7 @@ public class FIFOQueue<E> implements BlockingQueue<E> {
     public boolean add(E e) {
         lock.lock();
         last = last.next = new Node<E>(e);
+        count++;
         available = true;
         cond.signalAll();
         lock.unlock();
