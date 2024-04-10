@@ -1,3 +1,7 @@
+# BFT Smart
+Byzantine Fault-Tolerant (BFT) State Machine Replication (SMaRt) v1.2
+
+
 # Parallel Checkpoint
 
 Build the project:
